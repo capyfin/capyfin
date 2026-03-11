@@ -12,7 +12,28 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 const browserFallback: AppMetadata = {
   productName: "CapyFin",
-  workspaceLayout: ["apps/desktop", "docs", "apps/desktop/src-tauri"],
+  workspaceLayout: [
+    {
+      path: "apps/desktop",
+      responsibility: "Desktop frontend and product surface",
+    },
+    {
+      path: "apps/desktop/src-tauri",
+      responsibility: "Tauri runtime, commands, and desktop integration",
+    },
+    {
+      path: "crates/capyfin-core",
+      responsibility: "Shared application services and cross-surface contracts",
+    },
+    {
+      path: "crates/capyfin-cli",
+      responsibility: "Operational command line interface built on shared core",
+    },
+    {
+      path: "docs",
+      responsibility: "Architecture notes and repository conventions",
+    },
+  ],
 };
 
 export function App() {

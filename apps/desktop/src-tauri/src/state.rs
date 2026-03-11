@@ -1,11 +1,6 @@
-pub struct AppState {
-    pub product_name: String,
-}
+use capyfin_core::AppCore;
 
-impl Default for AppState {
-    fn default() -> Self {
-        Self {
-            product_name: "CapyFin".to_string(),
-        }
-    }
+#[derive(Default)]
+pub struct AppState {
+    pub core: AppCore,
 }

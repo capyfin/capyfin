@@ -1,18 +1,19 @@
 [package]
 name = "capyfin-desktop"
-version = "0.1.0"
+version.workspace = true
 description = "CapyFin desktop application"
-authors = ["CapyFin"]
-edition = "2024"
-rust-version = "1.94"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
 
 [lib]
 name = "capyfin_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = "2.5.6"
+tauri-build.workspace = true
 
 [dependencies]
-serde = { version = "1.0.228", features = ["derive"] }
-tauri = "2.10.3"
+capyfin-core = { path = "../../../crates/capyfin-core" }
+tauri.workspace = true

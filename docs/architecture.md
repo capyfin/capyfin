@@ -16,11 +16,11 @@ This keeps features from importing each other arbitrarily and gives reviewers a 
 
 ## Rust boundaries
 
-- `src-tauri/src/commands`: Tauri command handlers exposed to the frontend.
-- `src-tauri/src/state.rs`: process-wide application state.
-- `src-tauri/src/lib.rs`: composition root for plugins, commands, and state wiring.
+- `crates/capyfin-core`: shared application services and contracts used by every Rust surface.
+- `crates/capyfin-cli`: command-line entrypoint for operators, scripts, and local workflows.
+- `apps/desktop/src-tauri`: Tauri desktop runtime that adapts frontend commands onto the shared core.
 
-The Rust side starts intentionally small, but the module seams are in place before the first real command lands.
+This keeps product logic out of shell-specific entrypoints and makes the desktop runtime and CLI converge on the same behavior instead of drifting.
 
 ## Operating conventions
 

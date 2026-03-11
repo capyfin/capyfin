@@ -20,6 +20,13 @@ For a desktop shell with the Rust process running:
 pnpm desktop:dev
 ```
 
+For the shared CLI:
+
+```bash
+pnpm cli -- metadata
+pnpm cli -- workspace --output json
+```
+
 ## Quality gates
 
 ```bash
@@ -33,6 +40,7 @@ pnpm rust:clippy
 ## Principles
 
 - Keep product code under clear boundaries: app shell, features, shared frontend utilities, and Rust commands/state.
+- Keep Rust business logic in `capyfin-core`, then have desktop and CLI entrypoints consume it.
 - Default to strict static analysis so regressions are caught before review.
 - Add new surface area behind modules, not ad hoc files at the repo root.
 

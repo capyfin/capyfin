@@ -66,11 +66,18 @@ export function AllocationCard({ metadata }: AllocationCardProps) {
           <div className="grid gap-2">
             {metadata.workspaceLayout.map((item) => (
               <div
-                key={item}
+                key={item.path}
                 className="flex items-center gap-3 rounded-2xl border border-border/70 bg-muted/35 px-3 py-2 text-sm"
               >
                 <FolderTreeIcon className="size-4 text-muted-foreground" />
-                <span className="truncate">{item}</span>
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-foreground">
+                    {item.path}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {item.responsibility}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

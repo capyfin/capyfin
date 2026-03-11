@@ -1,0 +1,18 @@
+[package]
+name = "capyfin-desktop"
+version = "0.1.0"
+description = "CapyFin desktop application"
+authors = ["CapyFin"]
+edition = "2024"
+rust-version = "1.94"
+
+[lib]
+name = "capyfin_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = "2.5.6"
+
+[dependencies]
+serde = { version = "1.0.228", features = ["derive"] }
+tauri = "2.10.3"

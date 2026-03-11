@@ -1,0 +1,11 @@
+.DS_Store
+.turbo
+*.tsbuildinfo
+dist
+node_modules
+target
+coverage
+pnpm-debug.log*
+
+apps/desktop/dist
+apps/desktop/src-tauri/target

@@ -9,6 +9,8 @@ export default tseslint.config(
     ignores: [
       "**/dist/**",
       "**/node_modules/**",
+      "**/src/components/ui/**",
+      "**/src/hooks/use-mobile.ts",
       "**/src-tauri/target/**",
       "**/target/**",
       "**/vite.config.ts",

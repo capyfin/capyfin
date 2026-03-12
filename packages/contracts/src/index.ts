@@ -34,6 +34,7 @@ export const sidecarBootstrapSchema = z.object({
       websocket: z.boolean(),
     }),
   }),
+  version: z.string().min(1).optional(),
 });
 
 export type WorkspaceArea = z.infer<typeof workspaceAreaSchema>;

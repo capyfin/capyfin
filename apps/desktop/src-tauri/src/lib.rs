@@ -30,7 +30,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::app::app_metadata,
             commands::bootstrap::await_initialization,
             commands::bootstrap::kill_sidecar
         ])

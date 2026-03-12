@@ -1,4 +1,4 @@
-import { createBasicAuthHeader } from "@capyfin/contracts";
+import { createBasicAuthHeader } from "@capyfin/core";
 import type { HttpBindings } from "@hono/node-server";
 import { cors } from "hono/cors";
 import { Hono } from "hono";

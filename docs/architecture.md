@@ -12,9 +12,9 @@
 - `apps/desktop`: React shell, dashboard features, and the sidecar client.
 - `apps/desktop/src-tauri`: Tauri bootstrap layer, sidecar supervision, and native capabilities.
 - `packages/contracts`: shared transport schemas and the repository manifest.
+- `packages/core`: shared Node application core for manifest access, bootstrap payloads, and CLI-facing helpers.
+- `packages/cli`: operational Node CLI surface built on the shared core.
 - `packages/sidecar`: Node sidecar API that becomes the main application boundary.
-- `crates/capyfin-core`: shared Rust core for native services and the CLI.
-- `crates/capyfin-cli`: operational CLI built on the Rust core.
 - `config/app-manifest.json`: cross-language metadata that keeps Rust and TypeScript aligned.
 
 This gives contributors a clear place to add code without forcing product logic into Tauri commands or duplicating transport contracts.
@@ -28,6 +28,14 @@ This gives contributors a clear place to add code without forcing product logic 
 5. Once initialization is complete, the frontend talks to the sidecar over HTTP instead of pushing product traffic through direct Tauri IPC.
 
 This mirrors the intended long-term shape: Tauri is the secure host, the sidecar is the application server, and the frontend treats it as its backend.
+
+## Runtime boundaries
+
+- `packages/core`: shared application behavior and canonical metadata used by both the CLI and sidecar.
+- `packages/cli`: command entrypoint for operators and scripted workflows.
+- `packages/sidecar`: localhost HTTP server for the desktop shell, built on the same core package.
+
+This keeps the runtime behavior aligned across surfaces instead of splitting product logic between Node and Rust.
 
 ## Frontend boundaries
 
@@ -52,6 +60,7 @@ This keeps startup concerns centralized and prevents ad hoc process management f
 - The root workspace owns shared tooling and task orchestration.
 - TypeScript stays in strict mode with type-aware ESLint rules.
 - `packages/contracts` is the only place where frontend and sidecar transport types should be defined.
+- `packages/core` is the only place where shared Node application behavior for the CLI and sidecar should live.
 - `config/app-manifest.json` is the source of truth for shared repository metadata across Rust and TypeScript.
 - Rust formatting and Clippy warnings are treated as part of the normal build hygiene.
 - New plugins and permissions should be added only when required by a feature, then documented in the same pull request.

@@ -1,5 +1,5 @@
 {
-  "name": "@capyfin/sidecar",
+  "name": "@capyfin/core",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -14,19 +14,15 @@
     "src"
   ],
   "scripts": {
-    "build": "tsup src/cli.ts --format esm --platform node --target node22 --clean",
-    "dev": "tsx src/cli.ts",
+    "build": "tsup src/index.ts --format esm --dts --clean",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@capyfin/core": "workspace:*",
-    "@hono/node-server": "^1.19.11",
-    "hono": "^4.12.7"
+    "@capyfin/contracts": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.5.1",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

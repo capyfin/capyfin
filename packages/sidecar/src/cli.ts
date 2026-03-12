@@ -1,30 +1,7 @@
-import { serve } from "@hono/node-server";
-import packageJson from "../package.json" with { type: "json" };
-import { loadSidecarConfig } from "./config";
-import { createSidecarApp } from "./server/app";
+import { startSidecarServer } from "./index";
 
 function main(): void {
-  const config = loadSidecarConfig();
-  const runtime = {
-    config,
-    startedAt: Date.now(),
-    version: packageJson.version,
-  };
-  const app = createSidecarApp(runtime);
-
-  const server = serve(
-    {
-      fetch: app.fetch,
-      hostname: config.hostname,
-      port: config.port,
-    },
-    (info) => {
-      const port = String(info.port);
-      console.error(
-        `[sidecar] listening on http://${info.address}:${port} as ${config.username}`,
-      );
-    },
-  );
+  const server = startSidecarServer();
 
   const shutdown = () => {
     console.error("[sidecar] shutting down");

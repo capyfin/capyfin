@@ -1,4 +1,3 @@
-use capyfin_core::AppCore;
 use serde::Serialize;
 use tokio::sync::{Mutex, RwLock, watch};
 
@@ -22,7 +21,6 @@ pub struct SidecarConnection {
 }
 
 pub struct AppState {
-    pub core: AppCore,
     init_state: watch::Receiver<InitStep>,
     initialization_error: RwLock<Option<String>>,
     sidecar: Mutex<Option<SidecarHandle>>,
@@ -32,7 +30,6 @@ pub struct AppState {
 impl AppState {
     pub fn new(init_state: watch::Receiver<InitStep>) -> Self {
         Self {
-            core: AppCore::default(),
             init_state,
             initialization_error: RwLock::new(None),
             sidecar: Mutex::new(None),

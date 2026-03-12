@@ -1,8 +1,4 @@
-import {
-  appManifest,
-  sidecarBootstrapSchema,
-  sidecarHealthSchema,
-} from "@capyfin/contracts";
+import { createSidecarBootstrap, createSidecarHealth } from "@capyfin/core";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
@@ -12,29 +8,11 @@ export function createGlobalRoutes(runtime: SidecarRuntime): Hono {
   const app = new Hono();
 
   app.get("/health", (context) => {
-    const payload = sidecarHealthSchema.parse({
-      healthy: true,
-      productName: appManifest.productName,
-      version: runtime.version,
-    });
-
-    return context.json(payload);
+    return context.json(createSidecarHealth(runtime.version));
   });
 
   app.get("/bootstrap", (context) => {
-    const payload = sidecarBootstrapSchema.parse({
-      manifest: appManifest,
-      runtime: {
-        auth: "basic",
-        mode: "sidecar",
-        streams: {
-          sse: true,
-          websocket: false,
-        },
-      },
-    });
-
-    return context.json(payload);
+    return context.json(createSidecarBootstrap(runtime.version));
   });
 
   app.get("/events", (context) => {

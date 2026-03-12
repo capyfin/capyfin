@@ -14,16 +14,16 @@
       "responsibility": "Shared transport schemas and cross-language manifest contract"
     },
     {
+      "path": "packages/core",
+      "responsibility": "Shared Node application core consumed by the sidecar and CLI"
+    },
+    {
+      "path": "packages/cli",
+      "responsibility": "Operational Node CLI built on the shared application core"
+    },
+    {
       "path": "packages/sidecar",
       "responsibility": "Node sidecar API, local orchestration boundary, and streaming transport"
-    },
-    {
-      "path": "crates/capyfin-core",
-      "responsibility": "Shared Rust core for native runtime services and the operational CLI"
-    },
-    {
-      "path": "crates/capyfin-cli",
-      "responsibility": "Operational CLI surface built on the Rust core"
     },
     {
       "path": "docs",

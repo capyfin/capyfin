@@ -12,7 +12,7 @@
 - `apps/desktop`: React shell, dashboard features, and the sidecar client.
 - `apps/desktop/src-tauri`: Tauri bootstrap layer, sidecar supervision, and native capabilities.
 - `packages/contracts`: shared transport schemas and the repository manifest.
-- `packages/core`: shared Node application core for manifest access, bootstrap payloads, and CLI-facing helpers.
+- `packages/core`: shared Node application core for manifest access, auth/profile management, bootstrap payloads, and CLI-facing helpers.
 - `packages/cli`: operational Node CLI surface built on the shared core.
 - `packages/sidecar`: Node sidecar API that becomes the main application boundary.
 - `config/app-manifest.json`: cross-language metadata that keeps Rust and TypeScript aligned.
@@ -32,10 +32,23 @@ This mirrors the intended long-term shape: Tauri is the secure host, the sidecar
 ## Runtime boundaries
 
 - `packages/core`: shared application behavior and canonical metadata used by both the CLI and sidecar.
+- `packages/core/auth`: Node-only provider auth subsystem for provider definitions, credential profile storage, selection rules, and environment fallback.
 - `packages/cli`: command entrypoint for operators and scripted workflows.
 - `packages/sidecar`: localhost HTTP server for the desktop shell, built on the same core package.
 
 This keeps the runtime behavior aligned across surfaces instead of splitting product logic between Node and Rust.
+
+## Provider auth model
+
+- Provider auth lives in shared Node core, not in Rust and not directly in the CLI.
+- The CLI is the operator surface for login, selection, and status. It does not own provider resolution rules.
+- Auth state is stored in a versioned `auth-profiles.json` file under the user config directory, with optional override through `CAPYFIN_AUTH_STORE_PATH` for tests and isolated automation.
+- The auth store keeps three concepts explicit:
+  - Stored credential profiles keyed by provider and profile label.
+  - Per-provider profile ordering for deterministic resolution.
+  - Current selection through `activeProviderId` and `activeProfileId`.
+- Provider definitions are curated in core and enriched from the `pi-ai` OAuth registry so OAuth-capable providers and static-secret providers are surfaced through one catalog.
+- Environment credentials remain first-class. A provider can be selected from environment state even when no profile has been persisted, which keeps local development and CI flows scriptable without copying secrets into the auth store.
 
 ## Frontend boundaries
 
@@ -61,6 +74,7 @@ This keeps startup concerns centralized and prevents ad hoc process management f
 - TypeScript stays in strict mode with type-aware ESLint rules.
 - `packages/contracts` is the only place where frontend and sidecar transport types should be defined.
 - `packages/core` is the only place where shared Node application behavior for the CLI and sidecar should live.
+- Provider auth changes should start in `packages/core/auth`, then be surfaced through CLI commands or sidecar endpoints, rather than implemented separately in each runtime.
 - `config/app-manifest.json` is the source of truth for shared repository metadata across Rust and TypeScript.
 - Rust formatting and Clippy warnings are treated as part of the normal build hygiene.
 - New plugins and permissions should be added only when required by a feature, then documented in the same pull request.

@@ -18,6 +18,7 @@
     "rust:clippy": "cargo clippy --workspace --all-targets -- -D warnings",
     "rust:fmt": "cargo fmt --all",
     "rust:fmt:check": "cargo fmt --all --check",
+    "test": "turbo run test",
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {

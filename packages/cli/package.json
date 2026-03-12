@@ -20,6 +20,7 @@
     "build": "tsup src/index.ts --format esm --platform node --target node22 --clean",
     "cli": "tsx src/index.ts",
     "lint": "eslint src --ext .ts",
+    "test": "tsx --test src/**/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {

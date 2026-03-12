@@ -1,0 +1,82 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { ProviderAuthService } from "./service";
+
+function createStorePath(prefix: string): Promise<string> {
+  return mkdtemp(join(tmpdir(), `${prefix}-`)).then((directory) =>
+    join(directory, "auth-profiles.json"),
+  );
+}
+
+void test("stores and selects a static provider profile", async (context) => {
+  const storePath = await createStorePath("capyfin-auth");
+  const service = new ProviderAuthService({ storePath });
+
+  context.after(async () => {
+    await rm(dirname(storePath), { force: true, recursive: true });
+  });
+
+  const summary = await service.saveSecretProfile({
+    providerId: "openai",
+    secret: "sk-test",
+  });
+
+  assert.equal(summary.profileId, "openai:default");
+  assert.equal(summary.type, "api_key");
+
+  const overview = await service.getOverview();
+  const openaiStatus = overview.providers.find(
+    (provider) => provider.provider.id === "openai",
+  );
+
+  assert.ok(openaiStatus);
+  assert.ok(openaiStatus.resolved);
+  assert.equal(overview.selectedProviderId, "openai");
+  assert.equal(overview.selectedProfileId, "openai:default");
+  assert.equal(openaiStatus.selectedProfileId, "openai:default");
+  assert.equal(openaiStatus.resolved.source, "profile");
+});
+
+void test("supports selecting a provider from environment credentials", async (context) => {
+  const storePath = await createStorePath("capyfin-auth");
+  const service = new ProviderAuthService({
+    env: {
+      OPENAI_API_KEY: "sk-env",
+    },
+    storePath,
+  });
+
+  context.after(async () => {
+    await rm(dirname(storePath), { force: true, recursive: true });
+  });
+
+  await service.selectProvider("openai");
+
+  const resolved = await service.resolveCredential();
+  assert.deepEqual(
+    {
+      method: resolved?.method,
+      providerId: resolved?.providerId,
+      source: resolved?.source,
+      sourceLabel: resolved?.sourceLabel,
+    },
+    {
+      method: "api_key",
+      providerId: "openai",
+      source: "environment",
+      sourceLabel: "Environment variable OPENAI_API_KEY",
+    },
+  );
+});
+
+void test("adds oauth support for providers exposed by the provider registry", () => {
+  const service = new ProviderAuthService();
+  const providers = service.listProviders();
+  const anthropic = providers.find((provider) => provider.id === "anthropic");
+
+  assert.ok(anthropic);
+  assert.ok(anthropic.authMethods.includes("oauth"));
+});

@@ -1,0 +1,22 @@
+{
+  "name": "@capyfin/sidecar",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsup src/cli.ts --format esm --platform node --target node22 --clean",
+    "dev": "tsx src/cli.ts",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@capyfin/contracts": "workspace:*",
+    "@hono/node-server": "^1.19.11",
+    "hono": "^4.12.7"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,33 +1,19 @@
-use serde::Serialize;
-
-use crate::workspace::{WorkspaceArea, WorkspaceCatalog};
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct AppMetadata {
-    pub product_name: String,
-    pub workspace_layout: Vec<WorkspaceArea>,
-}
+use crate::manifest::AppMetadata;
 
 #[derive(Debug, Clone)]
 pub struct AppCore {
-    product_name: String,
-    workspace_catalog: WorkspaceCatalog,
+    metadata: AppMetadata,
 }
 
 impl AppCore {
     pub fn for_current_workspace() -> Self {
         Self {
-            product_name: "CapyFin".to_string(),
-            workspace_catalog: WorkspaceCatalog::current(),
+            metadata: AppMetadata::current(),
         }
     }
 
     pub fn app_metadata(&self) -> AppMetadata {
-        AppMetadata {
-            product_name: self.product_name.clone(),
-            workspace_layout: self.workspace_catalog.areas().to_vec(),
-        }
+        self.metadata.clone()
     }
 }
 
@@ -46,6 +32,18 @@ mod tests {
         let metadata = AppCore::default().app_metadata();
 
         assert_eq!(metadata.product_name, "CapyFin");
+        assert!(
+            metadata
+                .workspace_layout
+                .iter()
+                .any(|area| area.path == "packages/contracts")
+        );
+        assert!(
+            metadata
+                .workspace_layout
+                .iter()
+                .any(|area| area.path == "packages/sidecar")
+        );
         assert!(
             metadata
                 .workspace_layout

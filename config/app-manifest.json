@@ -1,0 +1,33 @@
+{
+  "productName": "CapyFin",
+  "workspaceLayout": [
+    {
+      "path": "apps/desktop",
+      "responsibility": "React desktop shell, dashboard surfaces, and local sidecar client integration"
+    },
+    {
+      "path": "apps/desktop/src-tauri",
+      "responsibility": "Native bootstrap, sidecar supervision, and platform-specific capabilities"
+    },
+    {
+      "path": "packages/contracts",
+      "responsibility": "Shared transport schemas and cross-language manifest contract"
+    },
+    {
+      "path": "packages/sidecar",
+      "responsibility": "Node sidecar API, local orchestration boundary, and streaming transport"
+    },
+    {
+      "path": "crates/capyfin-core",
+      "responsibility": "Shared Rust core for native runtime services and the operational CLI"
+    },
+    {
+      "path": "crates/capyfin-cli",
+      "responsibility": "Operational CLI surface built on the Rust core"
+    },
+    {
+      "path": "docs",
+      "responsibility": "Architecture records, conventions, and operational guidance"
+    }
+  ]
+}

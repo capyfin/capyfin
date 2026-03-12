@@ -16,4 +16,8 @@ tauri-build.workspace = true
 
 [dependencies]
 capyfin-core = { path = "../../../crates/capyfin-core" }
+reqwest.workspace = true
+serde.workspace = true
 tauri.workspace = true
+tokio.workspace = true
+uuid.workspace = true

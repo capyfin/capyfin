@@ -12,6 +12,7 @@
     "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.node.json --noEmit"
   },
   "dependencies": {
+    "@capyfin/contracts": "workspace:*",
     "@fontsource-variable/geist": "^5.2.8",
     "@tauri-apps/api": "^2.10.1",
     "class-variance-authority": "^0.7.1",

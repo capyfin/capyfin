@@ -1,9 +1,7 @@
-export interface WorkspaceArea {
-  path: string;
-  responsibility: string;
-}
-
-export interface AppMetadata {
-  productName: string;
-  workspaceLayout: WorkspaceArea[];
-}
+export type {
+  AppManifest as AppMetadata,
+  SidecarBootstrap,
+  SidecarConnection,
+  SidecarHealth,
+  WorkspaceArea,
+} from "@capyfin/contracts";

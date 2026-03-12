@@ -1,58 +1,50 @@
+import { appManifest, type AppManifest } from "@capyfin/contracts";
+import { Channel, invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
-import type { AppMetadata } from "@/app/types";
 import { AllocationCard } from "@/features/dashboard/components/AllocationCard";
 import { HoldingsTable } from "@/features/dashboard/components/HoldingsTable";
 import { MetricCards } from "@/features/dashboard/components/MetricCards";
 import { PortfolioChart } from "@/features/dashboard/components/PortfolioChart";
 import { WatchlistCard } from "@/features/dashboard/components/WatchlistCard";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidecarClient } from "@/lib/sidecar/client";
+import type { AppMetadata, SidecarConnection } from "@/app/types";
 
-const browserFallback: AppMetadata = {
-  productName: "CapyFin",
-  workspaceLayout: [
-    {
-      path: "apps/desktop",
-      responsibility: "Desktop frontend and product surface",
-    },
-    {
-      path: "apps/desktop/src-tauri",
-      responsibility: "Tauri runtime, commands, and desktop integration",
-    },
-    {
-      path: "crates/capyfin-core",
-      responsibility: "Shared application services and cross-surface contracts",
-    },
-    {
-      path: "crates/capyfin-cli",
-      responsibility: "Operational command line interface built on shared core",
-    },
-    {
-      path: "docs",
-      responsibility: "Architecture notes and repository conventions",
-    },
-  ],
-};
+type InitStep = "sidecar_waiting" | "sidecar_ready" | "done";
+
+const browserFallback: AppMetadata = appManifest;
 
 export function App() {
-  const [metadata, setMetadata] = useState<AppMetadata>(browserFallback);
+  const [metadata, setMetadata] = useState<AppManifest>(browserFallback);
 
   useEffect(() => {
     let isMounted = true;
 
-    void invoke<AppMetadata>("app_metadata")
-      .then((value) => {
+    async function hydrateFromSidecar(): Promise<void> {
+      try {
+        const connection = await invoke<SidecarConnection>(
+          "await_initialization",
+          {
+            events: new Channel<InitStep>(),
+          },
+        );
+        const client = SidecarClient.fromConnection(connection);
+        await client.waitUntilHealthy();
+        const bootstrap = await client.bootstrap();
+
         if (isMounted) {
-          setMetadata(value);
+          setMetadata(bootstrap.manifest);
         }
-      })
-      .catch(() => {
+      } catch {
         if (isMounted) {
           setMetadata(browserFallback);
         }
-      });
+      }
+    }
+
+    void hydrateFromSidecar();
 
     return () => {
       isMounted = false;

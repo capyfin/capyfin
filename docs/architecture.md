@@ -55,4 +55,4 @@ This keeps startup concerns centralized and prevents ad hoc process management f
 - `config/app-manifest.json` is the source of truth for shared repository metadata across Rust and TypeScript.
 - Rust formatting and Clippy warnings are treated as part of the normal build hygiene.
 - New plugins and permissions should be added only when required by a feature, then documented in the same pull request.
-- Release packaging should place the built sidecar at `sidecar/dist/cli.js` inside Tauri resources, matching the existing runtime lookup path.
+- Tauri bundle resources place the built sidecar at `sidecar/dist/cli.js`, matching the runtime lookup path used by the native bootstrap layer.

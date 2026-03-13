@@ -12,11 +12,13 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface AppHeaderProps {
   currentView: "connections" | "chat" | "agents";
+  onAddConnection: () => void;
   onCreateAgent: () => void;
 }
 
 export function AppHeader({
   currentView,
+  onAddConnection,
   onCreateAgent,
 }: AppHeaderProps) {
   const today = new Intl.DateTimeFormat("en-GB", {
@@ -27,7 +29,7 @@ export function AppHeader({
   }).format(new Date());
   const pageTitle =
     currentView === "connections"
-      ? "Provider Setup"
+      ? "Connections"
       : currentView === "agents"
         ? "Agents"
         : "Chat";
@@ -55,6 +57,19 @@ export function AppHeader({
           </Breadcrumb>
           <p className="mt-1 text-xs text-muted-foreground">{today}</p>
         </div>
+
+        {currentView === "connections" ? (
+          <div className="hidden items-center gap-2 lg:flex">
+            <Button
+              size="sm"
+              className="rounded-full px-4"
+              onClick={onAddConnection}
+            >
+              <PlusIcon className="size-4" />
+              Add connection
+            </Button>
+          </div>
+        ) : null}
 
         {currentView === "agents" ? (
           <div className="hidden items-center gap-2 lg:flex">

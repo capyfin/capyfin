@@ -68,4 +68,15 @@ void test("auth routes expose overview and store credentials", async (context) =
   };
   assert.equal(selected.isSelectedProvider, true);
   assert.equal(selected.selectedProfileId, "openai:default");
+
+  const deleteResponse = await app.request("/profiles/openai%3Adefault", {
+    method: "DELETE",
+  });
+  assert.equal(deleteResponse.status, 204);
+
+  const finalOverview = await app.request("/overview");
+  const finalJson = (await finalOverview.json()) as {
+    selectedProfileId?: string;
+  };
+  assert.equal(finalJson.selectedProfileId, undefined);
 });

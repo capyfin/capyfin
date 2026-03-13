@@ -111,6 +111,12 @@ export class SidecarClient {
     );
   }
 
+  async deleteAuthProfile(profileId: string): Promise<void> {
+    await this.request(`/auth/profiles/${encodeURIComponent(profileId)}`, {
+      method: "DELETE",
+    });
+  }
+
   async startOAuthSession(payload: {
     label?: string;
     providerId: string;
@@ -179,6 +185,10 @@ export class SidecarClient {
       throw new Error(
         `Sidecar request failed with status ${String(response.status)}.`,
       );
+    }
+
+    if (response.status === 204) {
+      return null;
     }
 
     return (await response.json()) as unknown;

@@ -80,6 +80,37 @@ void test("supports selecting a provider from environment credentials", async (c
   );
 });
 
+void test("deletes profiles and promotes the next stored profile", async (context) => {
+  const storePath = await createStorePath("capyfin-auth");
+  const service = new ProviderAuthService({ storePath });
+
+  context.after(async () => {
+    await rm(dirname(storePath), { force: true, recursive: true });
+  });
+
+  await service.saveSecretProfile({
+    label: "primary",
+    providerId: "openai",
+    secret: "sk-primary",
+  });
+  await service.saveSecretProfile({
+    label: "backup",
+    providerId: "anthropic",
+    secret: "sk-backup",
+  });
+
+  await service.deleteProfile("openai:primary");
+
+  const overview = await service.getOverview();
+  assert.equal(overview.selectedProviderId, "anthropic");
+  assert.equal(overview.selectedProfileId, "anthropic:backup");
+  assert.equal(
+    overview.providers.find((provider) => provider.provider.id === "openai")
+      ?.profiles.length,
+    0,
+  );
+});
+
 void test("adds oauth support for providers exposed by the provider registry", () => {
   const service = new ProviderAuthService();
   const providers = service.listProviders();

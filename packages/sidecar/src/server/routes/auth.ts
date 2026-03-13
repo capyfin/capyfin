@@ -37,6 +37,14 @@ export function createAuthRoutes(runtime: SidecarRuntime): Hono {
     return context.json(providerStatusSchema.parse(providerStatus));
   });
 
+  app.delete("/profiles/:profileId", async (context) => {
+    await runtime
+      .createAuthService()
+      .deleteProfile(context.req.param("profileId"));
+
+    return context.body(null, 204);
+  });
+
   app.post("/oauth/start", async (context) => {
     const payload = startOAuthSessionRequestSchema.parse(await context.req.json());
     const session = runtime.authSessions.start({

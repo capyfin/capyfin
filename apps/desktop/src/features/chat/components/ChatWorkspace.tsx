@@ -81,7 +81,7 @@ export function ChatWorkspace({
 
   if (isLoading) {
     return (
-      <div className="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center rounded-[28px] border border-border/70 bg-card/80 p-10 shadow-sm">
+      <div className="flex flex-1 items-center justify-center">
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <LoaderCircleIcon className="size-4 animate-spin" />
           Loading chat
@@ -92,7 +92,7 @@ export function ChatWorkspace({
 
   if (!bootstrap) {
     return (
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-start gap-4 rounded-[28px] border border-border/70 bg-card/90 p-6 shadow-sm">
+      <div className="flex flex-1 flex-col items-start gap-4 px-4 py-6 lg:px-6">
         <p className="text-sm text-muted-foreground">
           {errorMessage ?? "Chat is unavailable right now."}
         </p>
@@ -205,8 +205,8 @@ function ChatSessionView({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col overflow-hidden rounded-[28px] border border-border/70 bg-card/92 shadow-sm">
-      <div className="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-4 lg:px-6">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex items-center justify-between gap-4 px-4 py-4 lg:px-6">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
@@ -228,7 +228,7 @@ function ChatSessionView({
 
       <div
         ref={listRef}
-        className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-5 py-6 lg:px-6"
+        className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 lg:px-6"
       >
         {messages.length === 0 ? (
           <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-6 py-10 text-center">
@@ -251,7 +251,7 @@ function ChatSessionView({
                 <button
                   key={prompt}
                   type="button"
-                  className="rounded-3xl border border-border/70 bg-background px-4 py-4 text-left text-sm leading-6 text-foreground transition-colors hover:bg-muted"
+                  className="rounded-2xl border border-border/70 bg-background/70 px-4 py-4 text-left text-sm leading-6 text-foreground transition-colors hover:bg-muted"
                   onClick={() => {
                     void submitPrompt(prompt);
                   }}
@@ -307,18 +307,18 @@ function ChatSessionView({
         ) : null}
       </div>
 
-      <div className="border-t border-border/70 bg-background/80 px-5 py-4 lg:px-6">
+      <div className="border-t border-border/70 bg-background/55 px-4 py-4 backdrop-blur-sm lg:px-6">
         <form
-          className="mx-auto flex w-full max-w-3xl flex-col gap-3"
+          className="flex w-full flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault();
             void submitPrompt(draft);
           }}
         >
-          <div className="rounded-[28px] border border-border/70 bg-card/90 p-3 shadow-xs">
+          <div className="border border-border/70 bg-background/80 p-3">
             <Textarea
               ref={textareaRef}
-              className="max-h-56 min-h-[88px] resize-none border-0 bg-transparent px-1 py-1 shadow-none focus-visible:ring-0"
+              className="max-h-56 min-h-[88px] resize-none border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0"
               placeholder="Ask the main agent about planning, analysis, or finance workflows."
               value={draft}
               onChange={(event) => {
@@ -331,7 +331,7 @@ function ChatSessionView({
                 }
               }}
             />
-            <div className="flex items-center justify-between gap-3 px-1 pt-2">
+            <div className="flex items-center justify-between gap-3 pt-3">
               <p className="text-xs text-muted-foreground">
                 {isStreaming
                   ? "Generating a response..."

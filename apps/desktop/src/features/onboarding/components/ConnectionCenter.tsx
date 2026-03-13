@@ -26,6 +26,7 @@ import {
   type ConnectionMode,
   type ProviderFamily,
 } from "../provider-families";
+import { resolvePreferredOptionKey } from "../selection";
 
 interface ConnectionCenterProps {
   authOverview: AuthOverview | null;
@@ -95,16 +96,6 @@ export function ConnectionCenter({
     ) {
       setSelectedFamilyId(nextFamily.id);
     }
-
-    if (preferredProviderId) {
-      const preferredOption = nextFamily.options.find(
-        (option) => option.providerId === preferredProviderId,
-      );
-
-      if (preferredOption && preferredOption.key !== selectedOptionKey) {
-        setSelectedOptionKey(preferredOption.key);
-      }
-    }
   }, [authOverview?.selectedProviderId, providerFamilies, selectedFamilyId, selectedOptionKey]);
 
   const selectedFamily =
@@ -122,9 +113,13 @@ export function ConnectionCenter({
       !selectedOptionKey ||
       !selectedFamily.options.some((option) => option.key === selectedOptionKey)
     ) {
-      setSelectedOptionKey(selectedFamily.options[0]?.key ?? null);
+      setSelectedOptionKey(
+        resolvePreferredOptionKey(selectedFamily, authOverview) ??
+          selectedFamily.options[0]?.key ??
+          null,
+      );
     }
-  }, [selectedFamily, selectedOptionKey]);
+  }, [authOverview, selectedFamily, selectedOptionKey]);
 
   const selectedOption =
     selectedFamily?.options.find((option) => option.key === selectedOptionKey) ??
@@ -319,6 +314,7 @@ export function ConnectionCenter({
           <div className="flex items-center gap-2">
             {step === "configure" ? (
               <Button
+                type="button"
                 variant="outline"
                 className="rounded-full"
                 onClick={() => {
@@ -335,6 +331,7 @@ export function ConnectionCenter({
               </Button>
             ) : null}
             <Button
+              type="button"
               variant="outline"
               className="rounded-full"
               disabled={isLoading}
@@ -632,6 +629,7 @@ function CredentialForm({
       </label>
 
       <Button
+        type="button"
         className="w-full justify-between rounded-full"
         disabled={disabled}
         onClick={onSubmit}
@@ -683,6 +681,7 @@ function OAuthCard({
       </div>
 
       <Button
+        type="button"
         className="w-full justify-between rounded-full sm:w-auto sm:min-w-64"
         disabled={!isReady || isBusy}
         onClick={onStart}
@@ -709,6 +708,7 @@ function OAuthCard({
 
           {oauthLinkUrl ? (
             <Button
+              type="button"
               variant="outline"
               className="w-full justify-between rounded-full"
               onClick={onOpenLinkAgain}
@@ -730,6 +730,7 @@ function OAuthCard({
                 }
               />
               <Button
+                type="button"
                 className="w-full justify-between rounded-full"
                 disabled={
                   isBusy ||
@@ -775,6 +776,7 @@ function EnvironmentCard({
         </p>
       </div>
       <Button
+        type="button"
         variant="outline"
         className="w-full justify-between rounded-full sm:w-auto sm:min-w-72"
         disabled={disabled}
@@ -805,6 +807,7 @@ function MessageBox({
 
   return <p className={cn("rounded-3xl px-4 py-3 text-sm", toneClasses)}>{children}</p>;
 }
+
 
 function renderFallbackInitials(title: string): string {
   return title

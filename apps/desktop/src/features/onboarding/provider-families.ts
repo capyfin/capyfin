@@ -7,6 +7,11 @@ export type ConnectionMode =
   | "application_default"
   | "aws_sdk";
 
+export type OAuthExperience =
+  | "standard"
+  | "github-public"
+  | "github-enterprise";
+
 export interface ProviderFamilyOption {
   description: string;
   isAvailable: boolean;
@@ -15,6 +20,7 @@ export interface ProviderFamilyOption {
   key: string;
   label: string;
   mode: ConnectionMode;
+  oauthExperience?: OAuthExperience;
   providerId: string;
   providerStatus?: ProviderStatus;
 }
@@ -33,8 +39,10 @@ interface ProviderFamilySpec {
   id: string;
   options: {
     description: string;
+    id?: string;
     label: string;
     mode: ConnectionMode;
+    oauthExperience?: OAuthExperience;
     providerId: string;
   }[];
   title: string;
@@ -122,10 +130,20 @@ const curatedFamilies: ProviderFamilySpec[] = [
         description: "Connect with a GitHub or Copilot access token.",
       },
       {
+        id: "public",
         providerId: "github-copilot",
         mode: "oauth",
+        oauthExperience: "github-public",
         label: "Sign in with GitHub",
         description: "Authenticate with your GitHub Copilot account.",
+      },
+      {
+        id: "enterprise",
+        providerId: "github-copilot",
+        mode: "oauth",
+        oauthExperience: "github-enterprise",
+        label: "Sign in with GitHub Enterprise",
+        description: "Authenticate with a GitHub Enterprise Copilot account.",
       },
     ],
   },
@@ -300,7 +318,7 @@ function createFamily(
 
     options.push({
       ...option,
-      key: `${option.providerId}:${option.mode}`,
+      key: `${option.providerId}:${option.mode}:${option.id ?? option.mode}`,
       isAvailable,
       isConnected: providerStatus
         ? providerStatus.profiles.length > 0 || providerStatus.environment.available

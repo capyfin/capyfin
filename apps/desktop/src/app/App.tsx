@@ -25,11 +25,17 @@ export function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
   const [hashView, setHashView] = useState<AppView>(readViewFromHash());
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
 
     async function hydrateFromSidecar(): Promise<void> {
+      if (isMounted) {
+        setIsLoading(true);
+        setRuntimeError(null);
+      }
+
       try {
         const connection = await invoke<SidecarConnection>(
           "await_initialization",
@@ -52,6 +58,8 @@ export function App() {
         }
       } catch (error) {
         if (isMounted) {
+          setAuthOverview(null);
+          setClient(null);
           setMetadata(browserFallback);
           setRuntimeError(
             error instanceof Error
@@ -71,7 +79,7 @@ export function App() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [retryToken]);
 
   useEffect(() => {
     const onHashChange = (): void => {
@@ -88,6 +96,24 @@ export function App() {
     ? hashView
     : "connections";
 
+  if (currentView === "connections") {
+    return (
+      <ConnectionCenter
+        authOverview={authOverview}
+        client={client}
+        isLoading={isLoading}
+        runtimeError={runtimeError}
+        onAuthOverviewChange={setAuthOverview}
+        onContinue={() => {
+          window.location.hash = "#overview";
+        }}
+        onRetry={() => {
+          setRetryToken((current) => current + 1);
+        }}
+      />
+    );
+  }
+
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar activeView={currentView} authOverview={authOverview} />
@@ -98,30 +124,17 @@ export function App() {
           metadata={metadata}
         />
         <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
-          {currentView === "connections" ? (
-            <ConnectionCenter
-              authOverview={authOverview}
-              client={client}
-              isLoading={isLoading}
-              runtimeError={runtimeError}
-              onAuthOverviewChange={setAuthOverview}
-              onContinue={() => {
-                window.location.hash = "#overview";
-              }}
-            />
-          ) : (
-            <>
-              <MetricCards />
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]">
-                <PortfolioChart />
-                <AllocationCard metadata={metadata} />
-              </div>
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.9fr)]">
-                <HoldingsTable />
-                <WatchlistCard />
-              </div>
-            </>
-          )}
+          <>
+            <MetricCards />
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]">
+              <PortfolioChart />
+              <AllocationCard metadata={metadata} />
+            </div>
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.9fr)]">
+              <HoldingsTable />
+              <WatchlistCard />
+            </div>
+          </>
         </div>
       </SidebarInset>
     </SidebarProvider>

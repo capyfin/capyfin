@@ -146,6 +146,8 @@ export const oauthSessionSchema = z.object({
   providerName: z.string().min(1),
   state: z.enum(["pending", "completed", "error"]),
   step: oauthSessionStepSchema,
+  authUrl: z.url().optional(),
+  authInstructions: z.string().min(1).optional(),
   progress: z.array(z.string()),
   profile: storedProfileSummarySchema.optional(),
   error: z.string().min(1).optional(),

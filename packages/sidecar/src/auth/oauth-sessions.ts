@@ -148,6 +148,8 @@ export class OAuthSessionManager {
       onAuth: (info) => {
         record.snapshot = {
           ...record.snapshot,
+          authInstructions: info.instructions,
+          authUrl: info.url,
           progress: [...record.snapshot.progress, "Browser sign-in started"],
           step: {
             ...(info.instructions ? { instructions: info.instructions } : {}),

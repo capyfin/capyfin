@@ -19,21 +19,6 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
     Bindings: HttpBindings;
   }>();
 
-  app.use("*", async (context, next) => {
-    const expected = createBasicAuthHeader(
-      runtime.config.username,
-      runtime.config.password,
-    );
-    const actual = context.req.header("authorization");
-
-    if (actual !== expected) {
-      context.header("WWW-Authenticate", 'Basic realm="CapyFin Sidecar"');
-      return context.json({ error: "Unauthorized" }, 401);
-    }
-
-    return next();
-  });
-
   app.use(
     "*",
     cors({
@@ -59,6 +44,25 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
       allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     }),
   );
+
+  app.use("*", async (context, next) => {
+    if (context.req.method === "OPTIONS") {
+      return next();
+    }
+
+    const expected = createBasicAuthHeader(
+      runtime.config.username,
+      runtime.config.password,
+    );
+    const actual = context.req.header("authorization");
+
+    if (actual !== expected) {
+      context.header("WWW-Authenticate", 'Basic realm="CapyFin API"');
+      return context.json({ error: "Unauthorized" }, 401);
+    }
+
+    return next();
+  });
 
   app.route("/global", createGlobalRoutes(runtime));
   app.route("/auth", createAuthRoutes(runtime));

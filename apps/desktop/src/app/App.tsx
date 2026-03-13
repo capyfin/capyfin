@@ -56,15 +56,12 @@ export function App() {
           setRuntimeError(null);
         }
       } catch (error) {
+        console.error("Failed to initialize desktop runtime", error);
         if (isMounted) {
           setAuthOverview(null);
           setClient(null);
           setMetadata(browserFallback);
-          setRuntimeError(
-            error instanceof Error
-              ? error.message
-              : "The local sidecar is unavailable.",
-          );
+          setRuntimeError(error instanceof Error ? error.message : "Load failed");
         }
       } finally {
         if (isMounted) {

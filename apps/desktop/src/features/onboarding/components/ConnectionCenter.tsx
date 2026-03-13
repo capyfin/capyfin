@@ -24,8 +24,15 @@ import { SidecarClient } from "@/lib/sidecar/client";
 import {
   buildProviderFamilies,
   type ConnectionMode,
+  type OAuthExperience,
   type ProviderFamily,
 } from "../provider-families";
+import {
+  getOAuthAutomationResponse,
+  isGitHubEnterprisePrompt,
+  shouldAutoSubmitOAuthPrompt,
+  type PendingOAuthAutomation,
+} from "../oauth-flow";
 import { resolvePreferredOptionKey } from "../selection";
 
 interface ConnectionCenterProps {
@@ -39,7 +46,6 @@ interface ConnectionCenterProps {
 }
 
 type SetupStep = "providers" | "configure";
-
 const providerLogos: Partial<Record<string, { color: string; svg: string }>> = {
   anthropic: { svg: anthropicLogo, color: "#191919" },
   google: { svg: googleGeminiLogo, color: "#4285F4" },
@@ -65,6 +71,8 @@ export function ConnectionCenter({
   const [selectedOptionKey, setSelectedOptionKey] = useState<string | null>(null);
   const [secret, setSecret] = useState("");
   const [oauthSession, setOAuthSession] = useState<OAuthSession | null>(null);
+  const [pendingOAuthAutomation, setPendingOAuthAutomation] =
+    useState<PendingOAuthAutomation | null>(null);
   const [promptValue, setPromptValue] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -140,9 +148,17 @@ export function ConnectionCenter({
 
     const syncSession = async (): Promise<void> => {
       try {
-        const nextSession = await client.getOAuthSession(oauthSession.id);
+        let nextSession = await client.getOAuthSession(oauthSession.id);
         if (cancelled) {
           return;
+        }
+
+        if (shouldAutoSubmitOAuthPrompt(nextSession, pendingOAuthAutomation)) {
+          nextSession = await client.submitOAuthSessionPrompt(
+            nextSession.id,
+            pendingOAuthAutomation.response,
+          );
+          setPendingOAuthAutomation(null);
         }
 
         setOAuthSession(nextSession);
@@ -153,11 +169,13 @@ export function ConnectionCenter({
         if (nextSession.state === "completed") {
           setFeedback(`Connected ${nextSession.providerName}.`);
           setPromptValue("");
+          setPendingOAuthAutomation(null);
           const nextOverview = await client.authOverview();
           onAuthOverviewChange(nextOverview);
         }
 
         if (nextSession.state === "error") {
+          setPendingOAuthAutomation(null);
           setErrorMessage(nextSession.error ?? renderOAuthSessionMessage(nextSession));
         }
       } catch (error) {
@@ -176,7 +194,7 @@ export function ConnectionCenter({
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [client, oauthSession, onAuthOverviewChange]);
+  }, [client, oauthSession, onAuthOverviewChange, pendingOAuthAutomation]);
 
   async function refreshOverview(): Promise<void> {
     if (!client) {
@@ -249,10 +267,35 @@ export function ConnectionCenter({
     setIsBusy(true);
 
     try {
-      const session = await client.startOAuthSession({
+      const automationResponse = getOAuthAutomationResponse(
+        selectedOption.oauthExperience,
+        promptValue,
+      );
+      let session = await client.startOAuthSession({
         label: "default",
         providerId: selectedOption.providerId,
       });
+
+      if (automationResponse !== null) {
+        setPendingOAuthAutomation({
+          response: automationResponse,
+          sessionId: session.id,
+        });
+      } else {
+        setPendingOAuthAutomation(null);
+      }
+
+      if (
+        automationResponse !== null &&
+        isGitHubEnterprisePrompt(session.step)
+      ) {
+        session = await client.submitOAuthSessionPrompt(
+          session.id,
+          automationResponse,
+        );
+        setPendingOAuthAutomation(null);
+      }
+
       setOAuthSession(session);
 
       if (session.authUrl) {
@@ -281,6 +324,7 @@ export function ConnectionCenter({
         promptValue,
       );
       setOAuthSession(nextSession);
+      setPendingOAuthAutomation(null);
       setPromptValue("");
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
@@ -370,10 +414,16 @@ export function ConnectionCenter({
                     onClick={() => {
                       startTransition(() => {
                         setSelectedFamilyId(family.id);
-                        setSelectedOptionKey(family.options[0]?.key ?? null);
+                        setSelectedOptionKey(
+                          resolvePreferredOptionKey(family, authOverview) ??
+                            family.options[0]?.key ??
+                            null,
+                        );
                         setOAuthSession(null);
+                        setPendingOAuthAutomation(null);
                         setErrorMessage(null);
                         setFeedback(null);
+                        setPromptValue("");
                         setStep("configure");
                       });
                     }}
@@ -408,8 +458,10 @@ export function ConnectionCenter({
                       onClick={() => {
                         setSelectedOptionKey(option.key);
                         setOAuthSession(null);
+                        setPendingOAuthAutomation(null);
                         setErrorMessage(null);
                         setFeedback(null);
+                        setPromptValue("");
                       }}
                       className={cn(
                         "rounded-full px-4 py-2 text-sm transition-colors",
@@ -483,6 +535,7 @@ export function ConnectionCenter({
                     }}
                     promptValue={promptValue}
                     optionLabel={selectedOption.label}
+                    oauthExperience={selectedOption.oauthExperience}
                     providerTitle={selectedFamily.title}
                   />
                 )}
@@ -649,6 +702,7 @@ function OAuthCard({
   isBusy,
   isReady,
   oauthLinkUrl,
+  oauthExperience,
   oauthSession,
   onOpenLinkAgain,
   optionLabel,
@@ -661,6 +715,7 @@ function OAuthCard({
   isBusy: boolean;
   isReady: boolean;
   oauthLinkUrl: string | null;
+  oauthExperience: OAuthExperience | undefined;
   oauthSession: OAuthSession | null;
   onOpenLinkAgain: () => void;
   optionLabel: string;
@@ -670,23 +725,44 @@ function OAuthCard({
   promptValue: string;
   providerTitle: string;
 }) {
+  const isGitHubEnterprise = oauthExperience === "github-enterprise";
+  const actionLabel = isGitHubEnterprise ? "Continue with GitHub Enterprise" : optionLabel;
+  const statusMessage = oauthSession ? renderOAuthSessionMessage(oauthSession) : null;
+  const promptStep = getPromptStep(oauthSession);
+
   return (
     <div className="space-y-5">
       <div className="space-y-2">
         <h3 className="text-lg font-medium text-foreground">{optionLabel}</h3>
         <p className="text-sm leading-6 text-muted-foreground">
-          Sign in with your {providerTitle} account in the browser. When the
-          browser asks for a code or confirmation, continue here.
+          {isGitHubEnterprise
+            ? "Enter your GitHub Enterprise domain and continue directly into browser sign-in."
+            : `Sign in with your ${providerTitle} account in the browser.`}
         </p>
       </div>
+
+      {isGitHubEnterprise ? (
+        <label className="block space-y-2">
+          <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            GitHub Enterprise domain
+          </span>
+          <Input
+            value={promptValue}
+            onChange={(event) => {
+              onPromptValueChange(event.target.value);
+            }}
+            placeholder="company.ghe.com"
+          />
+        </label>
+      ) : null}
 
       <Button
         type="button"
         className="w-full justify-between rounded-full sm:w-auto sm:min-w-64"
-        disabled={!isReady || isBusy}
+        disabled={!isReady || isBusy || (isGitHubEnterprise && promptValue.trim().length === 0)}
         onClick={onStart}
       >
-        Start sign-in
+        {actionLabel}
         {isBusy ? (
           <LoaderCircleIcon className="size-4 animate-spin" />
         ) : (
@@ -700,53 +776,47 @@ function OAuthCard({
         </p>
       ) : null}
 
-      {oauthSession ? (
-        <div className="space-y-3 rounded-2xl border border-primary/18 bg-primary/5 p-4">
-          <p className="text-sm font-medium text-foreground">
-            {renderOAuthSessionMessage(oauthSession)}
-          </p>
+      {statusMessage ? (
+        <p className="text-sm text-muted-foreground">{statusMessage}</p>
+      ) : null}
 
-          {oauthLinkUrl ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full justify-between rounded-full"
-              onClick={onOpenLinkAgain}
-            >
-              Open sign-in link again
-              <ExternalLinkIcon className="size-4" />
-            </Button>
-          ) : null}
+      {oauthLinkUrl ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-between rounded-full sm:w-auto sm:min-w-64"
+          onClick={onOpenLinkAgain}
+        >
+          Open browser again
+          <ExternalLinkIcon className="size-4" />
+        </Button>
+      ) : null}
 
-          {oauthSession.step.type === "prompt" ? (
-            <div className="space-y-3">
-              <Input
-                value={promptValue}
-                onChange={(event) => {
-                  onPromptValueChange(event.target.value);
-                }}
-                placeholder={
-                  oauthSession.step.placeholder ?? "Enter the requested value"
-                }
-              />
-              <Button
-                type="button"
-                className="w-full justify-between rounded-full"
-                disabled={
-                  isBusy ||
-                  (!oauthSession.step.allowEmpty && promptValue.trim().length === 0)
-                }
-                onClick={onSubmitPrompt}
-              >
-                Continue sign-in
-                {isBusy ? (
-                  <LoaderCircleIcon className="size-4 animate-spin" />
-                ) : (
-                  <ArrowRightIcon className="size-4" />
-                )}
-              </Button>
-            </div>
-          ) : null}
+      {promptStep && !isGitHubEnterprisePrompt(promptStep) ? (
+        <div className="space-y-3">
+          <Input
+            value={promptValue}
+            onChange={(event) => {
+              onPromptValueChange(event.target.value);
+            }}
+            placeholder={getPromptPlaceholder(promptStep)}
+          />
+          <Button
+            type="button"
+            className="w-full justify-between rounded-full sm:w-auto sm:min-w-64"
+            disabled={
+              isBusy ||
+              (!promptStep.allowEmpty && promptValue.trim().length === 0)
+            }
+            onClick={onSubmitPrompt}
+          >
+            Continue sign-in
+            {isBusy ? (
+              <LoaderCircleIcon className="size-4 animate-spin" />
+            ) : (
+              <ArrowRightIcon className="size-4" />
+            )}
+          </Button>
         </div>
       ) : null}
     </div>
@@ -864,4 +934,20 @@ async function openSessionLink(
 
   openedLinks.add(url);
   await openExternalUrl(url);
+}
+
+function getPromptStep(
+  session: OAuthSession | null,
+): Extract<OAuthSession["step"], { type: "prompt" }> | null {
+  if (session?.step.type !== "prompt") {
+    return null;
+  }
+
+  return session.step;
+}
+
+function getPromptPlaceholder(
+  step: Extract<OAuthSession["step"], { type: "prompt" }>,
+): string {
+  return step.placeholder ?? "Enter the requested value";
 }

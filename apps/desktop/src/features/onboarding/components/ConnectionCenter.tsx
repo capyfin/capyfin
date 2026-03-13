@@ -15,15 +15,7 @@ import huggingFaceLogo from "simple-icons/icons/huggingface.svg?raw";
 import mistralLogo from "simple-icons/icons/mistralai.svg?raw";
 import openRouterLogo from "simple-icons/icons/openrouter.svg?raw";
 import vercelLogo from "simple-icons/icons/vercel.svg?raw";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { openExternalUrl } from "@/lib/platform/open-external-url";
@@ -70,7 +62,6 @@ export function ConnectionCenter({
   const [step, setStep] = useState<SetupStep>("providers");
   const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
   const [selectedOptionKey, setSelectedOptionKey] = useState<string | null>(null);
-  const [profileLabel, setProfileLabel] = useState("default");
   const [secret, setSecret] = useState("");
   const [oauthSession, setOAuthSession] = useState<OAuthSession | null>(null);
   const [promptValue, setPromptValue] = useState("");
@@ -211,7 +202,7 @@ export function ConnectionCenter({
 
     try {
       await client.connectProviderSecret({
-        label: profileLabel.trim() || "default",
+        label: "default",
         providerId: selectedOption.providerId,
         secret: secret.trim(),
       });
@@ -256,7 +247,7 @@ export function ConnectionCenter({
 
     try {
       const session = await client.startOAuthSession({
-        label: profileLabel.trim() || "default",
+        label: "default",
         providerId: selectedOption.providerId,
       });
       setOAuthSession(session);
@@ -359,9 +350,9 @@ export function ConnectionCenter({
           <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {isLoading && providerFamilies.length === 0
               ? Array.from({ length: 9 }, (_, index) => (
-                  <Card
+                  <div
                     key={String(index)}
-                    className="min-h-48 animate-pulse rounded-[1.75rem] border-border/60 bg-card/75"
+                    className="min-h-44 animate-pulse rounded-[1.75rem] border border-border/60 bg-card/75"
                   />
                 ))
               : providerFamilies.map((family) => (
@@ -385,160 +376,153 @@ export function ConnectionCenter({
                 ))}
           </div>
         ) : selectedFamily && selectedOption ? (
-          <Card className="mt-10 rounded-[2rem] border-border/70 bg-card/96 shadow-sm">
-            <CardHeader className="gap-6 border-b border-border/70 pb-6">
+          <section className="mt-10">
+            <div className="mx-auto max-w-3xl rounded-[2rem] border border-border/70 bg-card/96 px-6 py-6 shadow-sm sm:px-8 sm:py-8">
               <div className="flex items-start gap-4">
                 <ProviderLogo family={selectedFamily} size="lg" />
                 <div className="space-y-2">
-                  <CardTitle className="text-3xl">{selectedFamily.title}</CardTitle>
-                  <CardDescription className="max-w-2xl text-sm leading-6">
-                    Select how you want to connect. You can go back and choose a
-                    different provider at any time.
-                  </CardDescription>
+                  <h2 className="text-3xl font-semibold tracking-tight text-foreground">
+                    {selectedFamily.title}
+                  </h2>
+                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                    {selectedFamily.id === "openai"
+                      ? "Sign in with Codex by default, or switch to a direct API key if you prefer."
+                      : "Choose the connection method you want to use."}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {selectedFamily.options.map((option) => (
-                  <button
-                    key={option.key}
-                    type="button"
-                    onClick={() => {
-                      setSelectedOptionKey(option.key);
-                      setOAuthSession(null);
-                      setErrorMessage(null);
-                      setFeedback(null);
-                    }}
-                    className={cn(
-                      "rounded-full border px-4 py-2 text-sm transition-colors",
-                      option.key === selectedOption.key
-                        ? "border-primary/50 bg-primary/8 text-foreground"
-                        : "border-border/70 bg-background/70 text-muted-foreground hover:border-primary/30 hover:text-foreground",
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-5 p-6">
-              <div className="rounded-3xl border border-border/70 bg-background/80 px-4 py-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className="rounded-full">
-                    {selectedOption.label}
-                  </Badge>
-                  {selectedOption.isSelected ? (
-                    <Badge className="rounded-full bg-emerald-600/90 text-white">
-                      Selected
-                    </Badge>
-                  ) : null}
-                  {selectedOption.isConnected ? (
-                    <Badge
-                      variant="secondary"
-                      className="rounded-full bg-emerald-500/10 text-emerald-700"
+              {selectedFamily.options.length > 1 ? (
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {selectedFamily.options.map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => {
+                        setSelectedOptionKey(option.key);
+                        setOAuthSession(null);
+                        setErrorMessage(null);
+                        setFeedback(null);
+                      }}
+                      className={cn(
+                        "rounded-full px-4 py-2 text-sm transition-colors",
+                        option.key === selectedOption.key
+                          ? "bg-foreground text-background"
+                          : "bg-background text-muted-foreground ring-1 ring-border/80 hover:text-foreground",
+                      )}
                     >
-                      Connected
-                    </Badge>
-                  ) : null}
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  {selectedOption.description}
-                </p>
+              ) : null}
+
+              <div className="mt-8 space-y-6">
+                {(selectedOption.mode === "api_key" ||
+                  selectedOption.mode === "token") && (
+                  <div className="space-y-5">
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-medium text-foreground">
+                        {selectedOption.mode === "token" ? "Enter your token" : "Enter your API key"}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedOption.description}
+                      </p>
+                    </div>
+                    <CredentialForm
+                      buttonLabel="Connect"
+                      disabled={!client || !secret.trim() || isBusy}
+                      inputLabel={
+                        selectedOption.mode === "token" ? "Token" : "API key"
+                      }
+                      inputPlaceholder={
+                        selectedOption.mode === "token"
+                          ? "Paste provider token"
+                          : "Paste provider API key"
+                      }
+                      isBusy={isBusy}
+                      secret={secret}
+                      onSecretChange={setSecret}
+                      onSubmit={() => {
+                        void handleSecretConnect();
+                      }}
+                    />
+                  </div>
+                )}
+
+                {selectedOption.mode === "oauth" && (
+                  <OAuthCard
+                    isBusy={isBusy}
+                    oauthLinkUrl={oauthLinkUrl}
+                    oauthSession={oauthSession}
+                    onOpenLinkAgain={() => {
+                      if (!oauthLinkUrl) {
+                        return;
+                      }
+
+                      void openSessionLink(
+                        oauthLinkUrl,
+                        openedLinksRef.current,
+                        true,
+                      );
+                    }}
+                    onPromptValueChange={setPromptValue}
+                    onStart={() => {
+                      void handleOAuthStart();
+                    }}
+                    onSubmitPrompt={() => {
+                      void handleOAuthPromptSubmit();
+                    }}
+                    promptValue={promptValue}
+                    optionLabel={selectedOption.label}
+                    providerTitle={selectedFamily.title}
+                  />
+                )}
+
+                {(selectedOption.mode === "application_default" ||
+                  selectedOption.mode === "aws_sdk") && (
+                  <EnvironmentCard
+                    disabled={
+                      !client ||
+                      !selectedProviderStatus?.environment.available ||
+                      isBusy
+                    }
+                    isBusy={isBusy}
+                    mode={selectedOption.mode}
+                    onSelect={() => {
+                      void handleEnvironmentSelection();
+                    }}
+                  />
+                )}
+
                 {selectedProviderStatus?.resolved ? (
-                  <p className="mt-3 text-sm font-medium text-foreground">
-                    Current selection: {selectedProviderStatus.resolved.description}
+                  <p className="text-sm text-muted-foreground">
+                    Active connection:{" "}
+                    <span className="font-medium text-foreground">
+                      {selectedProviderStatus.resolved.description}
+                    </span>
                   </p>
                 ) : null}
+
+                {feedback ? <MessageBox tone="success">{feedback}</MessageBox> : null}
+                {errorMessage ? <MessageBox tone="error">{errorMessage}</MessageBox> : null}
+
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-5">
+                  <p className="text-sm text-muted-foreground">
+                    Continue after the provider is connected.
+                  </p>
+                  <Button
+                    className="rounded-full"
+                    disabled={!canContinue}
+                    onClick={onContinue}
+                  >
+                    Continue
+                    <ArrowRightIcon className="size-4" />
+                  </Button>
+                </div>
               </div>
-
-              {(selectedOption.mode === "api_key" ||
-                selectedOption.mode === "token") && (
-                <CredentialForm
-                  buttonLabel={`Connect with ${selectedOption.label.toLowerCase()}`}
-                  disabled={!client || !secret.trim() || isBusy}
-                  inputLabel={
-                    selectedOption.mode === "token" ? "Token" : "API key"
-                  }
-                  inputPlaceholder={
-                    selectedOption.mode === "token"
-                      ? "Paste provider token"
-                      : "Paste provider API key"
-                  }
-                  isBusy={isBusy}
-                  profileLabel={profileLabel}
-                  secret={secret}
-                  onProfileLabelChange={setProfileLabel}
-                  onSecretChange={setSecret}
-                  onSubmit={() => {
-                    void handleSecretConnect();
-                  }}
-                />
-              )}
-
-              {selectedOption.mode === "oauth" && (
-                <OAuthCard
-                  isBusy={isBusy}
-                  oauthLinkUrl={oauthLinkUrl}
-                  oauthSession={oauthSession}
-                  onOpenLinkAgain={() => {
-                    if (!oauthLinkUrl) {
-                      return;
-                    }
-
-                    void openSessionLink(
-                      oauthLinkUrl,
-                      openedLinksRef.current,
-                      true,
-                    );
-                  }}
-                  onProfileLabelChange={setProfileLabel}
-                  onPromptValueChange={setPromptValue}
-                  onStart={() => {
-                    void handleOAuthStart();
-                  }}
-                  onSubmitPrompt={() => {
-                    void handleOAuthPromptSubmit();
-                  }}
-                  profileLabel={profileLabel}
-                  promptValue={promptValue}
-                />
-              )}
-
-              {(selectedOption.mode === "application_default" ||
-                selectedOption.mode === "aws_sdk") && (
-                <EnvironmentCard
-                  disabled={
-                    !client ||
-                    !selectedProviderStatus?.environment.available ||
-                    isBusy
-                  }
-                  isBusy={isBusy}
-                  mode={selectedOption.mode}
-                  onSelect={() => {
-                    void handleEnvironmentSelection();
-                  }}
-                />
-              )}
-
-              {feedback ? <MessageBox tone="success">{feedback}</MessageBox> : null}
-              {errorMessage ? <MessageBox tone="error">{errorMessage}</MessageBox> : null}
-
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4">
-                <p className="text-sm text-muted-foreground">
-                  Continue once one provider is connected and selected.
-                </p>
-                <Button
-                  className="rounded-full"
-                  disabled={!canContinue}
-                  onClick={onContinue}
-                >
-                  Continue
-                  <ArrowRightIcon className="size-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         ) : null}
       </div>
     </div>
@@ -547,30 +531,21 @@ export function ConnectionCenter({
 
 function ProviderCard({ family }: { family: ProviderFamily }) {
   return (
-    <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/94 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg">
-      <CardHeader className="space-y-4">
-        <div className="flex items-center gap-3">
-          <ProviderLogo family={family} size="sm" />
-          <div className="min-w-0">
-            <CardTitle className="text-2xl">{family.title}</CardTitle>
-          </div>
+    <div className="h-full rounded-[1.75rem] border border-border/70 bg-card/94 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg">
+      <div className="flex items-center gap-3">
+        <ProviderLogo family={family} size="sm" />
+        <div className="min-w-0">
+          <p className="text-2xl font-semibold text-foreground">{family.title}</p>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm leading-7 text-muted-foreground">{family.description}</p>
-        <div className="flex flex-wrap gap-2">
-          {family.options.map((option) => (
-            <Badge
-              key={option.key}
-              variant="outline"
-              className="rounded-full border-border/70 bg-background/70 px-2.5 py-0.5 text-[11px]"
-            >
-              {option.label}
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+      <p className="mt-4 text-sm leading-7 text-muted-foreground">{family.description}</p>
+      <div className="mt-6 flex items-center justify-between">
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          {family.options[0]?.label ?? "Connect"}
+        </p>
+        <ArrowRightIcon className="size-4 text-muted-foreground" />
+      </div>
+    </div>
   );
 }
 
@@ -616,10 +591,8 @@ function CredentialForm({
   inputLabel,
   inputPlaceholder,
   isBusy,
-  onProfileLabelChange,
   onSecretChange,
   onSubmit,
-  profileLabel,
   secret,
 }: {
   buttonLabel: string;
@@ -627,29 +600,12 @@ function CredentialForm({
   inputLabel: string;
   inputPlaceholder: string;
   isBusy: boolean;
-  onProfileLabelChange: (value: string) => void;
   onSecretChange: (value: string) => void;
   onSubmit: () => void;
-  profileLabel: string;
   secret: string;
 }) {
   return (
-    <div className="space-y-4 rounded-3xl border border-border/70 bg-background/70 p-5">
-      <p className="font-medium text-foreground">Store credentials locally</p>
-
-      <label className="block space-y-2">
-        <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Profile label
-        </span>
-        <Input
-          value={profileLabel}
-          onChange={(event) => {
-            onProfileLabelChange(event.target.value);
-          }}
-          placeholder="default"
-        />
-      </label>
-
+    <div className="space-y-5">
       <label className="block space-y-2">
         <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {inputLabel}
@@ -685,43 +641,36 @@ function OAuthCard({
   oauthLinkUrl,
   oauthSession,
   onOpenLinkAgain,
-  onProfileLabelChange,
+  optionLabel,
   onPromptValueChange,
   onStart,
   onSubmitPrompt,
-  profileLabel,
   promptValue,
+  providerTitle,
 }: {
   isBusy: boolean;
   oauthLinkUrl: string | null;
   oauthSession: OAuthSession | null;
   onOpenLinkAgain: () => void;
-  onProfileLabelChange: (value: string) => void;
+  optionLabel: string;
   onPromptValueChange: (value: string) => void;
   onStart: () => void;
   onSubmitPrompt: () => void;
-  profileLabel: string;
   promptValue: string;
+  providerTitle: string;
 }) {
   return (
-    <div className="space-y-4 rounded-3xl border border-border/70 bg-background/70 p-5">
-      <p className="font-medium text-foreground">Sign in with your account</p>
-
-      <label className="block space-y-2">
-        <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Profile label
-        </span>
-        <Input
-          value={profileLabel}
-          onChange={(event) => {
-            onProfileLabelChange(event.target.value);
-          }}
-          placeholder="default"
-        />
-      </label>
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <h3 className="text-lg font-medium text-foreground">{optionLabel}</h3>
+        <p className="text-sm leading-6 text-muted-foreground">
+          Sign in with your {providerTitle} account in the browser. When the
+          browser asks for a code or confirmation, continue here.
+        </p>
+      </div>
 
       <Button
-        className="w-full justify-between rounded-full"
+        className="w-full justify-between rounded-full sm:w-auto sm:min-w-64"
         disabled={isBusy}
         onClick={onStart}
       >
@@ -734,7 +683,7 @@ function OAuthCard({
       </Button>
 
       {oauthSession ? (
-        <div className="space-y-3 rounded-3xl border border-primary/18 bg-primary/5 p-4">
+        <div className="space-y-3 rounded-2xl border border-primary/18 bg-primary/5 p-4">
           <p className="text-sm font-medium text-foreground">
             {renderOAuthSessionMessage(oauthSession)}
           </p>
@@ -799,11 +748,16 @@ function EnvironmentCard({
     mode === "aws_sdk" ? "Use AWS credentials" : "Use local cloud credentials";
 
   return (
-    <div className="space-y-4 rounded-3xl border border-border/70 bg-background/70 p-5">
-      <p className="font-medium text-foreground">Use existing machine auth</p>
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <h3 className="text-lg font-medium text-foreground">{label}</h3>
+        <p className="text-sm leading-6 text-muted-foreground">
+          Use credentials that are already available on this machine.
+        </p>
+      </div>
       <Button
         variant="outline"
-        className="w-full justify-between rounded-full"
+        className="w-full justify-between rounded-full sm:w-auto sm:min-w-72"
         disabled={disabled}
         onClick={onSelect}
       >

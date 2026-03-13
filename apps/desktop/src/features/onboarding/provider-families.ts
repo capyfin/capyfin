@@ -47,16 +47,16 @@ const curatedFamilies: ProviderFamilySpec[] = [
     description: "GPT models through API keys or a ChatGPT subscription sign-in.",
     options: [
       {
+        providerId: "openai-codex",
+        mode: "oauth",
+        label: "Sign in with Codex",
+        description: "Use your ChatGPT Plus or Pro subscription.",
+      },
+      {
         providerId: "openai",
         mode: "api_key",
         label: "Use API key",
         description: "Connect directly with an OpenAI API key.",
-      },
-      {
-        providerId: "openai-codex",
-        mode: "oauth",
-        label: "Login with Codex",
-        description: "Use your ChatGPT Plus or Pro subscription.",
       },
     ],
   },

@@ -1,4 +1,4 @@
-import { appManifest, type AppManifest, type AuthOverview } from "@capyfin/contracts";
+import { type AuthOverview } from "@capyfin/contracts";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/app/shell/AppHeader";
@@ -7,21 +7,19 @@ import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SidecarClient } from "@/lib/sidecar/client";
-import type { AppMetadata, SidecarConnection } from "@/app/types";
+import type { SidecarConnection } from "@/app/types";
 
 type InitStep = "sidecar_waiting" | "sidecar_ready" | "done";
-type AppView = "connections" | "overview";
-
-const browserFallback: AppMetadata = appManifest;
+type AppView = "connections" | "agents";
 
 export function App() {
-  const [metadata, setMetadata] = useState<AppManifest>(browserFallback);
   const [authOverview, setAuthOverview] = useState<AuthOverview | null>(null);
   const [client, setClient] = useState<SidecarClient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
   const [hashView, setHashView] = useState<AppView>(readViewFromHash());
   const [retryToken, setRetryToken] = useState(0);
+  const [createAgentToken, setCreateAgentToken] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -40,15 +38,11 @@ export function App() {
           },
         );
         const client = SidecarClient.fromConnection(connection);
-        const [bootstrap, overview] = await Promise.all([
-          client.bootstrap(),
-          client.authOverview(),
-        ]);
+        const overview = await client.authOverview();
 
         if (isMounted) {
           setAuthOverview(overview);
           setClient(client);
-          setMetadata(bootstrap.manifest);
           setRuntimeError(null);
         }
       } catch (error) {
@@ -56,7 +50,6 @@ export function App() {
         if (isMounted) {
           setAuthOverview(null);
           setClient(null);
-          setMetadata(browserFallback);
           setRuntimeError(error instanceof Error ? error.message : "Load failed");
         }
       } finally {
@@ -97,7 +90,7 @@ export function App() {
         runtimeError={runtimeError}
         onAuthOverviewChange={setAuthOverview}
         onContinue={() => {
-          window.location.hash = "#overview";
+          window.location.hash = "#agents";
         }}
         onRetry={() => {
           setRetryToken((current) => current + 1);
@@ -111,12 +104,17 @@ export function App() {
       <AppSidebar activeView={currentView} authOverview={authOverview} />
       <SidebarInset className="bg-transparent">
         <AppHeader
-          authOverview={authOverview}
           currentView={currentView}
-          metadata={metadata}
+          onCreateAgent={() => {
+            setCreateAgentToken((current) => current + 1);
+          }}
         />
         <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
-          <AgentsWorkspace authOverview={authOverview} client={client} />
+          <AgentsWorkspace
+            authOverview={authOverview}
+            client={client}
+            createRequestToken={createAgentToken}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>
@@ -124,5 +122,5 @@ export function App() {
 }
 
 function readViewFromHash(): AppView {
-  return window.location.hash === "#connections" ? "connections" : "overview";
+  return window.location.hash === "#connections" ? "connections" : "agents";
 }

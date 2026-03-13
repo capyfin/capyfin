@@ -3,11 +3,11 @@ import {
   ArrowLeftRightIcon,
   BadgeDollarSignIcon,
   BellDotIcon,
+  BotIcon,
   BookOpenTextIcon,
   CircleHelpIcon,
   Link2Icon,
   LandmarkIcon,
-  LayoutDashboardIcon,
   PiggyBankIcon,
   Settings2Icon,
   WalletCardsIcon,
@@ -22,9 +22,9 @@ export interface NavigationItem {
 
 export const primaryNavigation: NavigationItem[] = [
   {
-    title: "Overview",
-    href: "#overview",
-    icon: LayoutDashboardIcon,
+    title: "Agents",
+    href: "#agents",
+    icon: BotIcon,
   },
   {
     title: "Portfolio",

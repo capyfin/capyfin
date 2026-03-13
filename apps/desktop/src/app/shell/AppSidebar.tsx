@@ -22,7 +22,7 @@ import {
 import type { AuthOverview } from "@/app/types";
 
 interface AppSidebarProps {
-  activeView: "connections" | "overview";
+  activeView: "connections" | "agents";
   authOverview: AuthOverview | null;
 }
 
@@ -100,7 +100,7 @@ export function AppSidebar({ activeView, authOverview }: AppSidebarProps) {
                     tooltip={item.title}
                     isActive={
                       (item.href === "#connections" && activeView === "connections") ||
-                      (item.href === "#overview" && activeView === "overview")
+                      (item.href === "#agents" && activeView === "agents")
                     }
                   >
                     <a href={item.href}>

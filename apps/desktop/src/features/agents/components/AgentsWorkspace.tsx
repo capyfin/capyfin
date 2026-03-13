@@ -18,6 +18,7 @@ import { SidecarClient } from "@/lib/sidecar/client";
 interface AgentsWorkspaceProps {
   authOverview: AuthOverview | null;
   client: SidecarClient | null;
+  createRequestToken: number;
 }
 
 interface CreateAgentDraft {
@@ -35,6 +36,7 @@ const EMPTY_DRAFT: CreateAgentDraft = {
 export function AgentsWorkspace({
   authOverview,
   client,
+  createRequestToken,
 }: AgentsWorkspaceProps) {
   const connectedProviders = useMemo(
     () =>
@@ -109,6 +111,16 @@ export function AgentsWorkspace({
     };
   }, [client]);
 
+  useEffect(() => {
+    if (createRequestToken === 0) {
+      return;
+    }
+
+    setFeedback(null);
+    setErrorMessage(null);
+    setIsCreateOpen(true);
+  }, [createRequestToken]);
+
   const selectedProviderName =
     connectedProviders.find((provider) => provider.provider.id === draft.providerId)
       ?.provider.name ?? "selected provider";
@@ -172,45 +184,6 @@ export function AgentsWorkspace({
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6">
-      <section className="flex flex-col gap-4 rounded-[28px] border border-border/70 bg-card/90 p-5 shadow-sm lg:flex-row lg:items-end lg:justify-between lg:p-6">
-        <div className="max-w-2xl space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-            Agents
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-            Create the agents that will run CapyFin workflows.
-          </h1>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Keep this simple: each agent gets a name, a provider, and an optional
-            model. Everything else can evolve later.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            variant="outline"
-            className="rounded-full"
-            onClick={() => {
-              void refreshAgents();
-            }}
-          >
-            <RefreshCcwIcon className="size-4" />
-            Refresh
-          </Button>
-          <Button
-            className="rounded-full px-4"
-            onClick={() => {
-              setFeedback(null);
-              setErrorMessage(null);
-              setIsCreateOpen((current) => !current);
-            }}
-          >
-            <PlusIcon className="size-4" />
-            {isCreateOpen ? "Close" : "New agent"}
-          </Button>
-        </div>
-      </section>
-
       {errorMessage ? (
         <div className="rounded-2xl border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           {errorMessage}
@@ -337,6 +310,16 @@ export function AgentsWorkspace({
                 : `${String(agents.length)} agents available.`}
             </p>
           </div>
+          <Button
+            variant="outline"
+            className="rounded-full"
+            onClick={() => {
+              void refreshAgents();
+            }}
+          >
+            <RefreshCcwIcon className="size-4" />
+            Refresh
+          </Button>
         </div>
         <Separator />
         <div className="flex flex-col">
@@ -356,15 +339,9 @@ export function AgentsWorkspace({
                   workflows.
                 </p>
                 <div>
-                  <Button
-                    className="mt-2 rounded-full px-4"
-                    onClick={() => {
-                      setIsCreateOpen(true);
-                    }}
-                  >
-                    <PlusIcon className="size-4" />
-                    New agent
-                  </Button>
+                  <span className="mt-2 block text-sm text-muted-foreground">
+                    Use Create Agent in the header to get started.
+                  </span>
                 </div>
               </div>
             </div>

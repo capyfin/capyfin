@@ -1,5 +1,4 @@
-import { Link2Icon, RefreshCcwIcon, ShieldCheckIcon } from "lucide-react";
-import type { AppMetadata, AuthOverview } from "@/app/types";
+import { PlusIcon } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,15 +11,13 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface AppHeaderProps {
-  authOverview: AuthOverview | null;
-  currentView: "connections" | "overview";
-  metadata: AppMetadata;
+  currentView: "connections" | "agents";
+  onCreateAgent: () => void;
 }
 
 export function AppHeader({
-  authOverview,
   currentView,
-  metadata,
+  onCreateAgent,
 }: AppHeaderProps) {
   const today = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
@@ -28,11 +25,6 @@ export function AppHeader({
     weekday: "long",
     year: "numeric",
   }).format(new Date());
-  const connectedProviderCount =
-    authOverview?.providers.filter(
-      (provider) =>
-        provider.profiles.length > 0 || provider.environment.available,
-    ).length ?? 0;
   const pageTitle =
     currentView === "connections" ? "Provider Setup" : "Agents";
 
@@ -52,10 +44,6 @@ export function AppHeader({
                 Workspace
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem className="hidden sm:block">
-                Portfolio
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden sm:block" />
               <BreadcrumbItem>
                 <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
               </BreadcrumbItem>
@@ -64,26 +52,18 @@ export function AppHeader({
           <p className="mt-1 text-xs text-muted-foreground">{today}</p>
         </div>
 
-        <div className="hidden items-center gap-2 lg:flex">
-          <div className="flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-3 py-1.5 text-xs text-muted-foreground shadow-sm">
-            <ShieldCheckIcon className="size-3.5 text-emerald-600" />
-            {connectedProviderCount > 0
-              ? `${String(connectedProviderCount)} providers ready`
-              : `${String(metadata.workspaceLayout.length)} workspaces ready`}
+        {currentView === "agents" ? (
+          <div className="hidden items-center gap-2 lg:flex">
+            <Button
+              size="sm"
+              className="rounded-full px-4"
+              onClick={onCreateAgent}
+            >
+              <PlusIcon className="size-4" />
+              Create Agent
+            </Button>
           </div>
-          <Button size="sm" className="rounded-full px-4" asChild>
-            <a href={currentView === "connections" ? "#overview" : "#connections"}>
-              {currentView === "connections" ? (
-                <RefreshCcwIcon className="size-4" />
-              ) : (
-                <Link2Icon className="size-4" />
-              )}
-              {currentView === "connections"
-                ? "Open workspace"
-                : "Manage providers"}
-            </a>
-          </Button>
-        </div>
+        ) : null}
       </div>
     </header>
   );

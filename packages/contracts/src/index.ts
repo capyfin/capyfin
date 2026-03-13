@@ -37,11 +37,144 @@ export const sidecarBootstrapSchema = z.object({
   version: z.string().min(1).optional(),
 });
 
+export const providerAuthMethodSchema = z.enum([
+  "api_key",
+  "oauth",
+  "token",
+  "application_default",
+  "aws_sdk",
+]);
+
+export const providerDefinitionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  authMethods: z.array(providerAuthMethodSchema).min(1),
+  envVars: z.array(z.string().min(1)),
+  secretType: z.enum(["api_key", "token"]).optional(),
+  oauthProviderId: z.string().min(1).optional(),
+  description: z.string().min(1).optional(),
+});
+
+export const storedProfileSummarySchema = z.object({
+  profileId: z.string().min(1),
+  providerId: z.string().min(1),
+  label: z.string().min(1),
+  type: z.enum(["api_key", "oauth", "token"]),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  isActiveProfile: z.boolean(),
+});
+
+export const environmentAuthStatusSchema = z.object({
+  available: z.boolean(),
+  method: providerAuthMethodSchema.optional(),
+  sourceLabel: z.string().min(1).optional(),
+  envVars: z.array(z.string().min(1)),
+});
+
+export const resolvedProviderSourceSchema = z.object({
+  source: z.enum(["profile", "environment"]),
+  method: providerAuthMethodSchema,
+  profileId: z.string().min(1).optional(),
+  description: z.string().min(1),
+});
+
+export const providerStatusSchema = z.object({
+  provider: providerDefinitionSchema,
+  isSelectedProvider: z.boolean(),
+  isSelectedProfileProvider: z.boolean(),
+  profiles: z.array(storedProfileSummarySchema),
+  selectedProfileId: z.string().min(1).optional(),
+  environment: environmentAuthStatusSchema,
+  resolved: resolvedProviderSourceSchema.optional(),
+});
+
+export const authOverviewSchema = z.object({
+  storePath: z.string().min(1),
+  selectedProviderId: z.string().min(1).optional(),
+  selectedProfileId: z.string().min(1).optional(),
+  providers: z.array(providerStatusSchema),
+});
+
+export const connectProviderSecretRequestSchema = z.object({
+  providerId: z.string().min(1),
+  label: z.string().min(1).optional(),
+  secret: z.string().min(1),
+});
+
+export const selectProviderRequestSchema = z.object({
+  selector: z.string().min(1),
+});
+
+export const startOAuthSessionRequestSchema = z.object({
+  providerId: z.string().min(1),
+  label: z.string().min(1).optional(),
+});
+
+export const submitOAuthSessionPromptRequestSchema = z.object({
+  value: z.string(),
+});
+
+export const oauthSessionStepSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("working"),
+    message: z.string().min(1),
+  }),
+  z.object({
+    type: z.literal("auth_link"),
+    url: z.url(),
+    instructions: z.string().min(1).optional(),
+  }),
+  z.object({
+    type: z.literal("prompt"),
+    message: z.string().min(1),
+    placeholder: z.string().min(1).optional(),
+    allowEmpty: z.boolean(),
+  }),
+  z.object({
+    type: z.literal("completed"),
+  }),
+  z.object({
+    type: z.literal("error"),
+    message: z.string().min(1),
+  }),
+]);
+
+export const oauthSessionSchema = z.object({
+  id: z.string().min(1),
+  providerId: z.string().min(1),
+  providerName: z.string().min(1),
+  state: z.enum(["pending", "completed", "error"]),
+  step: oauthSessionStepSchema,
+  progress: z.array(z.string()),
+  profile: storedProfileSummarySchema.optional(),
+  error: z.string().min(1).optional(),
+});
+
 export type WorkspaceArea = z.infer<typeof workspaceAreaSchema>;
 export type AppManifest = z.infer<typeof appManifestSchema>;
 export type SidecarConnection = z.infer<typeof sidecarConnectionSchema>;
 export type SidecarHealth = z.infer<typeof sidecarHealthSchema>;
 export type SidecarBootstrap = z.infer<typeof sidecarBootstrapSchema>;
+export type ProviderAuthMethod = z.infer<typeof providerAuthMethodSchema>;
+export type ProviderDefinition = z.infer<typeof providerDefinitionSchema>;
+export type StoredProfileSummary = z.infer<typeof storedProfileSummarySchema>;
+export type EnvironmentAuthStatus = z.infer<typeof environmentAuthStatusSchema>;
+export type ResolvedProviderSource = z.infer<typeof resolvedProviderSourceSchema>;
+export type ProviderStatus = z.infer<typeof providerStatusSchema>;
+export type AuthOverview = z.infer<typeof authOverviewSchema>;
+export type ConnectProviderSecretRequest = z.infer<
+  typeof connectProviderSecretRequestSchema
+>;
+export type SelectProviderRequest = z.infer<typeof selectProviderRequestSchema>;
+export type StartOAuthSessionRequest = z.infer<
+  typeof startOAuthSessionRequestSchema
+>;
+export type SubmitOAuthSessionPromptRequest = z.infer<
+  typeof submitOAuthSessionPromptRequestSchema
+>;
+export type OAuthSessionStep = z.infer<typeof oauthSessionStepSchema>;
+export type OAuthSession = z.infer<typeof oauthSessionSchema>;
 
 export const appManifest = appManifestSchema.parse(appManifestJson);
 

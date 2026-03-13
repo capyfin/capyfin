@@ -2,7 +2,7 @@ import { createSidecarBootstrap, createSidecarHealth } from "@capyfin/core";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import type { SidecarRuntime } from "../context";
+import type { SidecarRuntime } from "../context.ts";
 
 export function createGlobalRoutes(runtime: SidecarRuntime): Hono {
   const app = new Hono();

@@ -5,6 +5,7 @@ import {
   BellDotIcon,
   BookOpenTextIcon,
   CircleHelpIcon,
+  Link2Icon,
   LandmarkIcon,
   LayoutDashboardIcon,
   PiggyBankIcon,
@@ -30,6 +31,12 @@ export const primaryNavigation: NavigationItem[] = [
     href: "#portfolio",
     icon: WalletCardsIcon,
     badge: "Core",
+  },
+  {
+    title: "Connections",
+    href: "#connections",
+    icon: Link2Icon,
+    badge: "Setup",
   },
   {
     title: "Cash Flow",

@@ -18,6 +18,7 @@ pub fn run() {
     let (init_tx, init_rx) = watch::channel(InitStep::SidecarWaiting);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .manage(AppState::new(init_rx))
         .setup(move |app| {
             let handle = app.handle().clone();

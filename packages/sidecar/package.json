@@ -14,14 +14,16 @@
     "src"
   ],
   "scripts": {
-    "build": "tsup src/cli.ts --format esm --platform node --target node22 --clean",
+    "build": "tsup --config tsup.config.ts",
     "dev": "tsx src/cli.ts",
     "lint": "eslint src --ext .ts",
+    "test": "tsx --test src/**/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
     "@capyfin/core": "workspace:*",
     "@hono/node-server": "^1.19.11",
+    "@mariozechner/pi-ai": "^0.57.1",
     "hono": "^4.12.7"
   },
   "devDependencies": {

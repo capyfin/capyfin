@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
-import type { AuthStoreLocation } from "./types";
+import type { AuthStoreLocation } from "./types.ts";
 
 const CONFIG_FILE_NAME = "auth-profiles.json";
 

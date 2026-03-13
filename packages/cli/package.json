@@ -17,7 +17,7 @@
     "src"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --platform node --target node22 --clean",
+    "build": "tsup --config tsup.config.ts",
     "cli": "tsx src/index.ts",
     "lint": "eslint src --ext .ts",
     "test": "tsx --test src/**/*.test.ts",

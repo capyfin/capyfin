@@ -1,5 +1,5 @@
 import { getAppManifest, renderMetadataText } from "@capyfin/core";
-import type { ResolvedRunCliOptions } from "../app";
+import type { ResolvedRunCliOptions } from "../app.ts";
 
 export function printMetadata(
   output: "text" | "json",

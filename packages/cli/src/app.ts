@@ -1,9 +1,9 @@
 import { parseArgs } from "node:util";
-import { runAuthCommand } from "./commands/auth";
-import { printMetadata } from "./commands/metadata";
-import { runServe } from "./commands/serve";
-import { printWorkspace } from "./commands/workspace";
-import { createProcessCliIo, type CliIo } from "./io";
+import { runAuthCommand } from "./commands/auth.ts";
+import { printMetadata } from "./commands/metadata.ts";
+import { runServe } from "./commands/serve.ts";
+import { printWorkspace } from "./commands/workspace.ts";
+import { createProcessCliIo, type CliIo } from "./io.ts";
 
 type CommandName = "auth" | "metadata" | "serve" | "workspace";
 type OutputFormat = "text" | "json";

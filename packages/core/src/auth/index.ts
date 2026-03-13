@@ -1,19 +1,19 @@
 export {
   getProviderDefinition,
   listProviderDefinitions,
-} from "./providers";
-export { resolveAuthStoreLocation } from "./paths";
+} from "./providers.ts";
+export { resolveAuthStoreLocation } from "./paths.ts";
 export {
   createEmptyAuthStore,
   loadAuthStore,
   resolveAuthStorePath,
   saveAuthStore,
-} from "./store";
+} from "./store.ts";
 export {
   loadOrCreateAuthStore,
   ProviderAuthService,
   resetAuthStore,
-} from "./service";
+} from "./service.ts";
 export type {
   ApiKeyProfile,
   AuthOverview,
@@ -33,4 +33,4 @@ export type {
   StoredCredentialType,
   StoredProfileSummary,
   TokenProfile,
-} from "./types";
+} from "./types.ts";

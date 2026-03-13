@@ -1,15 +1,20 @@
+import { ProviderAuthService } from "@capyfin/core/auth";
 import { serve } from "@hono/node-server";
 import packageJson from "../package.json" with { type: "json" };
-import { loadSidecarConfig, type SidecarConfig } from "./config";
-import { createSidecarApp } from "./server/app";
+import { OAuthSessionManager } from "./auth/oauth-sessions.ts";
+import { loadSidecarConfig, type SidecarConfig } from "./config.ts";
+import { createSidecarApp } from "./server/app.ts";
 
 export interface SidecarServerHandle {
   close(): void;
 }
 
 export function startSidecarServer(config: SidecarConfig = loadSidecarConfig()): SidecarServerHandle {
+  const createAuthService = (): ProviderAuthService => new ProviderAuthService();
   const runtime = {
+    authSessions: new OAuthSessionManager(createAuthService),
     config,
+    createAuthService,
     startedAt: Date.now(),
     version: packageJson.version,
   };

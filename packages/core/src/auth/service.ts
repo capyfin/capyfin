@@ -3,9 +3,13 @@ import {
   getOAuthProvider,
   type OAuthLoginCallbacks,
 } from "@mariozechner/pi-ai/oauth";
-import { getProviderDefinition, listProviderDefinitions } from "./providers";
-import { resolveAuthStoreLocation } from "./paths";
-import { createEmptyAuthStore, loadAuthStore, saveAuthStore } from "./store";
+import { getProviderDefinition, listProviderDefinitions } from "./providers.ts";
+import { resolveAuthStoreLocation } from "./paths.ts";
+import {
+  createEmptyAuthStore,
+  loadAuthStore,
+  saveAuthStore,
+} from "./store.ts";
 import type {
   AuthOverview,
   AuthProfile,
@@ -18,7 +22,7 @@ import type {
   SaveSecretProfileParams,
   StoredProfileSummary,
   StoredCredentialType,
-} from "./types";
+} from "./types.ts";
 
 export class ProviderAuthService {
   readonly #env: NodeJS.ProcessEnv;

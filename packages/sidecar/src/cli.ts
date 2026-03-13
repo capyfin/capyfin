@@ -1,4 +1,4 @@
-import { startSidecarServer } from "./index";
+import { startSidecarServer } from "./index.ts";
 
 function main(): void {
   const server = startSidecarServer();

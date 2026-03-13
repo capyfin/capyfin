@@ -1,7 +1,7 @@
 import { parseArgs } from "node:util";
 import { ProviderAuthService, type ProviderStatus } from "@capyfin/core/auth";
-import type { CliIo } from "../io";
-import type { ResolvedRunCliOptions } from "../app";
+import type { CliIo } from "../io.ts";
+import type { ResolvedRunCliOptions } from "../app.ts";
 
 type OutputFormat = "text" | "json";
 

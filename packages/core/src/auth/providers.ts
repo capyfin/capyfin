@@ -1,5 +1,5 @@
 import { getOAuthProviders } from "@mariozechner/pi-ai/oauth";
-import type { ProviderDefinition } from "./types";
+import type { ProviderDefinition } from "./types.ts";
 
 const BUILTIN_PROVIDER_DEFINITIONS = [
   {

@@ -19,8 +19,20 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import type { AuthOverview } from "@/app/types";
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  activeView: "connections" | "overview";
+  authOverview: AuthOverview | null;
+}
+
+export function AppSidebar({ activeView, authOverview }: AppSidebarProps) {
+  const connectedProviderCount =
+    authOverview?.providers.filter(
+      (provider) =>
+        provider.profiles.length > 0 || provider.environment.available,
+    ).length ?? 0;
+
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader className="border-b border-sidebar-border/70">
@@ -83,7 +95,14 @@ export function AppSidebar() {
             <SidebarMenu>
               {primaryNavigation.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                    isActive={
+                      (item.href === "#connections" && activeView === "connections") ||
+                      (item.href === "#overview" && activeView === "overview")
+                    }
+                  >
                     <a href={item.href}>
                       <item.icon />
                       <span>{item.title}</span>
@@ -151,7 +170,9 @@ export function AppSidebar() {
               Primary household
             </p>
             <p className="truncate text-xs text-sidebar-foreground/65">
-              3 institutions synced
+              {connectedProviderCount > 0
+                ? `${String(connectedProviderCount)} providers connected`
+                : "Provider setup pending"}
             </p>
           </div>
           <div className="hidden rounded-xl bg-emerald-500/10 p-2 text-emerald-600 group-data-[collapsible=icon]:hidden lg:block">

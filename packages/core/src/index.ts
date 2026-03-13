@@ -6,4 +6,4 @@ export {
   getWorkspaceAreas,
   renderMetadataText,
   renderWorkspaceText,
-} from "./app";
+} from "./app.ts";

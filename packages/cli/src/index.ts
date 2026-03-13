@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { runCli } from "./app";
+import { runCli } from "./app.ts";
 
 const exitCode = await runCli();
 

@@ -1,4 +1,4 @@
-import type { ResolvedRunCliOptions } from "../app";
+import type { ResolvedRunCliOptions } from "../app.ts";
 
 export async function runServe(
   values: Record<string, string | boolean | undefined>,

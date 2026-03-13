@@ -2,8 +2,9 @@ import { createBasicAuthHeader } from "@capyfin/core";
 import type { HttpBindings } from "@hono/node-server";
 import { cors } from "hono/cors";
 import { Hono } from "hono";
-import { createGlobalRoutes } from "./routes/global";
-import type { SidecarRuntime } from "./context";
+import { createAuthRoutes } from "./routes/auth.ts";
+import { createGlobalRoutes } from "./routes/global.ts";
+import type { SidecarRuntime } from "./context.ts";
 
 const TAURI_ORIGINS = new Set([
   "tauri://localhost",
@@ -60,6 +61,7 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
   );
 
   app.route("/global", createGlobalRoutes(runtime));
+  app.route("/auth", createAuthRoutes(runtime));
 
   app.notFound((context) => context.json({ error: "Not Found" }, 404));
   app.onError((error, context) => {

@@ -7,14 +7,14 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { resolveAuthStoreLocation } from "./paths";
+import { resolveAuthStoreLocation } from "./paths.ts";
 import type {
   ApiKeyProfile,
   AuthProfile,
   AuthStore,
   OAuthProfile,
   TokenProfile,
-} from "./types";
+} from "./types.ts";
 
 const AUTH_STORE_VERSION = 1 as const;
 

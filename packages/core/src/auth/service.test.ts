@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { ProviderAuthService } from "./service";
+import { ProviderAuthService } from "./service.ts";
 
 function createStorePath(prefix: string): Promise<string> {
   return mkdtemp(join(tmpdir(), `${prefix}-`)).then((directory) =>

@@ -5,6 +5,7 @@ import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
 import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
 import { ChatWorkspace } from "@/features/chat/components/ChatWorkspace";
+import { ConnectionsWorkspace } from "@/features/connections/components/ConnectionsWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SidecarClient } from "@/lib/sidecar/client";
@@ -21,6 +22,7 @@ export function App() {
   const [hashView, setHashView] = useState<AppView>(readViewFromHash());
   const [retryToken, setRetryToken] = useState(0);
   const [createAgentToken, setCreateAgentToken] = useState(0);
+  const [addConnectionToken, setAddConnectionToken] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -78,11 +80,7 @@ export function App() {
     };
   }, []);
 
-  const currentView: AppView = authOverview?.selectedProviderId
-    ? hashView
-    : "connections";
-
-  if (currentView === "connections") {
+  if (!authOverview?.selectedProviderId) {
     return (
       <ConnectionCenter
         authOverview={authOverview}
@@ -96,9 +94,11 @@ export function App() {
         onRetry={() => {
           setRetryToken((current) => current + 1);
         }}
-      />
+        />
     );
   }
+
+  const currentView: AppView = hashView;
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -106,6 +106,9 @@ export function App() {
       <SidebarInset className="bg-transparent">
         <AppHeader
           currentView={currentView}
+          onAddConnection={() => {
+            setAddConnectionToken((current) => current + 1);
+          }}
           onCreateAgent={() => {
             setCreateAgentToken((current) => current + 1);
           }}
@@ -113,6 +116,13 @@ export function App() {
         <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
           {currentView === "chat" ? (
             <ChatWorkspace authOverview={authOverview} client={client} />
+          ) : currentView === "connections" ? (
+            <ConnectionsWorkspace
+              addRequestToken={addConnectionToken}
+              authOverview={authOverview}
+              client={client}
+              onAuthOverviewChange={setAuthOverview}
+            />
           ) : (
             <AgentsWorkspace
               authOverview={authOverview}

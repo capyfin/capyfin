@@ -215,6 +215,39 @@ export class ProviderAuthService {
     return this.#buildProviderStatus(provider, store);
   }
 
+  async deleteProfile(profileId: string): Promise<void> {
+    const store = await this.#readStore();
+    const profile = store.profiles[profileId];
+
+    if (!profile) {
+      throw new Error(`Unknown auth profile: ${profileId}`);
+    }
+
+    store.profiles = Object.fromEntries(
+      Object.entries(store.profiles).filter(([entryProfileId]) => entryProfileId !== profileId),
+    );
+
+    const nextOrder = (store.order[profile.provider] ?? []).filter(
+      (entry) => entry !== profileId,
+    );
+    if (nextOrder.length > 0) {
+      store.order[profile.provider] = nextOrder;
+    } else {
+      store.order = Object.fromEntries(
+        Object.entries(store.order).filter(([providerId]) => providerId !== profile.provider),
+      );
+    }
+
+    if (
+      store.activeProfileId === profileId ||
+      store.activeProviderId === profile.provider
+    ) {
+      this.#repairActiveSelection(store, profile.provider);
+    }
+
+    await this.#writeStore(store);
+  }
+
   async resolveCredential(
     providerId?: string,
   ): Promise<ResolvedProviderCredential | null> {
@@ -507,6 +540,81 @@ export class ProviderAuthService {
 
   async #writeStore(store: AuthStore): Promise<void> {
     await saveAuthStore(store, this.#storePath);
+  }
+
+  #repairActiveSelection(
+    store: AuthStore,
+    preferredProviderId?: string,
+  ): void {
+    if (store.activeProfileId) {
+      const activeProfile = store.profiles[store.activeProfileId];
+      if (activeProfile) {
+        store.activeProviderId = activeProfile.provider;
+        return;
+      }
+
+      delete store.activeProfileId;
+    }
+
+    if (
+      store.activeProviderId &&
+      this.#resolveEnvironmentCredential(this.#requireProvider(store.activeProviderId))
+    ) {
+      return;
+    }
+
+    const preferredProvider =
+      preferredProviderId !== undefined
+        ? this.#getFallbackProviderSelection(store, preferredProviderId)
+        : null;
+    if (preferredProvider) {
+      this.#applyFallbackSelection(store, preferredProvider);
+      return;
+    }
+
+    for (const provider of this.listProviders()) {
+      const fallback = this.#getFallbackProviderSelection(store, provider.id);
+      if (fallback) {
+        this.#applyFallbackSelection(store, fallback);
+        return;
+      }
+    }
+
+    delete store.activeProviderId;
+    delete store.activeProfileId;
+  }
+
+  #getFallbackProviderSelection(
+    store: AuthStore,
+    providerId: string,
+  ): { profileId?: string; providerId: string } | null {
+    const orderedProfiles = this.#getOrderedProfiles(store, providerId);
+    if (orderedProfiles[0]) {
+      return {
+        profileId: orderedProfiles[0].profileId,
+        providerId,
+      };
+    }
+
+    const provider = getProviderDefinition(providerId);
+    if (provider && this.#resolveEnvironmentCredential(provider)) {
+      return { providerId };
+    }
+
+    return null;
+  }
+
+  #applyFallbackSelection(
+    store: AuthStore,
+    fallback: { profileId?: string; providerId: string },
+  ): void {
+    store.activeProviderId = fallback.providerId;
+    if (fallback.profileId) {
+      store.activeProfileId = fallback.profileId;
+      return;
+    }
+
+    delete store.activeProfileId;
   }
 
   #requireProvider(providerId: string): ProviderDefinition {

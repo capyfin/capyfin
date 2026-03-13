@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import type { AuthStoreLocation } from "./types.ts";
 
 const CONFIG_FILE_NAME = "auth-profiles.json";
+const AUTH_BRIDGE_FILE_NAME = "auth.json";
 
 export function resolveAuthStoreLocation(
   env: NodeJS.ProcessEnv = process.env,
@@ -10,6 +11,7 @@ export function resolveAuthStoreLocation(
   const explicitStorePath = env.CAPYFIN_AUTH_STORE_PATH?.trim();
   if (explicitStorePath) {
     return {
+      authBridgePath: join(dirname(explicitStorePath), AUTH_BRIDGE_FILE_NAME),
       configDir: dirname(explicitStorePath),
       authStorePath: explicitStorePath,
     };
@@ -22,6 +24,7 @@ export function resolveAuthStoreLocation(
   const configDir = join(configRoot, appDirectoryName);
 
   return {
+    authBridgePath: join(configDir, AUTH_BRIDGE_FILE_NAME),
     configDir,
     authStorePath: join(configDir, CONFIG_FILE_NAME),
   };

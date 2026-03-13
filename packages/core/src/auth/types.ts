@@ -54,6 +54,7 @@ export interface AuthStore {
 }
 
 export interface AuthStoreLocation {
+  authBridgePath: string;
   configDir: string;
   authStorePath: string;
 }

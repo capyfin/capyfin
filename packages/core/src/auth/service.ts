@@ -1,9 +1,12 @@
 import { getEnvApiKey } from "@mariozechner/pi-ai";
 import {
+  getOAuthApiKey,
   getOAuthProvider,
+  registerOAuthProvider,
   type OAuthLoginCallbacks,
 } from "@mariozechner/pi-ai/oauth";
 import { getProviderDefinition, listProviderDefinitions } from "./providers.ts";
+import { createOpenAICodexOAuthProvider } from "./oauth/openai-codex-provider.ts";
 import { resolveAuthStoreLocation } from "./paths.ts";
 import {
   createEmptyAuthStore,
@@ -23,6 +26,8 @@ import type {
   StoredProfileSummary,
   StoredCredentialType,
 } from "./types.ts";
+
+registerOAuthProvider(createOpenAICodexOAuthProvider());
 
 export class ProviderAuthService {
   readonly #env: NodeJS.ProcessEnv;
@@ -213,7 +218,7 @@ export class ProviderAuthService {
   async resolveCredential(
     providerId?: string,
   ): Promise<ResolvedProviderCredential | null> {
-    const store = await this.#readStore();
+    let store = await this.#readStore();
     const selectedProviderId = providerId ?? store.activeProviderId;
 
     if (!selectedProviderId) {
@@ -226,7 +231,13 @@ export class ProviderAuthService {
     if (store.activeProfileId) {
       const activeProfile = store.profiles[store.activeProfileId];
       if (activeProfile?.provider === selectedProviderId) {
-        return toResolvedProfileCredential(store.activeProfileId, activeProfile);
+        const resolvedActive = await this.#resolveStoredProfileCredential(
+          store,
+          store.activeProfileId,
+          activeProfile,
+        );
+        store = resolvedActive.store;
+        return resolvedActive.credential;
       }
     }
 
@@ -236,10 +247,12 @@ export class ProviderAuthService {
         return this.#resolveEnvironmentCredential(provider);
       }
 
-      return toResolvedProfileCredential(
+      const resolvedProfile = await this.#resolveStoredProfileCredential(
+        store,
         profileSummary.profileId,
         profile,
       );
+      return resolvedProfile.credential;
     }
 
     return this.#resolveEnvironmentCredential(provider);
@@ -370,6 +383,56 @@ export class ProviderAuthService {
 
   #readStore(): Promise<AuthStore> {
     return loadAuthStore(this.#storePath);
+  }
+
+  async #resolveStoredProfileCredential(
+    store: AuthStore,
+    profileId: string,
+    profile: AuthProfile,
+  ): Promise<{
+    credential: ResolvedProviderCredential;
+    store: AuthStore;
+  }> {
+    if (profile.type !== "oauth") {
+      return {
+        credential: toResolvedProfileCredential(profileId, profile),
+        store,
+      };
+    }
+
+    const oauthResult = await getOAuthApiKey(profile.provider, {
+      [profile.provider]: profile.credentials,
+    });
+
+    if (!oauthResult) {
+      throw new Error(`No OAuth credentials found for ${profile.provider}.`);
+    }
+
+    const nextProfile: AuthProfile = {
+      ...profile,
+      credentials: oauthResult.newCredentials,
+      updatedAt: this.#now().toISOString(),
+    };
+    const nextStore: AuthStore = {
+      ...store,
+      profiles: {
+        ...store.profiles,
+        [profileId]: nextProfile,
+      },
+    };
+
+    if (
+      nextProfile.credentials.access !== profile.credentials.access ||
+      nextProfile.credentials.refresh !== profile.credentials.refresh ||
+      nextProfile.credentials.expires !== profile.credentials.expires
+    ) {
+      await this.#writeStore(nextStore);
+    }
+
+    return {
+      credential: toResolvedProfileCredential(profileId, nextProfile),
+      store: nextStore,
+    };
   }
 
   #resolveEnvironmentCredential(

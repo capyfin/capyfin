@@ -34,7 +34,7 @@ export function AppHeader({
         provider.profiles.length > 0 || provider.environment.available,
     ).length ?? 0;
   const pageTitle =
-    currentView === "connections" ? "Provider Setup" : "Overview";
+    currentView === "connections" ? "Provider Setup" : "Agents";
 
   return (
     <header className="sticky top-0 z-20 border-b border-border/70 bg-background/80 backdrop-blur-xl">

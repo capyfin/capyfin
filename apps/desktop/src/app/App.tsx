@@ -3,11 +3,7 @@ import { Channel, invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
-import { AllocationCard } from "@/features/dashboard/components/AllocationCard";
-import { HoldingsTable } from "@/features/dashboard/components/HoldingsTable";
-import { MetricCards } from "@/features/dashboard/components/MetricCards";
-import { PortfolioChart } from "@/features/dashboard/components/PortfolioChart";
-import { WatchlistCard } from "@/features/dashboard/components/WatchlistCard";
+import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SidecarClient } from "@/lib/sidecar/client";
@@ -120,17 +116,7 @@ export function App() {
           metadata={metadata}
         />
         <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
-          <>
-            <MetricCards />
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]">
-              <PortfolioChart />
-              <AllocationCard metadata={metadata} />
-            </div>
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.9fr)]">
-              <HoldingsTable />
-              <WatchlistCard />
-            </div>
-          </>
+          <AgentsWorkspace authOverview={authOverview} client={client} />
         </div>
       </SidebarInset>
     </SidebarProvider>

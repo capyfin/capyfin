@@ -237,7 +237,14 @@ export function ConnectionCenter({
   }
 
   async function handleOAuthStart(): Promise<void> {
-    if (!client || !selectedOption) {
+    if (!selectedOption) {
+      return;
+    }
+
+    if (!client) {
+      setErrorMessage(
+        "Provider actions are unavailable until the desktop sidecar is connected.",
+      );
       return;
     }
 
@@ -453,6 +460,7 @@ export function ConnectionCenter({
                 {selectedOption.mode === "oauth" && (
                   <OAuthCard
                     isBusy={isBusy}
+                    isReady={Boolean(client)}
                     oauthLinkUrl={oauthLinkUrl}
                     oauthSession={oauthSession}
                     onOpenLinkAgain={() => {
@@ -638,6 +646,7 @@ function CredentialForm({
 
 function OAuthCard({
   isBusy,
+  isReady,
   oauthLinkUrl,
   oauthSession,
   onOpenLinkAgain,
@@ -649,6 +658,7 @@ function OAuthCard({
   providerTitle,
 }: {
   isBusy: boolean;
+  isReady: boolean;
   oauthLinkUrl: string | null;
   oauthSession: OAuthSession | null;
   onOpenLinkAgain: () => void;
@@ -671,7 +681,7 @@ function OAuthCard({
 
       <Button
         className="w-full justify-between rounded-full sm:w-auto sm:min-w-64"
-        disabled={isBusy}
+        disabled={!isReady || isBusy}
         onClick={onStart}
       >
         Start sign-in
@@ -681,6 +691,12 @@ function OAuthCard({
           <ExternalLinkIcon className="size-4" />
         )}
       </Button>
+
+      {!isReady ? (
+        <p className="text-sm text-muted-foreground">
+          Finish connecting the desktop sidecar before starting sign-in.
+        </p>
+      ) : null}
 
       {oauthSession ? (
         <div className="space-y-3 rounded-2xl border border-primary/18 bg-primary/5 p-4">

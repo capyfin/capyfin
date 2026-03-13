@@ -2,6 +2,7 @@ import { createBasicAuthHeader } from "@capyfin/core";
 import type { HttpBindings } from "@hono/node-server";
 import { cors } from "hono/cors";
 import { Hono } from "hono";
+import { createAgentRoutes } from "./routes/agents.ts";
 import { createAuthRoutes } from "./routes/auth.ts";
 import { createGlobalRoutes } from "./routes/global.ts";
 import type { SidecarRuntime } from "./context.ts";
@@ -64,6 +65,7 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
     return next();
   });
 
+  app.route("/agents", createAgentRoutes(runtime));
   app.route("/global", createGlobalRoutes(runtime));
   app.route("/auth", createAuthRoutes(runtime));
 

@@ -32,9 +32,14 @@ pnpm cli -- metadata
 pnpm cli -- workspace --output json
 pnpm cli -- auth providers
 pnpm cli -- auth status --output json
+pnpm cli -- agents list --output json
+pnpm cli -- agents create --name "Research" --provider openai --model gpt-5
+pnpm cli -- sessions create research --label "Morning brief"
 ```
 
 Provider credentials are managed through the CLI and stored in a versioned auth store under the user config directory, or at `CAPYFIN_AUTH_STORE_PATH` when an explicit path is provided. Shared auth behavior lives behind the Node-only `@capyfin/core/auth` entrypoint so the CLI and future sidecar workflows resolve providers through the same rules.
+
+Agent metadata and session transcripts follow the same pattern. Agent CRUD and session creation live in the shared Node core behind `@capyfin/core/agents`, with a versioned catalog under the app config directory and per-agent transcript/session state backed by `@mariozechner/pi-coding-agent`'s `SessionManager`.
 
 ## Quality gates
 

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { AgentService } from "@capyfin/core/agents";
 import { ProviderAuthService } from "@capyfin/core/auth";
 import { OAuthSessionManager } from "../../auth/oauth-sessions.ts";
 import { createAuthRoutes } from "./auth.ts";
@@ -24,6 +25,7 @@ void test("auth routes expose overview and store credentials", async (context) =
       port: 3000,
       username: "capyfin",
     },
+    createAgentService: () => new AgentService({ storePath: join(dirname(storePath), "catalog.json") }),
     createAuthService,
     startedAt: Date.now(),
     version: "0.1.0-test",

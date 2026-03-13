@@ -17,7 +17,7 @@
     "build": "tsup --config tsup.config.ts",
     "dev": "tsx src/cli.ts",
     "lint": "eslint src --ext .ts",
-    "test": "tsx --test src/**/*.test.ts",
+    "test": "tsx --test src/auth/*.test.ts src/server/routes/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {

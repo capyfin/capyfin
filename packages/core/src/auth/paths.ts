@@ -1,5 +1,5 @@
-import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { resolveCapyfinConfigDir } from "../config-paths.ts";
 import type { AuthStoreLocation } from "./types.ts";
 
 const CONFIG_FILE_NAME = "auth-profiles.json";
@@ -17,40 +17,11 @@ export function resolveAuthStoreLocation(
     };
   }
 
-  const appDirectoryName = process.platform === "linux" ? "capyfin" : "CapyFin";
-  const configRoot =
-    env.CAPYFIN_CONFIG_HOME?.trim() ??
-    resolvePlatformConfigRoot(env, homedir());
-  const configDir = join(configRoot, appDirectoryName);
+  const configDir = resolveCapyfinConfigDir(env);
 
   return {
     authBridgePath: join(configDir, AUTH_BRIDGE_FILE_NAME),
     configDir,
     authStorePath: join(configDir, CONFIG_FILE_NAME),
   };
-}
-
-function resolvePlatformConfigRoot(
-  env: NodeJS.ProcessEnv,
-  homeDirectory: string,
-): string {
-  if (process.platform === "darwin") {
-    return join(homeDirectory, "Library", "Application Support");
-  }
-
-  if (process.platform === "win32") {
-    const appData = env.APPDATA?.trim();
-    if (appData) {
-      return appData;
-    }
-
-    return join(homeDirectory, "AppData", "Roaming");
-  }
-
-  const xdgConfigHome = env.XDG_CONFIG_HOME?.trim();
-  if (xdgConfigHome) {
-    return xdgConfigHome;
-  }
-
-  return join(homeDirectory, ".config");
 }

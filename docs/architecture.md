@@ -13,6 +13,7 @@
 - `apps/desktop/src-tauri`: Tauri bootstrap layer, sidecar supervision, and native capabilities.
 - `packages/contracts`: shared transport schemas and the repository manifest.
 - `packages/core`: shared Node application core for manifest access, auth/profile management, bootstrap payloads, and CLI-facing helpers.
+- `packages/core/agents`: agent catalog, session metadata, filesystem layout, and transcript creation.
 - `packages/cli`: operational Node CLI surface built on the shared core.
 - `packages/sidecar`: Node sidecar API that becomes the main application boundary.
 - `config/app-manifest.json`: cross-language metadata that keeps Rust and TypeScript aligned.
@@ -33,10 +34,19 @@ This mirrors the intended long-term shape: Tauri is the secure host, the sidecar
 
 - `packages/core`: shared application behavior and canonical metadata used by both the CLI and sidecar.
 - `packages/core/auth`: Node-only provider auth subsystem for provider definitions, credential profile storage, selection rules, and environment fallback.
+- `packages/core/agents`: Node-only agent/session subsystem for normalized agent IDs, default-agent handling, agent stores, and session transcript creation.
 - `packages/cli`: command entrypoint for operators and scripted workflows.
 - `packages/sidecar`: localhost HTTP server for the desktop shell, built on the same core package.
 
 This keeps the runtime behavior aligned across surfaces instead of splitting product logic between Node and Rust.
+
+## Agent/session model
+
+- Agents are stored in a versioned catalog under the app config directory, with normalized IDs and one protected default agent (`main`).
+- Each agent owns an app-managed directory with a workspace folder plus a session area.
+- Session metadata is tracked in a lightweight JSON index per agent.
+- Session transcripts are not custom JSON invented in CapyFin. They use `@mariozechner/pi-coding-agent`'s `SessionManager`, which gives us a durable append-only transcript format that can later be consumed by richer agent runtimes without migration.
+- The CLI and sidecar both call the same `AgentService`, so agent CRUD, default-agent rules, session keying, and transcript creation cannot drift across surfaces.
 
 ## Provider auth model
 
@@ -75,6 +85,7 @@ This keeps startup concerns centralized and prevents ad hoc process management f
 - `packages/contracts` is the only place where frontend and sidecar transport types should be defined.
 - `packages/core` is the only place where shared Node application behavior for the CLI and sidecar should live.
 - Provider auth changes should start in `packages/core/auth`, then be surfaced through CLI commands or sidecar endpoints, rather than implemented separately in each runtime.
+- Agent/session changes should start in `packages/core/agents`, then be surfaced through CLI commands or sidecar endpoints instead of duplicating session rules in multiple runtimes.
 - `config/app-manifest.json` is the source of truth for shared repository metadata across Rust and TypeScript.
 - Rust formatting and Clippy warnings are treated as part of the normal build hygiene.
 - New plugins and permissions should be added only when required by a feature, then documented in the same pull request.

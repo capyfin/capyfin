@@ -1,3 +1,4 @@
+import { AgentService } from "@capyfin/core/agents";
 import { ProviderAuthService } from "@capyfin/core/auth";
 import { serve } from "@hono/node-server";
 import packageJson from "../package.json" with { type: "json" };
@@ -10,10 +11,12 @@ export interface SidecarServerHandle {
 }
 
 export function startSidecarServer(config: SidecarConfig = loadSidecarConfig()): SidecarServerHandle {
+  const createAgentService = (): AgentService => new AgentService();
   const createAuthService = (): ProviderAuthService => new ProviderAuthService();
   const runtime = {
     authSessions: new OAuthSessionManager(createAuthService),
     config,
+    createAgentService,
     createAuthService,
     startedAt: Date.now(),
     version: packageJson.version,

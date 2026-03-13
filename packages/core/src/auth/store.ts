@@ -7,6 +7,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { syncAuthBridge } from "./bridge.ts";
 import { resolveAuthStoreLocation } from "./paths.ts";
 import type {
   ApiKeyProfile,
@@ -70,6 +71,7 @@ export async function saveAuthStore(
 
   try {
     await rename(temporaryPath, storePath);
+    await syncAuthBridge(store, storePath);
   } catch (error) {
     await rm(temporaryPath, { force: true });
     throw error;

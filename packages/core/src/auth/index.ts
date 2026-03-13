@@ -3,6 +3,7 @@ export {
   listProviderDefinitions,
 } from "./providers.ts";
 export { resolveAuthStoreLocation } from "./paths.ts";
+export { loadAuthBridge, resolveAuthBridgePath, syncAuthBridge } from "./bridge.ts";
 export {
   createEmptyAuthStore,
   loadAuthStore,

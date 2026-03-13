@@ -44,7 +44,6 @@ export function App() {
           },
         );
         const client = SidecarClient.fromConnection(connection);
-        await client.waitUntilHealthy();
         const [bootstrap, overview] = await Promise.all([
           client.bootstrap(),
           client.authOverview(),

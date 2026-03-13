@@ -11,6 +11,10 @@
     "./auth": {
       "types": "./src/auth/index.ts",
       "default": "./src/auth/index.ts"
+    },
+    "./agents": {
+      "types": "./src/agents/index.ts",
+      "default": "./src/agents/index.ts"
     }
   },
   "files": [
@@ -25,11 +29,12 @@
   },
   "dependencies": {
     "@capyfin/contracts": "workspace:*",
-    "@mariozechner/pi-ai": "^0.57.1"
+    "@mariozechner/pi-ai": "^0.57.1",
+    "@mariozechner/pi-coding-agent": "^0.57.1"
   },
   "devDependencies": {
-    "tsx": "^4.21.0",
     "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

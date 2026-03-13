@@ -86,3 +86,35 @@ void test("auth providers emits provider metadata as json", async () => {
   assert.ok(providers.some((provider) => provider.id === "openai"));
   assert.ok(providers.some((provider) => provider.id === "anthropic"));
 });
+
+void test("agents create and sessions create persist agent state", async (context) => {
+  const storePath = await createStorePath("capyfin-cli-agents");
+  const io = new MemoryCliIo();
+
+  context.after(async () => {
+    await rm(dirname(storePath), { force: true, recursive: true });
+  });
+
+  const createExitCode = await runCli(
+    ["agents", "create", "--name", "Research", "--provider", "openai", "--model", "gpt-5"],
+    { io, storePath },
+  );
+  assert.equal(createExitCode, 0);
+  assert.match(io.stdoutMessages.join(""), /Created agent research/);
+
+  const sessionIo = new MemoryCliIo();
+  const sessionExitCode = await runCli(
+    ["sessions", "create", "research", "--label", "Morning brief", "--output", "json"],
+    { io: sessionIo, storePath },
+  );
+  assert.equal(sessionExitCode, 0);
+
+  const session = JSON.parse(sessionIo.stdoutMessages.join("")) as {
+    agentId: string;
+    label?: string;
+    sessionKey: string;
+  };
+  assert.equal(session.agentId, "research");
+  assert.equal(session.label, "Morning brief");
+  assert.match(session.sessionKey, /^agent:research:session:/);
+});

@@ -115,6 +115,76 @@ export const submitOAuthSessionPromptRequestSchema = z.object({
   value: z.string(),
 });
 
+export const agentSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1).optional(),
+  instructions: z.string().min(1),
+  providerId: z.string().min(1).optional(),
+  modelId: z.string().min(1).optional(),
+  workspaceDir: z.string().min(1),
+  agentDir: z.string().min(1),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  isDefault: z.boolean(),
+});
+
+export const agentCatalogSchema = z.object({
+  storePath: z.string().min(1),
+  defaultAgentId: z.string().min(1),
+  agents: z.array(agentSchema),
+});
+
+export const createAgentRequestSchema = z.object({
+  id: z.string().min(1).optional(),
+  name: z.string().min(1),
+  description: z.string().min(1).optional(),
+  instructions: z.string().min(1).optional(),
+  providerId: z.string().min(1).optional(),
+  modelId: z.string().min(1).optional(),
+  workspaceDir: z.string().min(1).optional(),
+  setAsDefault: z.boolean().optional(),
+});
+
+export const updateAgentRequestSchema = z.object({
+  name: z.string().min(1).optional(),
+  description: z.string().min(1).optional(),
+  instructions: z.string().min(1).optional(),
+  providerId: z.string().min(1).optional(),
+  modelId: z.string().min(1).optional(),
+  workspaceDir: z.string().min(1).optional(),
+  setAsDefault: z.boolean().optional(),
+});
+
+export const deleteAgentResponseSchema = z.object({
+  agentId: z.string().min(1),
+  deletedSessions: z.number().int().nonnegative(),
+  removedPaths: z.array(z.string().min(1)),
+});
+
+export const agentSessionSchema = z.object({
+  id: z.string().min(1),
+  agentId: z.string().min(1),
+  agentName: z.string().min(1),
+  sessionKey: z.string().min(1),
+  label: z.string().min(1).optional(),
+  sessionFile: z.string().min(1),
+  workspaceDir: z.string().min(1),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+});
+
+export const agentSessionListSchema = z.object({
+  agentId: z.string().min(1).optional(),
+  sessions: z.array(agentSessionSchema),
+});
+
+export const createAgentSessionRequestSchema = z.object({
+  agentId: z.string().min(1),
+  label: z.string().min(1).optional(),
+  initialPrompt: z.string().min(1).optional(),
+});
+
 export const oauthSessionStepSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("working"),
@@ -177,6 +247,16 @@ export type SubmitOAuthSessionPromptRequest = z.infer<
 >;
 export type OAuthSessionStep = z.infer<typeof oauthSessionStepSchema>;
 export type OAuthSession = z.infer<typeof oauthSessionSchema>;
+export type Agent = z.infer<typeof agentSchema>;
+export type AgentCatalog = z.infer<typeof agentCatalogSchema>;
+export type CreateAgentRequest = z.infer<typeof createAgentRequestSchema>;
+export type UpdateAgentRequest = z.infer<typeof updateAgentRequestSchema>;
+export type DeleteAgentResponse = z.infer<typeof deleteAgentResponseSchema>;
+export type AgentSession = z.infer<typeof agentSessionSchema>;
+export type AgentSessionList = z.infer<typeof agentSessionListSchema>;
+export type CreateAgentSessionRequest = z.infer<
+  typeof createAgentSessionRequestSchema
+>;
 
 export const appManifest = appManifestSchema.parse(appManifestJson);
 

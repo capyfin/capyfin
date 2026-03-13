@@ -1,11 +1,19 @@
 import { parseArgs } from "node:util";
+import { runAgentsCommand } from "./commands/agents.ts";
 import { runAuthCommand } from "./commands/auth.ts";
 import { printMetadata } from "./commands/metadata.ts";
 import { runServe } from "./commands/serve.ts";
+import { runSessionsCommand } from "./commands/sessions.ts";
 import { printWorkspace } from "./commands/workspace.ts";
 import { createProcessCliIo, type CliIo } from "./io.ts";
 
-type CommandName = "auth" | "metadata" | "serve" | "workspace";
+type CommandName =
+  | "agents"
+  | "auth"
+  | "metadata"
+  | "serve"
+  | "sessions"
+  | "workspace";
 type OutputFormat = "text" | "json";
 
 export interface RunCliOptions {
@@ -55,11 +63,17 @@ export async function runCli(
       case "workspace":
         handleStaticCommand("workspace", normalizedArgv.slice(1), resolvedOptions);
         return 0;
+      case "agents":
+        await runAgentsCommand(normalizedArgv.slice(1), resolvedOptions);
+        return 0;
       case "serve":
         await handleServe(normalizedArgv.slice(1), resolvedOptions);
         return 0;
       case "auth":
         await runAuthCommand(normalizedArgv.slice(1), resolvedOptions);
+        return 0;
+      case "sessions":
+        await runSessionsCommand(normalizedArgv.slice(1), resolvedOptions);
         return 0;
       default:
         throw new Error(`Unknown command: ${String(command)}`);
@@ -142,5 +156,11 @@ Commands:
   auth status [provider] [--output text|json]
   auth login [provider] [--api-key value | --token value | --oauth] [--profile label] [--skip-activate]
   auth select <provider|profile-id>
+  agents list [--output text|json]
+  agents create --name value [--id value] [--description value] [--instructions value] [--provider value] [--model value] [--workspace path] [--default] [--output text|json]
+  agents update <agent-id> [--name value] [--description value] [--instructions value] [--provider value] [--model value] [--workspace path] [--default] [--output text|json]
+  agents delete <agent-id> [--output text|json]
+  sessions list [--agent agent-id] [--output text|json]
+  sessions create <agent-id> [--label value] [--prompt value] [--output text|json]
 `;
 }

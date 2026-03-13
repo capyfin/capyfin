@@ -12,7 +12,7 @@ import { SidecarClient } from "@/lib/sidecar/client";
 import type { SidecarConnection } from "@/app/types";
 
 type InitStep = "sidecar_waiting" | "sidecar_ready" | "done";
-type AppView = "connections" | "chat" | "agents";
+type AppView = "connections" | "connections-add" | "chat" | "agents";
 
 export function App() {
   const [authOverview, setAuthOverview] = useState<AuthOverview | null>(null);
@@ -22,7 +22,6 @@ export function App() {
   const [hashView, setHashView] = useState<AppView>(readViewFromHash());
   const [retryToken, setRetryToken] = useState(0);
   const [createAgentToken, setCreateAgentToken] = useState(0);
-  const [addConnectionToken, setAddConnectionToken] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -80,7 +79,7 @@ export function App() {
     };
   }, []);
 
-  if (!authOverview?.selectedProviderId) {
+  if (!authOverview?.selectedProviderId || hashView === "connections-add") {
     return (
       <ConnectionCenter
         authOverview={authOverview}
@@ -89,16 +88,18 @@ export function App() {
         runtimeError={runtimeError}
         onAuthOverviewChange={setAuthOverview}
         onContinue={() => {
-          window.location.hash = "#chat";
+          window.location.hash = authOverview?.selectedProviderId
+            ? "#connections"
+            : "#chat";
         }}
         onRetry={() => {
           setRetryToken((current) => current + 1);
         }}
-        />
+      />
     );
   }
 
-  const currentView: AppView = hashView;
+  const currentView: Exclude<AppView, "connections-add"> = hashView;
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -107,7 +108,7 @@ export function App() {
         <AppHeader
           currentView={currentView}
           onAddConnection={() => {
-            setAddConnectionToken((current) => current + 1);
+            window.location.hash = "#connections/add";
           }}
           onCreateAgent={() => {
             setCreateAgentToken((current) => current + 1);
@@ -118,7 +119,6 @@ export function App() {
             <ChatWorkspace authOverview={authOverview} client={client} />
           ) : currentView === "connections" ? (
             <ConnectionsWorkspace
-              addRequestToken={addConnectionToken}
               authOverview={authOverview}
               client={client}
               onAuthOverviewChange={setAuthOverview}
@@ -137,6 +137,10 @@ export function App() {
 }
 
 function readViewFromHash(): AppView {
+  if (window.location.hash === "#connections/add") {
+    return "connections-add";
+  }
+
   if (window.location.hash === "#connections") {
     return "connections";
   }

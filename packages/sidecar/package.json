@@ -17,14 +17,19 @@
     "build": "tsup --config tsup.config.ts",
     "dev": "tsx src/cli.ts",
     "lint": "eslint src --ext .ts",
-    "test": "tsx --test src/auth/*.test.ts src/server/routes/*.test.ts",
+    "test": "tsx --test src/auth/*.test.ts src/chat/*.test.ts src/server/routes/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
     "@capyfin/core": "workspace:*",
     "@hono/node-server": "^1.19.11",
     "@mariozechner/pi-ai": "^0.57.1",
-    "hono": "^4.12.7"
+    "ai": "^6.0.116",
+    "@ai-sdk/anthropic": "^3.0.58",
+    "@ai-sdk/google": "^3.0.43",
+    "@ai-sdk/openai": "^3.0.41",
+    "hono": "^4.12.7",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

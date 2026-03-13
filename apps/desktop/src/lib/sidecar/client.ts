@@ -2,6 +2,7 @@ import {
   agentCatalogSchema,
   agentSchema,
   authOverviewSchema,
+  chatBootstrapSchema,
   connectProviderSecretRequestSchema,
   createAgentRequestSchema,
   createBasicAuthHeader,
@@ -15,6 +16,7 @@ import {
   type AuthOverview,
   type Agent,
   type AgentCatalog,
+  type ChatBootstrap,
   type OAuthSession,
   type ProviderStatus,
   type SidecarBootstrap,
@@ -57,6 +59,11 @@ export class SidecarClient {
 
   async authOverview(): Promise<AuthOverview> {
     return authOverviewSchema.parse(await this.request("/auth/overview"));
+  }
+
+  async chatBootstrap(agentId?: string): Promise<ChatBootstrap> {
+    const query = agentId ? `?agentId=${encodeURIComponent(agentId)}` : "";
+    return chatBootstrapSchema.parse(await this.request(`/chat/bootstrap${query}`));
   }
 
   async agents(): Promise<AgentCatalog> {
@@ -136,15 +143,29 @@ export class SidecarClient {
     );
   }
 
-  private async request(
-    path: string,
-    init?: RequestInit,
-  ): Promise<unknown> {
-    const headers = new Headers(init?.headers);
+  createApiUrl(path: string): string {
+    return new URL(path, this.connection.url).toString();
+  }
+
+  createAuthHeaders(): Headers {
+    const headers = new Headers();
     headers.set(
       "Authorization",
       createBasicAuthHeader(this.connection.username, this.connection.password),
     );
+    return headers;
+  }
+
+  private async request(
+    path: string,
+    init?: RequestInit,
+  ): Promise<unknown> {
+    const headers = this.createAuthHeaders();
+    const initHeaders = new Headers(init?.headers);
+    for (const [key, value] of initHeaders.entries()) {
+      headers.set(key, value);
+    }
+
     if (!headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
     }

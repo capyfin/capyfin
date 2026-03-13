@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface AppHeaderProps {
-  currentView: "connections" | "agents";
+  currentView: "connections" | "chat" | "agents";
   onCreateAgent: () => void;
 }
 
@@ -26,7 +26,11 @@ export function AppHeader({
     year: "numeric",
   }).format(new Date());
   const pageTitle =
-    currentView === "connections" ? "Provider Setup" : "Agents";
+    currentView === "connections"
+      ? "Provider Setup"
+      : currentView === "agents"
+        ? "Agents"
+        : "Chat";
 
   return (
     <header className="sticky top-0 z-20 border-b border-border/70 bg-background/80 backdrop-blur-xl">

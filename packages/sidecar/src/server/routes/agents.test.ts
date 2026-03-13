@@ -18,7 +18,9 @@ void test("agent routes manage agents and create sessions", async (context) => {
   const createAgentService = (): AgentService =>
     new AgentService({ storePath });
   const createAuthService = (): ProviderAuthService =>
-    new ProviderAuthService({ storePath: join(dirname(storePath), "auth.json") });
+    new ProviderAuthService({
+      storePath: join(dirname(storePath), "auth-profiles.json"),
+    });
   const runtime = {
     authSessions: new OAuthSessionManager(createAuthService),
     config: {

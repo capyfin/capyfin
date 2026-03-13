@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
 import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
+import { ChatWorkspace } from "@/features/chat/components/ChatWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SidecarClient } from "@/lib/sidecar/client";
 import type { SidecarConnection } from "@/app/types";
 
 type InitStep = "sidecar_waiting" | "sidecar_ready" | "done";
-type AppView = "connections" | "agents";
+type AppView = "connections" | "chat" | "agents";
 
 export function App() {
   const [authOverview, setAuthOverview] = useState<AuthOverview | null>(null);
@@ -90,7 +91,7 @@ export function App() {
         runtimeError={runtimeError}
         onAuthOverviewChange={setAuthOverview}
         onContinue={() => {
-          window.location.hash = "#agents";
+          window.location.hash = "#chat";
         }}
         onRetry={() => {
           setRetryToken((current) => current + 1);
@@ -110,11 +111,15 @@ export function App() {
           }}
         />
         <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
-          <AgentsWorkspace
-            authOverview={authOverview}
-            client={client}
-            createRequestToken={createAgentToken}
-          />
+          {currentView === "chat" ? (
+            <ChatWorkspace authOverview={authOverview} client={client} />
+          ) : (
+            <AgentsWorkspace
+              authOverview={authOverview}
+              client={client}
+              createRequestToken={createAgentToken}
+            />
+          )}
         </div>
       </SidebarInset>
     </SidebarProvider>
@@ -122,5 +127,13 @@ export function App() {
 }
 
 function readViewFromHash(): AppView {
-  return window.location.hash === "#connections" ? "connections" : "agents";
+  if (window.location.hash === "#connections") {
+    return "connections";
+  }
+
+  if (window.location.hash === "#agents") {
+    return "agents";
+  }
+
+  return "chat";
 }

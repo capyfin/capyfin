@@ -152,3 +152,22 @@ void test("refreshes expired oauth credentials and syncs the auth bridge", async
   assert.equal(bridgeCredential.refresh, "oauth-refresh-refreshed");
   assert.ok(Number.isFinite(bridgeCredential.expires));
 });
+
+void test("rejects auth store paths that collide with the runtime auth bridge", async (context) => {
+  const directory = await mkdtemp(join(tmpdir(), "capyfin-auth-collision-"));
+  const storePath = join(directory, "auth.json");
+  const service = new ProviderAuthService({ storePath });
+
+  context.after(async () => {
+    await rm(directory, { force: true, recursive: true });
+  });
+
+  await assert.rejects(
+    () =>
+      service.saveSecretProfile({
+        providerId: "openai",
+        secret: "sk-test",
+      }),
+    /conflicts with the runtime auth bridge/,
+  );
+});

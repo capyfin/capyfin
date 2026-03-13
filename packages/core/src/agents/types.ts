@@ -62,6 +62,15 @@ export interface AgentSessionSummary extends StoredAgentSessionRecord {
   workspaceDir: string;
 }
 
+export interface AgentTranscriptMessage {
+  id: string;
+  modelId?: string | undefined;
+  providerId?: string | undefined;
+  role: "assistant" | "system" | "user";
+  text: string;
+  createdAt: string;
+}
+
 export interface AgentSessionList {
   agentId?: string | undefined;
   sessions: AgentSessionSummary[];
@@ -104,6 +113,12 @@ export interface CreateAgentSessionParams {
   agentId: string;
   initialPrompt?: string | undefined;
   label?: string | undefined;
+}
+
+export interface AppendSessionMessagesParams {
+  agentId: string;
+  messages: AgentTranscriptMessage[];
+  sessionId: string;
 }
 
 export interface AgentFilesystemLayout {

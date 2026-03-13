@@ -55,6 +55,34 @@ void test("agent service manages catalog lifecycle and creates session transcrip
   assert.equal(sessions.length, 1);
   assert.equal(sessions[0]?.id, session.id);
 
+  const transcriptMessages = await service.readSessionMessages(
+    "analyst",
+    session.id,
+  );
+  assert.equal(transcriptMessages.length, 1);
+  assert.equal(transcriptMessages[0]?.role, "user");
+
+  const updatedSession = await service.appendSessionMessages({
+    agentId: "analyst",
+    sessionId: session.id,
+    messages: [
+      {
+        createdAt: new Date().toISOString(),
+        id: "assistant-1",
+        role: "assistant",
+        text: "Your allocation is overweight equities by 5%.",
+      },
+    ],
+  });
+  assert.equal(updatedSession.id, session.id);
+
+  const nextTranscript = await service.readSessionMessages("analyst", session.id);
+  assert.equal(nextTranscript.length, 2);
+  const assistantMessage = nextTranscript[1];
+  assert.ok(assistantMessage);
+  assert.equal(assistantMessage.role, "assistant");
+  assert.match(assistantMessage.text, /overweight equities/i);
+
   const deleted = await service.deleteAgent("analyst");
   assert.equal(deleted.agentId, "analyst");
   assert.equal(deleted.deletedSessions, 1);

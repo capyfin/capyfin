@@ -8,6 +8,7 @@ import {
   CircleHelpIcon,
   Link2Icon,
   LandmarkIcon,
+  MessageSquareIcon,
   PiggyBankIcon,
   Settings2Icon,
   WalletCardsIcon,
@@ -21,6 +22,11 @@ export interface NavigationItem {
 }
 
 export const primaryNavigation: NavigationItem[] = [
+  {
+    title: "Chat",
+    href: "#chat",
+    icon: MessageSquareIcon,
+  },
   {
     title: "Agents",
     href: "#agents",

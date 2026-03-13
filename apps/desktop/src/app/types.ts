@@ -3,6 +3,8 @@ export type {
   AgentCatalog,
   AuthOverview,
   AppManifest as AppMetadata,
+  ChatBootstrap,
+  ChatTranscriptMessage,
   OAuthSession,
   ProviderStatus,
   SidecarBootstrap,

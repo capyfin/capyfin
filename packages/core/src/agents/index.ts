@@ -15,6 +15,8 @@ export type {
   AgentServiceOptions,
   AgentSessionList,
   AgentSessionSummary,
+  AgentTranscriptMessage,
+  AppendSessionMessagesParams,
   CreateAgentParams,
   CreateAgentSessionParams,
   UpdateAgentParams,

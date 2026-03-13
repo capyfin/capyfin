@@ -22,7 +22,7 @@ import {
 import type { AuthOverview } from "@/app/types";
 
 interface AppSidebarProps {
-  activeView: "connections" | "agents";
+  activeView: "connections" | "chat" | "agents";
   authOverview: AuthOverview | null;
 }
 
@@ -43,7 +43,7 @@ export function AppSidebar({ activeView, authOverview }: AppSidebarProps) {
               size="lg"
               className="h-12 data-[slot=sidebar-menu-button]:!p-2"
             >
-              <a href="#overview">
+              <a href="#chat">
                 <div className="flex size-9 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
                   <Wallet2Icon className="size-4" />
                 </div>
@@ -100,6 +100,7 @@ export function AppSidebar({ activeView, authOverview }: AppSidebarProps) {
                     tooltip={item.title}
                     isActive={
                       (item.href === "#connections" && activeView === "connections") ||
+                      (item.href === "#chat" && activeView === "chat") ||
                       (item.href === "#agents" && activeView === "agents")
                     }
                   >

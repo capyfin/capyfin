@@ -185,6 +185,22 @@ export const createAgentSessionRequestSchema = z.object({
   initialPrompt: z.string().min(1).optional(),
 });
 
+export const chatTranscriptMessageSchema = z.object({
+  id: z.string().min(1),
+  role: z.enum(["assistant", "system", "user"]),
+  text: z.string(),
+  createdAt: z.string().min(1),
+});
+
+export const chatBootstrapSchema = z.object({
+  agent: agentSchema,
+  agents: z.array(agentSchema),
+  session: agentSessionSchema,
+  messages: z.array(chatTranscriptMessageSchema),
+  resolvedModelId: z.string().min(1).optional(),
+  resolvedProviderId: z.string().min(1).optional(),
+});
+
 export const oauthSessionStepSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("working"),
@@ -257,6 +273,8 @@ export type AgentSessionList = z.infer<typeof agentSessionListSchema>;
 export type CreateAgentSessionRequest = z.infer<
   typeof createAgentSessionRequestSchema
 >;
+export type ChatTranscriptMessage = z.infer<typeof chatTranscriptMessageSchema>;
+export type ChatBootstrap = z.infer<typeof chatBootstrapSchema>;
 
 export const appManifest = appManifestSchema.parse(appManifestJson);
 

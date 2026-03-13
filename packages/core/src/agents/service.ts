@@ -1,6 +1,9 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { SessionManager } from "@mariozechner/pi-coding-agent";
+import type { AssistantMessage, TextContent, UserMessage } from "@mariozechner/pi-ai";
 import type {
+  AgentTranscriptMessage,
+  AppendSessionMessagesParams,
   AgentCatalog,
   AgentDeleteSummary,
   AgentRecord,
@@ -352,6 +355,119 @@ export class AgentService {
     return summary;
   }
 
+  async getDefaultAgent(): Promise<AgentRecord> {
+    const catalog = await this.getCatalog();
+    return this.getAgent(catalog.defaultAgentId);
+  }
+
+  async getSession(
+    agentId: string,
+    sessionId: string,
+  ): Promise<AgentSessionSummary> {
+    const normalizedAgentId = normalizeAgentId(agentId);
+    const sessions = await this.listSessions(normalizedAgentId);
+    const session = sessions.find((candidate) => candidate.id === sessionId);
+
+    if (!session) {
+      throw new Error(
+        `Session "${sessionId}" not found for agent "${normalizedAgentId}".`,
+      );
+    }
+
+    return session;
+  }
+
+  async readSessionMessages(
+    agentId: string,
+    sessionId: string,
+  ): Promise<AgentTranscriptMessage[]> {
+    const session = await this.getSession(agentId, sessionId);
+    const sessionManager = SessionManager.open(session.sessionFile);
+    const messages: AgentTranscriptMessage[] = [];
+
+    for (const entry of sessionManager.getEntries()) {
+      if (entry.type !== "message") {
+        continue;
+      }
+
+      if (entry.message.role !== "assistant" && entry.message.role !== "user") {
+        continue;
+      }
+
+      const text =
+        "content" in entry.message ? extractMessageText(entry.message.content) : "";
+      if (!text.trim()) {
+        continue;
+      }
+
+      messages.push({
+        createdAt: entry.timestamp,
+        id: entry.id,
+        ...(entry.message.role === "assistant"
+          ? {
+              modelId: entry.message.model,
+              providerId: entry.message.provider,
+            }
+          : {}),
+        role: entry.message.role,
+        text,
+      });
+    }
+
+    return messages;
+  }
+
+  async appendSessionMessages(
+    params: AppendSessionMessagesParams,
+  ): Promise<AgentSessionSummary> {
+    const normalizedAgentId = normalizeAgentId(params.agentId);
+    const agent = await this.getAgent(normalizedAgentId);
+    const session = await this.getSession(normalizedAgentId, params.sessionId);
+    const messages = params.messages.filter(
+      (message) => message.text.trim().length > 0,
+    );
+
+    if (messages.length === 0) {
+      return session;
+    }
+
+    const sessionManager = SessionManager.open(session.sessionFile);
+    for (const message of messages) {
+      sessionManager.appendMessage(
+        createTranscriptSessionMessage(
+          message,
+          agent.providerId,
+          agent.modelId,
+        ),
+      );
+    }
+
+    await persistSessionSnapshot(sessionManager, session.sessionFile);
+    return this.#touchSession(
+      normalizedAgentId,
+      params.sessionId,
+      messages[messages.length - 1]?.createdAt ?? this.#timestamp(),
+    );
+  }
+
+  async getOrCreateLatestSession(
+    agentId: string,
+    params: Omit<CreateAgentSessionParams, "agentId"> = {},
+  ): Promise<AgentSessionSummary> {
+    const normalizedAgentId = normalizeAgentId(agentId);
+    const sessions = await this.listSessions(normalizedAgentId);
+    const latestSession = sessions[0];
+
+    if (latestSession) {
+      return latestSession;
+    }
+
+    return this.createSession({
+      ...params,
+      agentId: normalizedAgentId,
+    });
+  }
+
   async #readStore(): Promise<AgentStore> {
     const store = await loadAgentStore(this.#storePath);
     return this.#ensureDefaultAgent(store);
@@ -408,6 +524,46 @@ export class AgentService {
     return resolveAgentStoreLocation(this.#env, this.#storePath);
   }
 
+  async #touchSession(
+    agentId: string,
+    sessionId: string,
+    updatedAt: string,
+  ): Promise<AgentSessionSummary> {
+    const store = await this.#readStore();
+    const agent = store.agents[agentId];
+    if (!agent) {
+      throw new Error(`Agent "${agentId}" not found.`);
+    }
+
+    const layout = resolveAgentFilesystemLayout(
+      this.#location(),
+      agentId,
+      agent.workspaceDir,
+    );
+    const sessionStore = await loadAgentSessionStore(layout.sessionsIndexPath);
+    const existing = sessionStore.sessions[sessionId];
+    if (!existing) {
+      throw new Error(`Session "${sessionId}" not found for agent "${agentId}".`);
+    }
+
+    sessionStore.sessions[sessionId] = {
+      ...existing,
+      updatedAt,
+    };
+    sessionStore.order = [
+      sessionId,
+      ...sessionStore.order.filter((candidate) => candidate !== sessionId),
+    ];
+    await saveAgentSessionStore(sessionStore, layout.sessionsIndexPath);
+
+    return {
+      ...sessionStore.sessions[sessionId],
+      agentId,
+      agentName: agent.name,
+      workspaceDir: agent.workspaceDir,
+    };
+  }
+
   #timestamp(): string {
     return this.#now().toISOString();
   }
@@ -443,4 +599,79 @@ function normalizeRequiredString(value: string | undefined, message: string): st
 
 function buildDefaultInstructions(agentName: string): string {
   return `You are ${agentName}, a CapyFin agent focused on finance planning, research, and execution support.`;
+}
+
+function extractMessageText(content: unknown): string {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  if (!Array.isArray(content)) {
+    return "";
+  }
+
+  return content
+    .flatMap((part) => {
+      if (!part || typeof part !== "object") {
+        return [];
+      }
+
+      const record = part as Record<string, unknown>;
+      if (record.type === "text" && typeof record.text === "string") {
+        return [record.text];
+      }
+
+      return [];
+    })
+    .join("\n")
+    .trim();
+}
+
+function createTranscriptSessionMessage(
+  message: AgentTranscriptMessage,
+  fallbackProviderId?: string,
+  fallbackModelId?: string,
+): AssistantMessage | UserMessage {
+  if (message.role === "assistant") {
+    const textContent: TextContent = {
+      text: message.text,
+      type: "text",
+    };
+
+    return {
+      api: "chat",
+      content: [textContent],
+      model:
+        message.modelId ??
+        fallbackModelId ??
+        "capyfin-chat",
+      provider:
+        message.providerId ??
+        fallbackProviderId ??
+        "capyfin",
+      role: "assistant",
+      stopReason: "stop",
+      timestamp: new Date(message.createdAt).getTime(),
+      usage: {
+        cacheRead: 0,
+        cacheWrite: 0,
+        cost: {
+          cacheRead: 0,
+          cacheWrite: 0,
+          input: 0,
+          output: 0,
+          total: 0,
+        },
+        input: 0,
+        output: 0,
+        totalTokens: 0,
+      },
+    };
+  }
+
+  return {
+    content: message.text,
+    role: "user",
+    timestamp: new Date(message.createdAt).getTime(),
+  };
 }

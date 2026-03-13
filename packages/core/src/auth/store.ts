@@ -7,7 +7,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { syncAuthBridge } from "./bridge.ts";
+import { resolveAuthBridgePath, syncAuthBridge } from "./bridge.ts";
 import { resolveAuthStoreLocation } from "./paths.ts";
 import type {
   ApiKeyProfile,
@@ -36,6 +36,8 @@ export function resolveAuthStorePath(
 export async function loadAuthStore(
   storePath = resolveAuthStorePath(),
 ): Promise<AuthStore> {
+  assertDistinctAuthPaths(storePath);
+
   try {
     const rawContent = await readFile(storePath, "utf8");
     return normalizeAuthStore(JSON.parse(rawContent) as unknown);
@@ -58,6 +60,8 @@ export async function saveAuthStore(
   store: AuthStore,
   storePath = resolveAuthStorePath(),
 ): Promise<void> {
+  assertDistinctAuthPaths(storePath);
+
   const directory = dirname(storePath);
   const temporaryPath = join(
     directory,
@@ -75,6 +79,14 @@ export async function saveAuthStore(
   } catch (error) {
     await rm(temporaryPath, { force: true });
     throw error;
+  }
+}
+
+function assertDistinctAuthPaths(storePath: string): void {
+  if (resolveAuthBridgePath(storePath) === storePath) {
+    throw new Error(
+      `Auth store path ${storePath} conflicts with the runtime auth bridge. Use auth-profiles.json for the store path instead of auth.json.`,
+    );
   }
 }
 

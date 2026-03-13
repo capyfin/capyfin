@@ -12,10 +12,12 @@
     "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.node.json --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.118",
     "@capyfin/contracts": "workspace:*",
     "@fontsource-variable/geist": "^5.2.8",
     "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/plugin-opener": "2.5.3",
+    "ai": "^6.0.116",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.577.0",

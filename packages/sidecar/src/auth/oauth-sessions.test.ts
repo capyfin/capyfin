@@ -52,6 +52,11 @@ void test("oauth sessions expose link and prompt steps before completion", async
   const promptSession = manager.get(session.id);
   assert.ok(promptSession);
   assert.equal(promptSession.step.type, "prompt");
+  assert.equal(promptSession.authUrl, "https://example.com/login");
+  assert.equal(
+    promptSession.authInstructions,
+    "Approve the login in your browser.",
+  );
 
   manager.respond(session.id, "123456");
 
@@ -62,5 +67,6 @@ void test("oauth sessions expose link and prompt steps before completion", async
   const completedSession = manager.get(session.id);
   assert.ok(completedSession);
   assert.equal(completedSession.state, "completed");
+  assert.equal(completedSession.authUrl, "https://example.com/login");
   assert.equal(completedSession.profile?.profileId, "anthropic:default");
 });

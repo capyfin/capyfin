@@ -132,7 +132,8 @@ export function ConnectionCenter({
     null;
   const selectedProviderStatus = selectedOption?.providerStatus;
   const oauthLinkUrl =
-    oauthSession?.step.type === "auth_link" ? oauthSession.step.url : null;
+    oauthSession?.authUrl ??
+    (oauthSession?.step.type === "auth_link" ? oauthSession.step.url : null);
   const canContinue = Boolean(authOverview?.selectedProviderId);
 
   useEffect(() => {
@@ -150,8 +151,8 @@ export function ConnectionCenter({
         }
 
         setOAuthSession(nextSession);
-        if (nextSession.step.type === "auth_link") {
-          void openSessionLink(nextSession.step.url, openedLinksRef.current);
+        if (nextSession.authUrl) {
+          void openSessionLink(nextSession.authUrl, openedLinksRef.current);
         }
 
         if (nextSession.state === "completed") {
@@ -243,7 +244,7 @@ export function ConnectionCenter({
 
     if (!client) {
       setErrorMessage(
-        "Provider actions are unavailable until the desktop sidecar is connected.",
+        "CapyFin is still preparing secure sign-in. Please try again in a moment.",
       );
       return;
     }
@@ -259,7 +260,9 @@ export function ConnectionCenter({
       });
       setOAuthSession(session);
 
-      if (session.step.type === "auth_link") {
+      if (session.authUrl) {
+        await openSessionLink(session.authUrl, openedLinksRef.current);
+      } else if (session.step.type === "auth_link") {
         await openSessionLink(session.step.url, openedLinksRef.current);
       }
     } catch (error) {
@@ -694,7 +697,7 @@ function OAuthCard({
 
       {!isReady ? (
         <p className="text-sm text-muted-foreground">
-          Finish connecting the desktop sidecar before starting sign-in.
+          CapyFin is preparing secure sign-in.
         </p>
       ) : null}
 
@@ -818,10 +821,10 @@ function resolveRuntimeMessage(runtimeError: string | null): string | null {
   }
 
   if (!isTauriRuntime()) {
-    return "The provider sidecar only starts inside the desktop shell. Run `pnpm desktop:dev` instead of opening the Vite page directly.";
+    return "CapyFin needs to finish opening before sign-in is available.";
   }
 
-  return runtimeError;
+  return "CapyFin couldn't finish setup yet. Retrying in a moment usually fixes it.";
 }
 
 function isTauriRuntime(): boolean {

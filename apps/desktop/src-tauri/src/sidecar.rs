@@ -183,7 +183,7 @@ fn build_sidecar_command(app: &AppHandle) -> Result<Command, String> {
     if cfg!(debug_assertions) {
         let sidecar_dir = workspace_root().join("packages/sidecar");
         let mut command = Command::new("pnpm");
-        command.arg("--dir").arg(sidecar_dir).arg("dev").arg("--");
+        command.arg("--dir").arg(sidecar_dir).arg("dev");
         return Ok(command);
     }
 

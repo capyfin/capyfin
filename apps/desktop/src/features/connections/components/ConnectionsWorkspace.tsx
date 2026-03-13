@@ -57,9 +57,13 @@ export function ConnectionsWorkspace({
       (authOverview?.providers ?? [])
         .flatMap((providerStatus) =>
           providerStatus.profiles.map((profile) => ({
+            modelLabel: resolveActiveModelLabel(providerStatus.provider.id),
             profile,
             providerId: providerStatus.provider.id,
-            providerName: providerStatus.provider.name,
+            providerName: resolveConnectionProviderName(
+              providerStatus.provider.id,
+              providerStatus.provider.name,
+            ),
             providerStatus,
           })),
         )
@@ -562,7 +566,7 @@ export function ConnectionsWorkspace({
                 <TableRow>
                   <TableHead>Provider</TableHead>
                   <TableHead>Connection</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Model</TableHead>
                   <TableHead>Updated</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -593,6 +597,7 @@ function ConnectionRow({
   onSelectDefault,
 }: {
   connection: {
+    modelLabel: string;
     profile: StoredProfileSummary;
     providerId: string;
     providerName: string;
@@ -612,7 +617,7 @@ function ConnectionRow({
           {isDefault ? <Badge variant="secondary">Default</Badge> : null}
         </div>
       </TableCell>
-      <TableCell>{formatCredentialType(connection.profile.type)}</TableCell>
+      <TableCell>{connection.modelLabel}</TableCell>
       <TableCell>{formatDate(connection.profile.updatedAt)}</TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
@@ -835,19 +840,6 @@ function MessageBanner({
   );
 }
 
-function formatCredentialType(type: StoredProfileSummary["type"]): string {
-  switch (type) {
-    case "api_key":
-      return "API key";
-    case "token":
-      return "Token";
-    case "oauth":
-      return "Sign-in";
-    default:
-      return type;
-  }
-}
-
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
@@ -896,4 +888,34 @@ async function openSessionLink(
 
   openedLinks.add(url);
   await openExternalUrl(url);
+}
+
+function resolveConnectionProviderName(
+  providerId: string,
+  fallbackName: string,
+): string {
+  if (providerId === "openai-codex") {
+    return "ChatGPT (Codex)";
+  }
+
+  return fallbackName;
+}
+
+function resolveActiveModelLabel(providerId: string): string {
+  switch (providerId) {
+    case "anthropic":
+      return "claude-sonnet-4-5";
+    case "google":
+    case "google-antigravity":
+    case "google-gemini-cli":
+    case "google-vertex":
+      return "gemini-2.5-pro";
+    case "openai":
+    case "openai-codex":
+    case "azure-openai-responses":
+    case "github-copilot":
+      return "gpt-5";
+    default:
+      return "provider default";
+  }
 }

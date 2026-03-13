@@ -1,6 +1,9 @@
 import {
+  agentCatalogSchema,
+  agentSchema,
   authOverviewSchema,
   connectProviderSecretRequestSchema,
+  createAgentRequestSchema,
   createBasicAuthHeader,
   oauthSessionSchema,
   selectProviderRequestSchema,
@@ -10,6 +13,8 @@ import {
   startOAuthSessionRequestSchema,
   submitOAuthSessionPromptRequestSchema,
   type AuthOverview,
+  type Agent,
+  type AgentCatalog,
   type OAuthSession,
   type ProviderStatus,
   type SidecarBootstrap,
@@ -52,6 +57,28 @@ export class SidecarClient {
 
   async authOverview(): Promise<AuthOverview> {
     return authOverviewSchema.parse(await this.request("/auth/overview"));
+  }
+
+  async agents(): Promise<AgentCatalog> {
+    return agentCatalogSchema.parse(await this.request("/agents"));
+  }
+
+  async createAgent(payload: {
+    id?: string;
+    name: string;
+    description?: string;
+    instructions?: string;
+    providerId?: string;
+    modelId?: string;
+    workspaceDir?: string;
+    setAsDefault?: boolean;
+  }): Promise<Agent> {
+    return agentSchema.parse(
+      await this.request("/agents", {
+        body: JSON.stringify(createAgentRequestSchema.parse(payload)),
+        method: "POST",
+      }),
+    );
   }
 
   async connectProviderSecret(payload: {

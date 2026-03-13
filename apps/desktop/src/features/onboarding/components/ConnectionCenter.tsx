@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import {
+  ArrowLeftIcon,
   ArrowRightIcon,
   BadgeCheckIcon,
   ExternalLinkIcon,
@@ -44,9 +45,9 @@ interface ConnectionCenterProps {
   runtimeError: string | null;
 }
 
-const providerLogos: Partial<
-  Record<string, { color: string; svg: string }>
-> = {
+type SetupStep = "providers" | "configure";
+
+const providerLogos: Partial<Record<string, { color: string; svg: string }>> = {
   anthropic: { svg: anthropicLogo, color: "#191919" },
   google: { svg: googleGeminiLogo, color: "#4285F4" },
   "github-copilot": { svg: githubCopilotLogo, color: "#171515" },
@@ -66,6 +67,7 @@ export function ConnectionCenter({
   runtimeError,
 }: ConnectionCenterProps) {
   const providerFamilies = buildProviderFamilies(authOverview);
+  const [step, setStep] = useState<SetupStep>("providers");
   const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
   const [selectedOptionKey, setSelectedOptionKey] = useState<string | null>(null);
   const [profileLabel, setProfileLabel] = useState("default");
@@ -291,84 +293,107 @@ export function ConnectionCenter({
     }
   }
 
+  const runtimeMessage = resolveRuntimeMessage(runtimeError);
+
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,_rgba(249,248,243,1)_0%,_rgba(243,241,234,1)_100%)]">
-      <div className="mx-auto max-w-6xl px-6 py-10 lg:px-8 lg:py-12">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="min-h-screen bg-[linear-gradient(180deg,_rgba(248,246,240,1)_0%,_rgba(241,238,230,1)_100%)]">
+      <div className="mx-auto max-w-5xl px-6 py-10 lg:px-8 lg:py-12">
+        <div className="flex items-start justify-between gap-4">
           <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700">
+            <p className="text-sm font-semibold uppercase tracking-[0.34em] text-emerald-700">
               CapyFin
             </p>
             <div className="space-y-2">
               <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-                Connect a provider
+                {step === "providers" ? "Choose a provider" : selectedFamily?.title}
               </h1>
               <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-                Pick a provider first. After you choose one, its configuration
-                options appear below.
+                {step === "providers"
+                  ? "Pick one provider to get started. The next screen handles the exact connection method."
+                  : selectedFamily?.description}
               </p>
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            className="rounded-full"
-            disabled={isLoading}
-            onClick={onRetry}
-          >
-            {isLoading ? (
-              <LoaderCircleIcon className="size-4 animate-spin" />
-            ) : (
-              <RefreshCcwIcon className="size-4" />
-            )}
-            Retry
-          </Button>
+          <div className="flex items-center gap-2">
+            {step === "configure" ? (
+              <Button
+                variant="outline"
+                className="rounded-full"
+                onClick={() => {
+                  startTransition(() => {
+                    setStep("providers");
+                    setErrorMessage(null);
+                    setFeedback(null);
+                    setOAuthSession(null);
+                  });
+                }}
+              >
+                <ArrowLeftIcon className="size-4" />
+                Back
+              </Button>
+            ) : null}
+            <Button
+              variant="outline"
+              className="rounded-full"
+              disabled={isLoading}
+              onClick={onRetry}
+            >
+              {isLoading ? (
+                <LoaderCircleIcon className="size-4 animate-spin" />
+              ) : (
+                <RefreshCcwIcon className="size-4" />
+              )}
+              Retry
+            </Button>
+          </div>
         </div>
 
-        {runtimeError ? (
-          <div className="mt-6 rounded-3xl border border-amber-500/25 bg-amber-500/8 px-5 py-4 text-sm text-amber-800">
-            {runtimeError}
+        {runtimeMessage ? (
+          <div className="mt-6 rounded-3xl border border-amber-500/25 bg-amber-500/8 px-5 py-4 text-sm text-amber-900">
+            {runtimeMessage}
           </div>
         ) : null}
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {isLoading && providerFamilies.length === 0
-            ? Array.from({ length: 9 }, (_, index) => (
-                <Card
-                  key={String(index)}
-                  className="min-h-48 animate-pulse rounded-3xl border-border/60 bg-card/75"
-                />
-              ))
-            : providerFamilies.map((family) => (
-                <button
-                  key={family.id}
-                  type="button"
-                  className="text-left"
-                  onClick={() => {
-                    setSelectedFamilyId(family.id);
-                    setSelectedOptionKey(family.options[0]?.key ?? null);
-                    setOAuthSession(null);
-                    setErrorMessage(null);
-                    setFeedback(null);
-                  }}
-                >
-                  <ProviderCard
-                    family={family}
-                    isSelected={family.id === selectedFamily?.id}
+        {step === "providers" ? (
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {isLoading && providerFamilies.length === 0
+              ? Array.from({ length: 9 }, (_, index) => (
+                  <Card
+                    key={String(index)}
+                    className="min-h-48 animate-pulse rounded-[1.75rem] border-border/60 bg-card/75"
                   />
-                </button>
-              ))}
-        </div>
-
-        {selectedFamily && selectedOption ? (
-          <Card className="mt-8 rounded-[2rem] border-border/70 bg-card/95 shadow-sm">
-            <CardHeader className="gap-5 border-b border-border/70 pb-5">
+                ))
+              : providerFamilies.map((family) => (
+                  <button
+                    key={family.id}
+                    type="button"
+                    className="text-left"
+                    onClick={() => {
+                      startTransition(() => {
+                        setSelectedFamilyId(family.id);
+                        setSelectedOptionKey(family.options[0]?.key ?? null);
+                        setOAuthSession(null);
+                        setErrorMessage(null);
+                        setFeedback(null);
+                        setStep("configure");
+                      });
+                    }}
+                  >
+                    <ProviderCard family={family} />
+                  </button>
+                ))}
+          </div>
+        ) : selectedFamily && selectedOption ? (
+          <Card className="mt-10 rounded-[2rem] border-border/70 bg-card/96 shadow-sm">
+            <CardHeader className="gap-6 border-b border-border/70 pb-6">
               <div className="flex items-start gap-4">
                 <ProviderLogo family={selectedFamily} size="lg" />
                 <div className="space-y-2">
                   <CardTitle className="text-3xl">{selectedFamily.title}</CardTitle>
-                  <CardDescription className="max-w-3xl text-sm leading-6">
-                    {selectedFamily.description}
+                  <CardDescription className="max-w-2xl text-sm leading-6">
+                    Select how you want to connect. You can go back and choose a
+                    different provider at any time.
                   </CardDescription>
                 </div>
               </div>
@@ -501,7 +526,7 @@ export function ConnectionCenter({
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4">
                 <p className="text-sm text-muted-foreground">
-                  You can change or add more providers later.
+                  Continue once one provider is connected and selected.
                 </p>
                 <Button
                   className="rounded-full"
@@ -520,40 +545,15 @@ export function ConnectionCenter({
   );
 }
 
-function ProviderCard({
-  family,
-  isSelected,
-}: {
-  family: ProviderFamily;
-  isSelected: boolean;
-}) {
+function ProviderCard({ family }: { family: ProviderFamily }) {
   return (
-    <Card
-      className={cn(
-        "h-full rounded-[1.75rem] border-border/70 bg-card/92 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg",
-        isSelected ? "border-primary/55 shadow-lg shadow-primary/10" : "",
-      )}
-    >
+    <Card className="h-full rounded-[1.75rem] border-border/70 bg-card/94 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg">
       <CardHeader className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <ProviderLogo family={family} size="sm" />
-            <div>
-              <CardTitle className="text-xl">{family.title}</CardTitle>
-            </div>
+        <div className="flex items-center gap-3">
+          <ProviderLogo family={family} size="sm" />
+          <div className="min-w-0">
+            <CardTitle className="text-2xl">{family.title}</CardTitle>
           </div>
-          {family.isSelected ? (
-            <Badge className="rounded-full bg-emerald-600/90 text-white">
-              Selected
-            </Badge>
-          ) : family.isConnected ? (
-            <Badge
-              variant="secondary"
-              className="rounded-full bg-emerald-500/10 text-emerald-700"
-            >
-              Connected
-            </Badge>
-          ) : null}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -589,7 +589,7 @@ function ProviderLogo({
     return (
       <span
         className={cn(
-          "flex shrink-0 items-center justify-center bg-foreground text-background font-semibold uppercase",
+          "flex shrink-0 items-center justify-center bg-foreground font-semibold uppercase text-background",
           sizeClasses,
         )}
       >
@@ -840,6 +840,22 @@ function renderFallbackInitials(title: string): string {
     .map((part) => part.charAt(0))
     .join("")
     .toUpperCase();
+}
+
+function resolveRuntimeMessage(runtimeError: string | null): string | null {
+  if (!runtimeError) {
+    return null;
+  }
+
+  if (!isTauriRuntime()) {
+    return "The provider sidecar only starts inside the desktop shell. Run `pnpm desktop:dev` instead of opening the Vite page directly.";
+  }
+
+  return runtimeError;
+}
+
+function isTauriRuntime(): boolean {
+  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 }
 
 function renderOAuthSessionMessage(session: OAuthSession): string {

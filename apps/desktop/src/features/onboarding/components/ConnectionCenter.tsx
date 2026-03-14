@@ -7,6 +7,7 @@ import {
   KeyRoundIcon,
   LoaderCircleIcon,
   RefreshCcwIcon,
+  Wallet2Icon,
 } from "lucide-react";
 import anthropicLogo from "simple-icons/icons/anthropic.svg?raw";
 import githubCopilotLogo from "simple-icons/icons/githubcopilot.svg?raw";
@@ -336,18 +337,23 @@ export function ConnectionCenter({
   const runtimeMessage = resolveRuntimeMessage(runtimeError);
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,_rgba(248,246,240,1)_0%,_rgba(241,238,230,1)_100%)]">
-      <div className="mx-auto max-w-5xl px-6 py-10 lg:px-8 lg:py-12">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-5xl px-6 py-10 lg:px-8 lg:py-14">
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.34em] text-emerald-700">
-              CapyFin
-            </p>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm shadow-primary/15">
+                <Wallet2Icon className="size-3.5" />
+              </div>
+              <span className="text-sm font-semibold tracking-tight text-foreground">
+                CapyFin
+              </span>
+            </div>
             <div className="space-y-2">
-              <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                 {step === "providers" ? "Choose a provider" : selectedFamily?.title}
               </h1>
-              <p className="max-w-2xl text-base leading-7 text-muted-foreground">
+              <p className="max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
                 {step === "providers"
                   ? "Pick one provider to get started. The next screen handles the exact connection method."
                   : selectedFamily?.description}
@@ -360,6 +366,7 @@ export function ConnectionCenter({
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 className="rounded-full"
                 onClick={() => {
                   startTransition(() => {
@@ -370,21 +377,22 @@ export function ConnectionCenter({
                   });
                 }}
               >
-                <ArrowLeftIcon className="size-4" />
+                <ArrowLeftIcon className="size-3.5" />
                 Back
               </Button>
             ) : null}
             <Button
               type="button"
               variant="outline"
+              size="sm"
               className="rounded-full"
               disabled={isLoading}
               onClick={onRetry}
             >
               {isLoading ? (
-                <LoaderCircleIcon className="size-4 animate-spin" />
+                <LoaderCircleIcon className="size-3.5 animate-spin" />
               ) : (
-                <RefreshCcwIcon className="size-4" />
+                <RefreshCcwIcon className="size-3.5" />
               )}
               Retry
             </Button>
@@ -392,18 +400,18 @@ export function ConnectionCenter({
         </div>
 
         {runtimeMessage ? (
-          <div className="mt-6 rounded-3xl border border-amber-500/25 bg-amber-500/8 px-5 py-4 text-sm text-amber-900">
+          <div className="mt-6 rounded-2xl border border-warning/30 bg-warning/10 px-5 py-4 text-sm text-warning-foreground">
             {runtimeMessage}
           </div>
         ) : null}
 
         {step === "providers" ? (
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {isLoading && providerFamilies.length === 0
               ? Array.from({ length: 9 }, (_, index) => (
                   <div
                     key={String(index)}
-                    className="min-h-44 animate-pulse rounded-[1.75rem] border border-border/60 bg-card/75"
+                    className="min-h-44 animate-pulse rounded-2xl border border-border bg-card"
                   />
                 ))
               : providerFamilies.map((family) => (
@@ -434,14 +442,14 @@ export function ConnectionCenter({
           </div>
         ) : selectedFamily && selectedOption ? (
           <section className="mt-10">
-            <div className="mx-auto max-w-3xl rounded-[2rem] border border-border/70 bg-card/96 px-6 py-6 shadow-sm sm:px-8 sm:py-8">
+            <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card px-6 py-6 shadow-sm sm:px-8 sm:py-8">
               <div className="flex items-start gap-4">
                 <ProviderLogo family={selectedFamily} size="lg" />
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-semibold tracking-tight text-foreground">
+                <div className="space-y-1.5">
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                     {selectedFamily.title}
                   </h2>
-                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                  <p className="max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
                     {selectedFamily.id === "openai"
                       ? "Sign in with Codex by default, or switch to a direct API key if you prefer."
                       : "Choose the connection method you want to use."}
@@ -464,10 +472,10 @@ export function ConnectionCenter({
                         setPromptValue("");
                       }}
                       className={cn(
-                        "rounded-full px-4 py-2 text-sm transition-colors",
+                        "rounded-full px-4 py-2 text-sm transition-all duration-200",
                         option.key === selectedOption.key
-                          ? "bg-foreground text-background"
-                          : "bg-background text-muted-foreground ring-1 ring-border/80 hover:text-foreground",
+                          ? "bg-foreground text-background shadow-sm"
+                          : "bg-muted/50 text-muted-foreground ring-1 ring-border hover:text-foreground",
                       )}
                     >
                       {option.label}
@@ -481,10 +489,10 @@ export function ConnectionCenter({
                   selectedOption.mode === "token") && (
                   <div className="space-y-5">
                     <div className="space-y-1">
-                      <h3 className="text-lg font-medium text-foreground">
+                      <h3 className="text-base font-medium text-foreground">
                         {selectedOption.mode === "token" ? "Enter your token" : "Enter your API key"}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-[13px] text-muted-foreground">
                         {selectedOption.description}
                       </p>
                     </div>
@@ -557,7 +565,7 @@ export function ConnectionCenter({
                 )}
 
                 {selectedProviderStatus?.resolved ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[13px] text-muted-foreground">
                     Active connection:{" "}
                     <span className="font-medium text-foreground">
                       {selectedProviderStatus.resolved.description}
@@ -568,12 +576,12 @@ export function ConnectionCenter({
                 {feedback ? <MessageBox tone="success">{feedback}</MessageBox> : null}
                 {errorMessage ? <MessageBox tone="error">{errorMessage}</MessageBox> : null}
 
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-5">
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
+                  <p className="text-[13px] text-muted-foreground">
                     Continue after the provider is connected.
                   </p>
                   <Button
-                    className="rounded-full"
+                    className="rounded-full shadow-sm shadow-primary/15"
                     disabled={!canContinue}
                     onClick={onContinue}
                   >
@@ -592,19 +600,19 @@ export function ConnectionCenter({
 
 function ProviderCard({ family }: { family: ProviderFamily }) {
   return (
-    <div className="h-full rounded-[1.75rem] border border-border/70 bg-card/94 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg">
+    <div className="group h-full rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md">
       <div className="flex items-center gap-3">
         <ProviderLogo family={family} size="sm" />
         <div className="min-w-0">
-          <p className="text-2xl font-semibold text-foreground">{family.title}</p>
+          <p className="text-lg font-semibold tracking-tight text-foreground">{family.title}</p>
         </div>
       </div>
-      <p className="mt-4 text-sm leading-7 text-muted-foreground">{family.description}</p>
-      <div className="mt-6 flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{family.description}</p>
+      <div className="mt-5 flex items-center justify-between">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/60">
           {family.options[0]?.label ?? "Connect"}
         </p>
-        <ArrowRightIcon className="size-4 text-muted-foreground" />
+        <ArrowRightIcon className="size-3.5 text-muted-foreground/40 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-primary" />
       </div>
     </div>
   );
@@ -619,7 +627,7 @@ function ProviderLogo({
 }) {
   const logo = providerLogos[family.id];
   const sizeClasses =
-    size === "lg" ? "size-14 rounded-2xl text-[18px]" : "size-11 rounded-xl text-sm";
+    size === "lg" ? "size-12 rounded-xl text-base" : "size-10 rounded-xl text-sm";
 
   if (!logo) {
     return (
@@ -637,7 +645,7 @@ function ProviderLogo({
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center border border-border/70 bg-background [&_svg]:size-[60%] [&_svg]:fill-current",
+        "flex shrink-0 items-center justify-center border border-border bg-card shadow-sm [&_svg]:size-[55%] [&_svg]:fill-current",
         sizeClasses,
       )}
       style={{ color: logo.color }}
@@ -666,9 +674,9 @@ function CredentialForm({
   secret: string;
 }) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <label className="block space-y-2">
-        <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
           {inputLabel}
         </span>
         <Input
@@ -683,7 +691,7 @@ function CredentialForm({
 
       <Button
         type="button"
-        className="w-full justify-between rounded-full"
+        className="w-full justify-between rounded-full shadow-sm shadow-primary/15"
         disabled={disabled}
         onClick={onSubmit}
       >
@@ -732,9 +740,9 @@ function OAuthCard({
 
   return (
     <div className="space-y-5">
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium text-foreground">{optionLabel}</h3>
-        <p className="text-sm leading-6 text-muted-foreground">
+      <div className="space-y-1.5">
+        <h3 className="text-base font-medium text-foreground">{optionLabel}</h3>
+        <p className="text-[13px] leading-relaxed text-muted-foreground">
           {isGitHubEnterprise
             ? "Enter your GitHub Enterprise domain and continue directly into browser sign-in."
             : `Sign in with your ${providerTitle} account in the browser.`}
@@ -743,7 +751,7 @@ function OAuthCard({
 
       {isGitHubEnterprise ? (
         <label className="block space-y-2">
-          <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
             GitHub Enterprise domain
           </span>
           <Input
@@ -758,7 +766,7 @@ function OAuthCard({
 
       <Button
         type="button"
-        className="w-full justify-between rounded-full sm:w-auto sm:min-w-64"
+        className="w-full justify-between rounded-full shadow-sm shadow-primary/15 sm:w-auto sm:min-w-64"
         disabled={!isReady || isBusy || (isGitHubEnterprise && promptValue.trim().length === 0)}
         onClick={onStart}
       >
@@ -771,13 +779,13 @@ function OAuthCard({
       </Button>
 
       {!isReady ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-[13px] text-muted-foreground">
           CapyFin is preparing secure sign-in.
         </p>
       ) : null}
 
       {statusMessage ? (
-        <p className="text-sm text-muted-foreground">{statusMessage}</p>
+        <p className="text-[13px] text-muted-foreground">{statusMessage}</p>
       ) : null}
 
       {oauthLinkUrl ? (
@@ -803,7 +811,7 @@ function OAuthCard({
           />
           <Button
             type="button"
-            className="w-full justify-between rounded-full sm:w-auto sm:min-w-64"
+            className="w-full justify-between rounded-full shadow-sm shadow-primary/15 sm:w-auto sm:min-w-64"
             disabled={
               isBusy ||
               (!promptStep.allowEmpty && promptValue.trim().length === 0)
@@ -840,8 +848,8 @@ function EnvironmentCard({
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <h3 className="text-lg font-medium text-foreground">{label}</h3>
-        <p className="text-sm leading-6 text-muted-foreground">
+        <h3 className="text-base font-medium text-foreground">{label}</h3>
+        <p className="text-[13px] leading-relaxed text-muted-foreground">
           Use credentials that are already available on this machine.
         </p>
       </div>
@@ -872,10 +880,10 @@ function MessageBox({
 }) {
   const toneClasses =
     tone === "success"
-      ? "border-emerald-500/20 bg-emerald-500/8 text-emerald-700"
-      : "border-destructive/20 bg-destructive/8 text-destructive";
+      ? "border-success/30 bg-success/10 text-success"
+      : "border-destructive/30 bg-destructive/10 text-destructive";
 
-  return <p className={cn("rounded-3xl px-4 py-3 text-sm", toneClasses)}>{children}</p>;
+  return <p className={cn("rounded-2xl px-4 py-3 text-sm", toneClasses)}>{children}</p>;
 }
 
 

@@ -27,11 +27,7 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ activeView, authOverview }: AppSidebarProps) {
-  const connectedProviderCount =
-    authOverview?.providers.filter(
-      (provider) =>
-        provider.profiles.length > 0 || provider.environment.available,
-    ).length ?? 0;
+  const connectedProviderCount = authOverview?.connections.length ?? 0;
 
   return (
     <Sidebar collapsible="icon" variant="inset">

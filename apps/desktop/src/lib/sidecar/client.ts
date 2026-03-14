@@ -1,29 +1,28 @@
 import {
   agentCatalogSchema,
   agentSchema,
+  authSessionSchema,
   authOverviewSchema,
   chatBootstrapSchema,
   connectProviderSecretRequestSchema,
   createAgentRequestSchema,
   createBasicAuthHeader,
-  oauthSessionSchema,
-  selectProviderRequestSchema,
+  respondAuthSessionRequestSchema,
+  savedConnectionSchema,
+  selectConnectionRequestSchema,
   sidecarBootstrapSchema,
   sidecarConnectionSchema,
   sidecarHealthSchema,
-  startOAuthSessionRequestSchema,
-  submitOAuthSessionPromptRequestSchema,
+  startAuthSessionRequestSchema,
   type AuthOverview,
   type Agent,
   type AgentCatalog,
+  type AuthSession,
   type ChatBootstrap,
-  type OAuthSession,
-  type ProviderStatus,
+  type SavedConnection,
   type SidecarBootstrap,
   type SidecarConnection,
   type SidecarHealth,
-  providerStatusSchema,
-  storedProfileSummarySchema,
 } from "@capyfin/contracts";
 
 export class SidecarClient {
@@ -89,23 +88,21 @@ export class SidecarClient {
   }
 
   async connectProviderSecret(payload: {
-    label?: string;
-    providerId: string;
+    authChoice: string;
     secret: string;
-  }): Promise<void> {
-    connectProviderSecretRequestSchema.parse(payload);
-    storedProfileSummarySchema.parse(
+  }): Promise<SavedConnection> {
+    return savedConnectionSchema.parse(
       await this.request("/auth/credentials", {
-        body: JSON.stringify(payload),
+        body: JSON.stringify(connectProviderSecretRequestSchema.parse(payload)),
         method: "POST",
       }),
     );
   }
 
-  async selectProvider(selector: string): Promise<ProviderStatus> {
-    return providerStatusSchema.parse(
+  async selectConnection(profileId: string): Promise<SavedConnection> {
+    return savedConnectionSchema.parse(
       await this.request("/auth/select", {
-        body: JSON.stringify(selectProviderRequestSchema.parse({ selector })),
+        body: JSON.stringify(selectConnectionRequestSchema.parse({ profileId })),
         method: "POST",
       }),
     );
@@ -117,32 +114,31 @@ export class SidecarClient {
     });
   }
 
-  async startOAuthSession(payload: {
-    label?: string;
-    providerId: string;
-  }): Promise<OAuthSession> {
-    return oauthSessionSchema.parse(
-      await this.request("/auth/oauth/start", {
-        body: JSON.stringify(startOAuthSessionRequestSchema.parse(payload)),
+  async startAuthSession(payload: {
+    authChoice: string;
+  }): Promise<AuthSession> {
+    return authSessionSchema.parse(
+      await this.request("/auth/sessions", {
+        body: JSON.stringify(startAuthSessionRequestSchema.parse(payload)),
         method: "POST",
       }),
     );
   }
 
-  async getOAuthSession(sessionId: string): Promise<OAuthSession> {
-    return oauthSessionSchema.parse(
-      await this.request(`/auth/oauth/sessions/${sessionId}`),
+  async getAuthSession(sessionId: string): Promise<AuthSession> {
+    return authSessionSchema.parse(
+      await this.request(`/auth/sessions/${sessionId}`),
     );
   }
 
-  async submitOAuthSessionPrompt(
+  async respondToAuthSession(
     sessionId: string,
-    value: string,
-  ): Promise<OAuthSession> {
-    return oauthSessionSchema.parse(
-      await this.request(`/auth/oauth/sessions/${sessionId}/respond`, {
+    value: boolean | string | string[],
+  ): Promise<AuthSession> {
+    return authSessionSchema.parse(
+      await this.request(`/auth/sessions/${sessionId}/respond`, {
         body: JSON.stringify(
-          submitOAuthSessionPromptRequestSchema.parse({ value }),
+          respondAuthSessionRequestSchema.parse({ value }),
         ),
         method: "POST",
       }),

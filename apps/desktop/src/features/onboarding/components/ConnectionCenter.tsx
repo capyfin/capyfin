@@ -1,13 +1,11 @@
-import { startTransition, useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  BadgeCheckIcon,
+  CheckIcon,
   ExternalLinkIcon,
-  KeyRoundIcon,
   LoaderCircleIcon,
   RefreshCcwIcon,
-  Wallet2Icon,
 } from "lucide-react";
 import anthropicLogo from "simple-icons/icons/anthropic.svg?raw";
 import githubCopilotLogo from "simple-icons/icons/githubcopilot.svg?raw";
@@ -16,25 +14,16 @@ import huggingFaceLogo from "simple-icons/icons/huggingface.svg?raw";
 import mistralLogo from "simple-icons/icons/mistralai.svg?raw";
 import openRouterLogo from "simple-icons/icons/openrouter.svg?raw";
 import vercelLogo from "simple-icons/icons/vercel.svg?raw";
+import type {
+  AuthOverview,
+  AuthSession,
+  ProviderDefinition,
+} from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { openExternalUrl } from "@/lib/platform/open-external-url";
-import type { AuthOverview, OAuthSession } from "@/app/types";
 import { SidecarClient } from "@/lib/sidecar/client";
-import {
-  buildProviderFamilies,
-  type ConnectionMode,
-  type OAuthExperience,
-  type ProviderFamily,
-} from "../provider-families";
-import {
-  getOAuthAutomationResponse,
-  isGitHubEnterprisePrompt,
-  shouldAutoSubmitOAuthPrompt,
-  type PendingOAuthAutomation,
-} from "../oauth-flow";
-import { resolvePreferredOptionKey } from "../selection";
 
 interface ConnectionCenterProps {
   authOverview: AuthOverview | null;
@@ -47,14 +36,15 @@ interface ConnectionCenterProps {
 }
 
 type SetupStep = "providers" | "configure";
+
 const providerLogos: Partial<Record<string, { color: string; svg: string }>> = {
-  anthropic: { svg: anthropicLogo, color: "#191919" },
-  google: { svg: googleGeminiLogo, color: "#4285F4" },
-  "github-copilot": { svg: githubCopilotLogo, color: "#171515" },
-  huggingface: { svg: huggingFaceLogo, color: "#FFD21E" },
-  mistral: { svg: mistralLogo, color: "#FF7000" },
-  openrouter: { svg: openRouterLogo, color: "#111111" },
-  "vercel-ai-gateway": { svg: vercelLogo, color: "#111111" },
+  anthropic: { color: "#191919", svg: anthropicLogo },
+  copilot: { color: "#171515", svg: githubCopilotLogo },
+  google: { color: "#4285F4", svg: googleGeminiLogo },
+  huggingface: { color: "#FFD21E", svg: huggingFaceLogo },
+  mistral: { color: "#FF7000", svg: mistralLogo },
+  openrouter: { color: "#111111", svg: openRouterLogo },
+  "ai-gateway": { color: "#111111", svg: vercelLogo },
 };
 
 export function ConnectionCenter({
@@ -66,82 +56,67 @@ export function ConnectionCenter({
   onRetry,
   runtimeError,
 }: ConnectionCenterProps) {
-  const providerFamilies = buildProviderFamilies(authOverview);
+  const providers = useMemo(() => authOverview?.providers ?? [], [authOverview?.providers]);
   const [step, setStep] = useState<SetupStep>("providers");
-  const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
-  const [selectedOptionKey, setSelectedOptionKey] = useState<string | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
+  const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null);
   const [secret, setSecret] = useState("");
-  const [oauthSession, setOAuthSession] = useState<OAuthSession | null>(null);
-  const [pendingOAuthAutomation, setPendingOAuthAutomation] =
-    useState<PendingOAuthAutomation | null>(null);
-  const [promptValue, setPromptValue] = useState("");
+  const [sessionInputValue, setSessionInputValue] = useState("");
+  const [sessionSelections, setSessionSelections] = useState<string[]>([]);
+  const [authSession, setAuthSession] = useState<AuthSession | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
-  const openedLinksRef = useRef<Set<string>>(new Set());
+  const openedAuthLinkRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (providerFamilies.length === 0) {
-      setSelectedFamilyId(null);
-      setSelectedOptionKey(null);
-      return;
-    }
-
-    const preferredProviderId = authOverview?.selectedProviderId;
-    const preferredFamily = preferredProviderId
-      ? providerFamilies.find((family) =>
-          family.options.some((option) => option.providerId === preferredProviderId),
-        )
-      : undefined;
-    const nextFamily = preferredFamily ?? providerFamilies[0];
-
-    if (!nextFamily) {
-      return;
-    }
-
-    if (
-      !selectedFamilyId ||
-      !providerFamilies.some((family) => family.id === selectedFamilyId)
-    ) {
-      setSelectedFamilyId(nextFamily.id);
-    }
-  }, [authOverview?.selectedProviderId, providerFamilies, selectedFamilyId, selectedOptionKey]);
-
-  const selectedFamily =
-    providerFamilies.find((family) => family.id === selectedFamilyId) ??
-    providerFamilies[0] ??
-    null;
-
-  useEffect(() => {
-    if (!selectedFamily) {
-      setSelectedOptionKey(null);
-      return;
-    }
-
-    if (
-      !selectedOptionKey ||
-      !selectedFamily.options.some((option) => option.key === selectedOptionKey)
-    ) {
-      setSelectedOptionKey(
-        resolvePreferredOptionKey(selectedFamily, authOverview) ??
-          selectedFamily.options[0]?.key ??
-          null,
-      );
-    }
-  }, [authOverview, selectedFamily, selectedOptionKey]);
-
-  const selectedOption =
-    selectedFamily?.options.find((option) => option.key === selectedOptionKey) ??
-    selectedFamily?.options[0] ??
-    null;
-  const selectedProviderStatus = selectedOption?.providerStatus;
-  const oauthLinkUrl =
-    oauthSession?.authUrl ??
-    (oauthSession?.step.type === "auth_link" ? oauthSession.step.url : null);
+  const connectedProviderIds = useMemo(
+    () => new Set((authOverview?.connections ?? []).map((connection) => connection.providerId)),
+    [authOverview],
+  );
   const canContinue = Boolean(authOverview?.selectedProviderId);
 
   useEffect(() => {
-    if (!client || oauthSession?.state !== "pending") {
+    if (providers.length === 0) {
+      setSelectedProviderId(null);
+      return;
+    }
+
+    const preferred =
+      providers.find((provider) =>
+        provider.methods.some((method) => method.providerId === authOverview?.selectedProviderId),
+      ) ?? providers[0];
+    if (!preferred) {
+      return;
+    }
+
+    setSelectedProviderId((current) =>
+      current && providers.some((provider) => provider.id === current) ? current : preferred.id,
+    );
+  }, [authOverview?.selectedProviderId, providers]);
+
+  const selectedProvider =
+    providers.find((provider) => provider.id === selectedProviderId) ?? providers[0] ?? null;
+
+  useEffect(() => {
+    if (!selectedProvider) {
+      setSelectedMethodId(null);
+      return;
+    }
+
+    setSelectedMethodId((current) =>
+      current && selectedProvider.methods.some((method) => method.id === current)
+        ? current
+        : selectedProvider.methods[0]?.id ?? null,
+    );
+  }, [selectedProvider]);
+
+  const selectedMethod =
+    selectedProvider?.methods.find((method) => method.id === selectedMethodId) ??
+    selectedProvider?.methods[0] ??
+    null;
+
+  useEffect(() => {
+    if (!client || authSession?.state !== "pending") {
       return;
     }
 
@@ -149,35 +124,34 @@ export function ConnectionCenter({
 
     const syncSession = async (): Promise<void> => {
       try {
-        let nextSession = await client.getOAuthSession(oauthSession.id);
+        const nextSession = await client.getAuthSession(authSession.id);
         if (cancelled) {
           return;
         }
+        setAuthSession(nextSession);
 
-        if (shouldAutoSubmitOAuthPrompt(nextSession, pendingOAuthAutomation)) {
-          nextSession = await client.submitOAuthSessionPrompt(
-            nextSession.id,
-            pendingOAuthAutomation.response,
-          );
-          setPendingOAuthAutomation(null);
-        }
-
-        setOAuthSession(nextSession);
-        if (nextSession.authUrl) {
-          void openSessionLink(nextSession.authUrl, openedLinksRef.current);
+        if (nextSession.step.type === "auth_link") {
+          const authLinkKey = `${nextSession.id}:${nextSession.step.url}`;
+          if (openedAuthLinkRef.current !== authLinkKey) {
+            openedAuthLinkRef.current = authLinkKey;
+            await openExternalUrl(nextSession.step.url);
+          }
         }
 
         if (nextSession.state === "completed") {
-          setFeedback(`Connected ${nextSession.providerName}.`);
-          setPromptValue("");
-          setPendingOAuthAutomation(null);
           const nextOverview = await client.authOverview();
           onAuthOverviewChange(nextOverview);
+          setFeedback(
+            nextSession.connection
+              ? `Connected ${nextSession.connection.providerName}.`
+              : `${nextSession.providerName} is ready.`,
+          );
+          setSessionInputValue("");
+          setSessionSelections([]);
         }
 
         if (nextSession.state === "error") {
-          setPendingOAuthAutomation(null);
-          setErrorMessage(nextSession.error ?? renderOAuthSessionMessage(nextSession));
+          setErrorMessage(nextSession.error ?? "Could not complete the connection.");
         }
       } catch (error) {
         if (!cancelled) {
@@ -189,25 +163,16 @@ export function ConnectionCenter({
     void syncSession();
     const timer = window.setInterval(() => {
       void syncSession();
-    }, 1_000);
+    }, 1000);
 
     return () => {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [client, oauthSession, onAuthOverviewChange, pendingOAuthAutomation]);
-
-  async function refreshOverview(): Promise<void> {
-    if (!client) {
-      return;
-    }
-
-    const nextOverview = await client.authOverview();
-    onAuthOverviewChange(nextOverview);
-  }
+  }, [authSession, client, onAuthOverviewChange]);
 
   async function handleSecretConnect(): Promise<void> {
-    if (!client || !selectedOption) {
+    if (!client || !selectedMethod) {
       return;
     }
 
@@ -216,94 +181,16 @@ export function ConnectionCenter({
     setIsBusy(true);
 
     try {
-      await client.connectProviderSecret({
-        label: "default",
-        providerId: selectedOption.providerId,
+      const connection = await client.connectProviderSecret({
+        authChoice: selectedMethod.id,
         secret: secret.trim(),
       });
-      await refreshOverview();
-      setSecret("");
-      setFeedback(`Connected ${selectedFamily?.title ?? "provider"}.`);
-    } catch (error) {
-      setErrorMessage(getErrorMessage(error));
-    } finally {
-      setIsBusy(false);
-    }
-  }
-
-  async function handleEnvironmentSelection(): Promise<void> {
-    if (!client || !selectedOption) {
-      return;
-    }
-
-    setErrorMessage(null);
-    setFeedback(null);
-    setIsBusy(true);
-
-    try {
-      await client.selectProvider(selectedOption.providerId);
-      await refreshOverview();
-      setFeedback(`Selected ${selectedFamily?.title ?? "provider"}.`);
-    } catch (error) {
-      setErrorMessage(getErrorMessage(error));
-    } finally {
-      setIsBusy(false);
-    }
-  }
-
-  async function handleOAuthStart(): Promise<void> {
-    if (!selectedOption) {
-      return;
-    }
-
-    if (!client) {
-      setErrorMessage(
-        "CapyFin is still preparing secure sign-in. Please try again in a moment.",
-      );
-      return;
-    }
-
-    setErrorMessage(null);
-    setFeedback(null);
-    setIsBusy(true);
-
-    try {
-      const automationResponse = getOAuthAutomationResponse(
-        selectedOption.oauthExperience,
-        promptValue,
-      );
-      let session = await client.startOAuthSession({
-        label: "default",
-        providerId: selectedOption.providerId,
+      const nextOverview = await client.authOverview();
+      startTransition(() => {
+        onAuthOverviewChange(nextOverview);
+        setSecret("");
       });
-
-      if (automationResponse !== null) {
-        setPendingOAuthAutomation({
-          response: automationResponse,
-          sessionId: session.id,
-        });
-      } else {
-        setPendingOAuthAutomation(null);
-      }
-
-      if (
-        automationResponse !== null &&
-        isGitHubEnterprisePrompt(session.step)
-      ) {
-        session = await client.submitOAuthSessionPrompt(
-          session.id,
-          automationResponse,
-        );
-        setPendingOAuthAutomation(null);
-      }
-
-      setOAuthSession(session);
-
-      if (session.authUrl) {
-        await openSessionLink(session.authUrl, openedLinksRef.current);
-      } else if (session.step.type === "auth_link") {
-        await openSessionLink(session.step.url, openedLinksRef.current);
-      }
+      setFeedback(`Connected ${connection.providerName}.`);
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
@@ -311,8 +198,34 @@ export function ConnectionCenter({
     }
   }
 
-  async function handleOAuthPromptSubmit(): Promise<void> {
-    if (!client || oauthSession?.step.type !== "prompt") {
+  async function handleStartAuthSession(): Promise<void> {
+    if (!client || !selectedMethod) {
+      return;
+    }
+
+    setErrorMessage(null);
+    setFeedback(null);
+    setIsBusy(true);
+
+    try {
+      const session = await client.startAuthSession({
+        authChoice: selectedMethod.id,
+      });
+      openedAuthLinkRef.current = null;
+      setSessionInputValue("");
+      setSessionSelections([]);
+      setAuthSession(session);
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function handleRespondToSession(
+    valueOverride?: boolean | string | string[],
+  ): Promise<void> {
+    if (!client || !authSession) {
       return;
     }
 
@@ -320,45 +233,48 @@ export function ConnectionCenter({
     setIsBusy(true);
 
     try {
-      const nextSession = await client.submitOAuthSessionPrompt(
-        oauthSession.id,
-        promptValue,
+      const step = authSession.step;
+      const value = valueOverride ?? (
+        step.type === "confirm_prompt"
+          ? true
+          : step.type === "select_prompt"
+            ? step.allowMultiple
+              ? sessionSelections
+              : sessionSelections[0] ?? ""
+            : sessionInputValue
       );
-      setOAuthSession(nextSession);
-      setPendingOAuthAutomation(null);
-      setPromptValue("");
+      const nextSession = await client.respondToAuthSession(authSession.id, value);
+      setAuthSession(nextSession);
+      if (step.type === "text_prompt") {
+        setSessionInputValue("");
+      }
+      if (step.type === "select_prompt") {
+        setSessionSelections([]);
+      }
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
       setIsBusy(false);
     }
   }
-
-  const runtimeMessage = resolveRuntimeMessage(runtimeError);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-5xl px-6 py-10 lg:px-8 lg:py-14">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm shadow-primary/15">
-                <Wallet2Icon className="size-3.5" />
-              </div>
-              <span className="text-sm font-semibold tracking-tight text-foreground">
-                CapyFin
-              </span>
+    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(8,145,178,0.08),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.06),_transparent_24%),linear-gradient(180deg,_#fffdf8_0%,_#fffdf8_42%,_#fcfaf3_100%)] px-6 py-8 text-slate-900 lg:px-12 lg:py-10">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col">
+        <header className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-sm font-semibold uppercase tracking-[0.38em] text-emerald-700">
+              CapyFin
             </div>
-            <div className="space-y-2">
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-                {step === "providers" ? "Choose a provider" : selectedFamily?.title}
-              </h1>
-              <p className="max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
-                {step === "providers"
-                  ? "Pick one provider to get started. The next screen handles the exact connection method."
-                  : selectedFamily?.description}
-              </p>
-            </div>
+            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-900 lg:text-6xl">
+              {step === "providers" ? "Connect a provider" : selectedProvider?.name ?? "Connection"}
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
+              {step === "providers"
+                ? "Choose the model provider you want to use. You can always add more later."
+                : selectedProvider?.description ??
+                  "Choose how you want to connect, then finish the setup on this page."}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -366,596 +282,506 @@ export function ConnectionCenter({
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
                 className="rounded-full"
                 onClick={() => {
-                  startTransition(() => {
-                    setStep("providers");
-                    setErrorMessage(null);
-                    setFeedback(null);
-                    setOAuthSession(null);
-                  });
+                  openedAuthLinkRef.current = null;
+                  setAuthSession(null);
+                  setErrorMessage(null);
+                  setFeedback(null);
+                  setSecret("");
+                  setSessionInputValue("");
+                  setSessionSelections([]);
+                  setStep("providers");
                 }}
               >
-                <ArrowLeftIcon className="size-3.5" />
+                <ArrowLeftIcon className="size-4" />
                 Back
               </Button>
             ) : null}
             <Button
               type="button"
               variant="outline"
-              size="sm"
               className="rounded-full"
-              disabled={isLoading}
-              onClick={onRetry}
+              disabled={!client || isBusy || isLoading}
+              onClick={() => {
+                setErrorMessage(null);
+                setFeedback(null);
+                onRetry();
+              }}
             >
-              {isLoading ? (
-                <LoaderCircleIcon className="size-3.5 animate-spin" />
-              ) : (
-                <RefreshCcwIcon className="size-3.5" />
-              )}
+              <RefreshCcwIcon className="size-4" />
               Retry
             </Button>
           </div>
-        </div>
+        </header>
 
-        {runtimeMessage ? (
-          <div className="mt-6 rounded-2xl border border-warning/30 bg-warning/10 px-5 py-4 text-sm text-warning-foreground">
-            {runtimeMessage}
-          </div>
-        ) : null}
+        <div className="mt-10 flex flex-1 flex-col gap-6">
+          {runtimeError ? (
+            <Banner tone="error">
+              Couldn&apos;t load connection setup. Retry to continue.
+            </Banner>
+          ) : null}
 
-        {step === "providers" ? (
-          <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {isLoading && providerFamilies.length === 0
-              ? Array.from({ length: 9 }, (_, index) => (
-                  <div
-                    key={String(index)}
-                    className="min-h-44 animate-pulse rounded-2xl border border-border bg-card"
-                  />
-                ))
-              : providerFamilies.map((family) => (
-                  <button
-                    key={family.id}
-                    type="button"
-                    className="text-left"
-                    onClick={() => {
-                      startTransition(() => {
-                        setSelectedFamilyId(family.id);
-                        setSelectedOptionKey(
-                          resolvePreferredOptionKey(family, authOverview) ??
-                            family.options[0]?.key ??
-                            null,
-                        );
-                        setOAuthSession(null);
-                        setPendingOAuthAutomation(null);
-                        setErrorMessage(null);
-                        setFeedback(null);
-                        setPromptValue("");
-                        setStep("configure");
-                      });
-                    }}
-                  >
-                    <ProviderCard family={family} />
-                  </button>
-                ))}
-          </div>
-        ) : selectedFamily && selectedOption ? (
-          <section className="mt-10">
-            <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card px-6 py-6 shadow-sm sm:px-8 sm:py-8">
-              <div className="flex items-start gap-4">
-                <ProviderLogo family={selectedFamily} size="lg" />
-                <div className="space-y-1.5">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    {selectedFamily.title}
-                  </h2>
-                  <p className="max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
-                    {selectedFamily.id === "openai"
-                      ? "Sign in with Codex by default, or switch to a direct API key if you prefer."
-                      : "Choose the connection method you want to use."}
-                  </p>
-                </div>
+          {errorMessage ? <Banner tone="error">{errorMessage}</Banner> : null}
+          {feedback ? <Banner tone="success">{feedback}</Banner> : null}
+
+          {isLoading && !authOverview ? (
+            <div className="flex flex-1 items-center justify-center py-12">
+              <div className="flex items-center gap-3 text-sm text-slate-500">
+                <LoaderCircleIcon className="size-4 animate-spin" />
+                Loading providers
               </div>
+            </div>
+          ) : step === "providers" ? (
+            <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {providers.map((provider) => (
+                <button
+                  key={provider.id}
+                  type="button"
+                  className={cn(
+                    "group rounded-3xl border bg-white/85 p-5 text-left shadow-[0_20px_50px_-32px_rgba(15,23,42,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_24px_65px_-34px_rgba(15,23,42,0.34)]",
+                    connectedProviderIds.has(resolveProviderConnectionId(provider))
+                      ? "border-emerald-200"
+                      : "border-slate-200/80",
+                  )}
+                  onClick={() => {
+                    setSelectedProviderId(provider.id);
+                    setSelectedMethodId(provider.methods[0]?.id ?? null);
+                    openedAuthLinkRef.current = null;
+                    setAuthSession(null);
+                    setErrorMessage(null);
+                    setFeedback(null);
+                    setSecret("");
+                    setSessionInputValue("");
+                    setSessionSelections([]);
+                    setStep("configure");
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <ProviderMark provider={provider} />
+                      <div>
+                        <div className="text-2xl font-semibold tracking-tight text-slate-900">
+                          {formatProviderName(provider)}
+                        </div>
+                        {provider.description ? (
+                          <p className="mt-1 text-sm leading-6 text-slate-500">
+                            {provider.description}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                    {connectedProviderIds.has(resolveProviderConnectionId(provider)) ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                        <CheckIcon className="size-3.5" />
+                        Connected
+                      </span>
+                    ) : null}
+                  </div>
 
-              {selectedFamily.options.length > 1 ? (
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {selectedFamily.options.map((option) => (
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {provider.methods.map((method) => (
+                      <span
+                        key={method.id}
+                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600"
+                      >
+                        {method.label}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </section>
+          ) : selectedProvider && selectedMethod ? (
+            <section className="flex flex-1 flex-col">
+              <div className="flex flex-col gap-5">
+                <div className="flex items-center gap-4">
+                  <ProviderMark provider={selectedProvider} />
+                  <div>
+                    <div className="text-3xl font-semibold tracking-tight text-slate-900">
+                      {formatProviderName(selectedProvider)}
+                    </div>
+                    <p className="mt-2 text-base text-slate-500">
+                      Choose the connection method you want to use.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {selectedProvider.methods.map((method) => (
                     <button
-                      key={option.key}
+                      key={method.id}
                       type="button"
+                      className={cn(
+                        "rounded-full border px-5 py-3 text-base transition-colors",
+                        method.id === selectedMethod.id
+                          ? "border-slate-900 bg-slate-900 text-white"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900",
+                      )}
                       onClick={() => {
-                        setSelectedOptionKey(option.key);
-                        setOAuthSession(null);
-                        setPendingOAuthAutomation(null);
+                        setSelectedMethodId(method.id);
+                        openedAuthLinkRef.current = null;
+                        setAuthSession(null);
                         setErrorMessage(null);
                         setFeedback(null);
-                        setPromptValue("");
+                        setSecret("");
+                        setSessionInputValue("");
+                        setSessionSelections([]);
                       }}
-                      className={cn(
-                        "rounded-full px-4 py-2 text-sm transition-all duration-200",
-                        option.key === selectedOption.key
-                          ? "bg-foreground text-background shadow-sm"
-                          : "bg-muted/50 text-muted-foreground ring-1 ring-border hover:text-foreground",
-                      )}
                     >
-                      {option.label}
+                      {method.label}
                     </button>
                   ))}
                 </div>
-              ) : null}
+              </div>
 
-              <div className="mt-8 space-y-6">
-                {(selectedOption.mode === "api_key" ||
-                  selectedOption.mode === "token") && (
+              <div className="mt-10 max-w-3xl">
+                {selectedMethod.input === "api_key" || selectedMethod.input === "token" ? (
                   <div className="space-y-5">
-                    <div className="space-y-1">
-                      <h3 className="text-base font-medium text-foreground">
-                        {selectedOption.mode === "token" ? "Enter your token" : "Enter your API key"}
-                      </h3>
-                      <p className="text-[13px] text-muted-foreground">
-                        {selectedOption.description}
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                        {selectedMethod.label}
+                      </h2>
+                      <p className="text-base leading-7 text-slate-500">
+                        {selectedMethod.hint ?? "Paste the credential you want CapyFin to use."}
                       </p>
                     </div>
-                    <CredentialForm
-                      buttonLabel="Connect"
+
+                    <div className="space-y-3">
+                      <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                        {selectedMethod.input === "token" ? "Token" : "API key"}
+                      </label>
+                      <Input
+                        type="password"
+                        value={secret}
+                        placeholder={
+                          selectedMethod.input === "token"
+                            ? "Paste provider token"
+                            : "Paste provider API key"
+                        }
+                        onChange={(event) => {
+                          setSecret(event.target.value);
+                        }}
+                      />
+                    </div>
+
+                    <Button
+                      type="button"
+                      className="rounded-full px-5"
                       disabled={!client || !secret.trim() || isBusy}
-                      inputLabel={
-                        selectedOption.mode === "token" ? "Token" : "API key"
-                      }
-                      inputPlaceholder={
-                        selectedOption.mode === "token"
-                          ? "Paste provider token"
-                          : "Paste provider API key"
-                      }
-                      isBusy={isBusy}
-                      secret={secret}
-                      onSecretChange={setSecret}
-                      onSubmit={() => {
+                      onClick={() => {
                         void handleSecretConnect();
                       }}
-                    />
+                    >
+                      {isBusy ? (
+                        <>
+                          <LoaderCircleIcon className="size-4 animate-spin" />
+                          Connecting
+                        </>
+                      ) : (
+                        "Connect"
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                        {selectedMethod.label}
+                      </h2>
+                      <p className="text-base leading-7 text-slate-500">
+                        {selectedMethod.hint ??
+                          "Continue the sign-in flow in the browser, then finish any remaining steps here."}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        type="button"
+                        className="rounded-full px-5"
+                        disabled={!client || isBusy}
+                        onClick={() => {
+                          void handleStartAuthSession();
+                        }}
+                      >
+                        {isBusy ? (
+                          <>
+                            <LoaderCircleIcon className="size-4 animate-spin" />
+                            Starting
+                          </>
+                        ) : (
+                          <>
+                            Start sign-in
+                            <ExternalLinkIcon className="size-4" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {authSession ? (
+                      <AuthSessionPanel
+                        inputValue={sessionInputValue}
+                        isBusy={isBusy}
+                        session={authSession}
+                        selections={sessionSelections}
+                        setInputValue={setSessionInputValue}
+                        setSelections={setSessionSelections}
+                        onRespond={(value) => {
+                          void handleRespondToSession(value);
+                        }}
+                      />
+                    ) : null}
                   </div>
                 )}
-
-                {selectedOption.mode === "oauth" && (
-                  <OAuthCard
-                    isBusy={isBusy}
-                    isReady={Boolean(client)}
-                    oauthLinkUrl={oauthLinkUrl}
-                    oauthSession={oauthSession}
-                    onOpenLinkAgain={() => {
-                      if (!oauthLinkUrl) {
-                        return;
-                      }
-
-                      void openSessionLink(
-                        oauthLinkUrl,
-                        openedLinksRef.current,
-                        true,
-                      );
-                    }}
-                    onPromptValueChange={setPromptValue}
-                    onStart={() => {
-                      void handleOAuthStart();
-                    }}
-                    onSubmitPrompt={() => {
-                      void handleOAuthPromptSubmit();
-                    }}
-                    promptValue={promptValue}
-                    optionLabel={selectedOption.label}
-                    oauthExperience={selectedOption.oauthExperience}
-                    providerTitle={selectedFamily.title}
-                  />
-                )}
-
-                {(selectedOption.mode === "application_default" ||
-                  selectedOption.mode === "aws_sdk") && (
-                  <EnvironmentCard
-                    disabled={
-                      !client ||
-                      !selectedProviderStatus?.environment.available ||
-                      isBusy
-                    }
-                    isBusy={isBusy}
-                    mode={selectedOption.mode}
-                    onSelect={() => {
-                      void handleEnvironmentSelection();
-                    }}
-                  />
-                )}
-
-                {selectedProviderStatus?.resolved ? (
-                  <p className="text-[13px] text-muted-foreground">
-                    Active connection:{" "}
-                    <span className="font-medium text-foreground">
-                      {selectedProviderStatus.resolved.description}
-                    </span>
-                  </p>
-                ) : null}
-
-                {feedback ? <MessageBox tone="success">{feedback}</MessageBox> : null}
-                {errorMessage ? <MessageBox tone="error">{errorMessage}</MessageBox> : null}
-
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
-                  <p className="text-[13px] text-muted-foreground">
-                    Continue after the provider is connected.
-                  </p>
-                  <Button
-                    className="rounded-full shadow-sm shadow-primary/15"
-                    disabled={!canContinue}
-                    onClick={onContinue}
-                  >
-                    Continue
-                    <ArrowRightIcon className="size-4" />
-                  </Button>
-                </div>
               </div>
-            </div>
-          </section>
-        ) : null}
-      </div>
-    </div>
-  );
-}
 
-function ProviderCard({ family }: { family: ProviderFamily }) {
-  return (
-    <div className="group h-full rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md">
-      <div className="flex items-center gap-3">
-        <ProviderLogo family={family} size="sm" />
-        <div className="min-w-0">
-          <p className="text-lg font-semibold tracking-tight text-foreground">{family.title}</p>
+              <div className="mt-auto flex items-center justify-between gap-4 border-t border-slate-200 pt-8">
+                <p className="text-sm text-slate-500">
+                  Continue after one provider is connected and selected.
+                </p>
+                <Button
+                  type="button"
+                  className="rounded-full px-5"
+                  disabled={!canContinue}
+                  onClick={onContinue}
+                >
+                  Continue
+                  <ArrowRightIcon className="size-4" />
+                </Button>
+              </div>
+            </section>
+          ) : null}
         </div>
       </div>
-      <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{family.description}</p>
-      <div className="mt-5 flex items-center justify-between">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/60">
-          {family.options[0]?.label ?? "Connect"}
-        </p>
-        <ArrowRightIcon className="size-3.5 text-muted-foreground/40 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-primary" />
-      </div>
-    </div>
+    </main>
   );
 }
 
-function ProviderLogo({
-  family,
-  size,
-}: {
-  family: ProviderFamily;
-  size: "lg" | "sm";
-}) {
-  const logo = providerLogos[family.id];
-  const sizeClasses =
-    size === "lg" ? "size-12 rounded-xl text-base" : "size-10 rounded-xl text-sm";
-
-  if (!logo) {
-    return (
-      <span
-        className={cn(
-          "flex shrink-0 items-center justify-center bg-foreground font-semibold uppercase text-background",
-          sizeClasses,
-        )}
-      >
-        {renderFallbackInitials(family.title)}
-      </span>
-    );
-  }
-
-  return (
-    <span
-      className={cn(
-        "flex shrink-0 items-center justify-center border border-border bg-card shadow-sm [&_svg]:size-[55%] [&_svg]:fill-current",
-        sizeClasses,
-      )}
-      style={{ color: logo.color }}
-      dangerouslySetInnerHTML={{ __html: logo.svg }}
-    />
-  );
-}
-
-function CredentialForm({
-  buttonLabel,
-  disabled,
-  inputLabel,
-  inputPlaceholder,
-  isBusy,
-  onSecretChange,
-  onSubmit,
-  secret,
-}: {
-  buttonLabel: string;
-  disabled: boolean;
-  inputLabel: string;
-  inputPlaceholder: string;
-  isBusy: boolean;
-  onSecretChange: (value: string) => void;
-  onSubmit: () => void;
-  secret: string;
-}) {
-  return (
-    <div className="space-y-4">
-      <label className="block space-y-2">
-        <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
-          {inputLabel}
-        </span>
-        <Input
-          value={secret}
-          onChange={(event) => {
-            onSecretChange(event.target.value);
-          }}
-          placeholder={inputPlaceholder}
-          type="password"
-        />
-      </label>
-
-      <Button
-        type="button"
-        className="w-full justify-between rounded-full shadow-sm shadow-primary/15"
-        disabled={disabled}
-        onClick={onSubmit}
-      >
-        {buttonLabel}
-        {isBusy ? (
-          <LoaderCircleIcon className="size-4 animate-spin" />
-        ) : (
-          <KeyRoundIcon className="size-4" />
-        )}
-      </Button>
-    </div>
-  );
-}
-
-function OAuthCard({
-  isBusy,
-  isReady,
-  oauthLinkUrl,
-  oauthExperience,
-  oauthSession,
-  onOpenLinkAgain,
-  optionLabel,
-  onPromptValueChange,
-  onStart,
-  onSubmitPrompt,
-  promptValue,
-  providerTitle,
-}: {
-  isBusy: boolean;
-  isReady: boolean;
-  oauthLinkUrl: string | null;
-  oauthExperience: OAuthExperience | undefined;
-  oauthSession: OAuthSession | null;
-  onOpenLinkAgain: () => void;
-  optionLabel: string;
-  onPromptValueChange: (value: string) => void;
-  onStart: () => void;
-  onSubmitPrompt: () => void;
-  promptValue: string;
-  providerTitle: string;
-}) {
-  const isGitHubEnterprise = oauthExperience === "github-enterprise";
-  const actionLabel = isGitHubEnterprise ? "Continue with GitHub Enterprise" : optionLabel;
-  const statusMessage = oauthSession ? renderOAuthSessionMessage(oauthSession) : null;
-  const promptStep = getPromptStep(oauthSession);
-
-  return (
-    <div className="space-y-5">
-      <div className="space-y-1.5">
-        <h3 className="text-base font-medium text-foreground">{optionLabel}</h3>
-        <p className="text-[13px] leading-relaxed text-muted-foreground">
-          {isGitHubEnterprise
-            ? "Enter your GitHub Enterprise domain and continue directly into browser sign-in."
-            : `Sign in with your ${providerTitle} account in the browser.`}
-        </p>
-      </div>
-
-      {isGitHubEnterprise ? (
-        <label className="block space-y-2">
-          <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
-            GitHub Enterprise domain
-          </span>
-          <Input
-            value={promptValue}
-            onChange={(event) => {
-              onPromptValueChange(event.target.value);
-            }}
-            placeholder="company.ghe.com"
-          />
-        </label>
-      ) : null}
-
-      <Button
-        type="button"
-        className="w-full justify-between rounded-full shadow-sm shadow-primary/15 sm:w-auto sm:min-w-64"
-        disabled={!isReady || isBusy || (isGitHubEnterprise && promptValue.trim().length === 0)}
-        onClick={onStart}
-      >
-        {actionLabel}
-        {isBusy ? (
-          <LoaderCircleIcon className="size-4 animate-spin" />
-        ) : (
-          <ExternalLinkIcon className="size-4" />
-        )}
-      </Button>
-
-      {!isReady ? (
-        <p className="text-[13px] text-muted-foreground">
-          CapyFin is preparing secure sign-in.
-        </p>
-      ) : null}
-
-      {statusMessage ? (
-        <p className="text-[13px] text-muted-foreground">{statusMessage}</p>
-      ) : null}
-
-      {oauthLinkUrl ? (
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full justify-between rounded-full sm:w-auto sm:min-w-64"
-          onClick={onOpenLinkAgain}
-        >
-          Open browser again
-          <ExternalLinkIcon className="size-4" />
-        </Button>
-      ) : null}
-
-      {promptStep && !isGitHubEnterprisePrompt(promptStep) ? (
-        <div className="space-y-3">
-          <Input
-            value={promptValue}
-            onChange={(event) => {
-              onPromptValueChange(event.target.value);
-            }}
-            placeholder={getPromptPlaceholder(promptStep)}
-          />
-          <Button
-            type="button"
-            className="w-full justify-between rounded-full shadow-sm shadow-primary/15 sm:w-auto sm:min-w-64"
-            disabled={
-              isBusy ||
-              (!promptStep.allowEmpty && promptValue.trim().length === 0)
-            }
-            onClick={onSubmitPrompt}
-          >
-            Continue sign-in
-            {isBusy ? (
-              <LoaderCircleIcon className="size-4 animate-spin" />
-            ) : (
-              <ArrowRightIcon className="size-4" />
-            )}
-          </Button>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function EnvironmentCard({
-  disabled,
-  isBusy,
-  mode,
-  onSelect,
-}: {
-  disabled: boolean;
-  isBusy: boolean;
-  mode: Extract<ConnectionMode, "application_default" | "aws_sdk">;
-  onSelect: () => void;
-}) {
-  const label =
-    mode === "aws_sdk" ? "Use AWS credentials" : "Use local cloud credentials";
-
-  return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <h3 className="text-base font-medium text-foreground">{label}</h3>
-        <p className="text-[13px] leading-relaxed text-muted-foreground">
-          Use credentials that are already available on this machine.
-        </p>
-      </div>
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full justify-between rounded-full sm:w-auto sm:min-w-72"
-        disabled={disabled}
-        onClick={onSelect}
-      >
-        {label}
-        {isBusy ? (
-          <LoaderCircleIcon className="size-4 animate-spin" />
-        ) : (
-          <BadgeCheckIcon className="size-4" />
-        )}
-      </Button>
-    </div>
-  );
-}
-
-function MessageBox({
+function Banner({
   children,
   tone,
 }: {
   children: string;
   tone: "error" | "success";
 }) {
-  const toneClasses =
-    tone === "success"
-      ? "border-success/30 bg-success/10 text-success"
-      : "border-destructive/30 bg-destructive/10 text-destructive";
-
-  return <p className={cn("rounded-2xl px-4 py-3 text-sm", toneClasses)}>{children}</p>;
+  return (
+    <div
+      className={cn(
+        "rounded-3xl border px-5 py-4 text-base",
+        tone === "error"
+          ? "border-amber-300 bg-amber-50/90 text-amber-900"
+          : "border-emerald-200 bg-emerald-50/90 text-emerald-800",
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
+function AuthSessionPanel({
+  inputValue,
+  isBusy,
+  onRespond,
+  selections,
+  session,
+  setInputValue,
+  setSelections,
+}: {
+  inputValue: string;
+  isBusy: boolean;
+  onRespond: (value?: boolean | string | string[]) => void;
+  selections: string[];
+  session: AuthSession;
+  setInputValue: (nextValue: string) => void;
+  setSelections: (nextSelections: string[]) => void;
+}) {
+  const step = session.step;
 
-function renderFallbackInitials(title: string): string {
-  return title
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part.charAt(0))
-    .join("")
-    .toUpperCase();
-}
-
-function resolveRuntimeMessage(runtimeError: string | null): string | null {
-  if (!runtimeError) {
-    return null;
+  if (step.type === "working") {
+    return (
+      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <LoaderCircleIcon className="size-4 animate-spin" />
+        {step.message}
+      </div>
+    );
   }
 
-  if (!isTauriRuntime()) {
-    return "CapyFin needs to finish opening before sign-in is available.";
+  if (step.type === "completed") {
+    return (
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+        {step.message ?? "Connection completed."}
+      </div>
+    );
   }
 
-  return "CapyFin couldn't finish setup yet. Retrying in a moment usually fixes it.";
-}
-
-function isTauriRuntime(): boolean {
-  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
-}
-
-function renderOAuthSessionMessage(session: OAuthSession): string {
-  switch (session.step.type) {
-    case "auth_link":
-      return session.step.instructions ?? "Continue the sign-in flow in your browser.";
-    case "completed":
-      return "Provider connected successfully.";
-    case "error":
-      return session.step.message;
-    case "prompt":
-      return session.step.message;
-    case "working":
-      return session.step.message;
+  if (step.type === "error") {
+    return (
+      <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        {step.message}
+      </div>
+    );
   }
+
+  if (step.type === "auth_link") {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
+        <div className="font-medium text-slate-900">{step.label ?? "Browser sign-in ready"}</div>
+        {step.instructions ? (
+          <p className="mt-1 leading-6 text-slate-500">{step.instructions}</p>
+        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-4 rounded-full"
+          onClick={() => {
+            void openExternalUrl(step.url);
+          }}
+        >
+          Open sign-in page
+          <ExternalLinkIcon className="size-4" />
+        </Button>
+      </div>
+    );
+  }
+
+  if (step.type === "confirm_prompt") {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+        <p className="text-sm leading-6 text-slate-700">{step.message}</p>
+        <div className="mt-4 flex gap-2">
+          <Button
+            type="button"
+            className="rounded-full"
+            disabled={isBusy}
+            onClick={() => {
+              onRespond(true);
+            }}
+          >
+            {step.confirmLabel ?? "Continue"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-full"
+            disabled={isBusy}
+            onClick={() => {
+              onRespond(false);
+            }}
+          >
+            {step.cancelLabel ?? "Not now"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (step.type === "text_prompt") {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+        <label className="block text-sm font-medium text-slate-900">{step.message}</label>
+        <Input
+          type={step.secret ? "password" : "text"}
+          className="mt-3"
+          value={inputValue}
+          placeholder={step.placeholder}
+          onChange={(event) => {
+            setInputValue(event.target.value);
+          }}
+        />
+        <Button
+          type="button"
+          className="mt-4 rounded-full"
+          disabled={isBusy || (!step.allowEmpty && !inputValue.trim())}
+          onClick={() => {
+            onRespond(inputValue);
+          }}
+        >
+          Continue
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+      <p className="text-sm font-medium text-slate-900">{step.message}</p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {step.options.map((option) => {
+          const isSelected = selections.includes(option.value);
+          return (
+            <button
+              key={option.value}
+              type="button"
+              className={cn(
+                "rounded-full border px-3 py-2 text-sm transition-colors",
+                isSelected
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900",
+              )}
+              onClick={() => {
+                if (step.allowMultiple) {
+                  setSelections(
+                    isSelected
+                      ? selections.filter((value) => value !== option.value)
+                      : [...selections, option.value],
+                  );
+                  return;
+                }
+                setSelections([option.value]);
+              }}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+      <Button
+        type="button"
+        className="mt-4 rounded-full"
+        disabled={isBusy || selections.length === 0}
+        onClick={() => {
+          onRespond(step.allowMultiple ? selections : selections[0] ?? "");
+        }}
+      >
+        Continue
+      </Button>
+    </div>
+  );
+}
+
+function ProviderMark({ provider }: { provider: ProviderDefinition }) {
+  const logo = providerLogos[provider.id];
+
+  if (!logo) {
+    return (
+      <div className="flex size-14 items-center justify-center rounded-2xl border border-slate-200 bg-white text-lg font-semibold text-slate-700">
+        {provider.name.charAt(0)}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="flex size-14 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm"
+      aria-hidden="true"
+      dangerouslySetInnerHTML={{
+        __html: logo.svg.replace("<svg ", `<svg fill="${logo.color}" `),
+      }}
+    />
+  );
+}
+
+function resolveProviderConnectionId(provider: ProviderDefinition): string {
+  return provider.methods[0]?.providerId ?? provider.id;
+}
+
+function formatProviderName(provider: ProviderDefinition): string {
+  if (provider.id === "copilot") {
+    return "GitHub Copilot";
+  }
+  return provider.name;
 }
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
-}
-
-async function openSessionLink(
-  url: string,
-  openedLinks: Set<string>,
-  force = false,
-): Promise<void> {
-  if (!force && openedLinks.has(url)) {
-    return;
-  }
-
-  openedLinks.add(url);
-  await openExternalUrl(url);
-}
-
-function getPromptStep(
-  session: OAuthSession | null,
-): Extract<OAuthSession["step"], { type: "prompt" }> | null {
-  if (session?.step.type !== "prompt") {
-    return null;
-  }
-
-  return session.step;
-}
-
-function getPromptPlaceholder(
-  step: Extract<OAuthSession["step"], { type: "prompt" }>,
-): string {
-  return step.placeholder ?? "Enter the requested value";
 }

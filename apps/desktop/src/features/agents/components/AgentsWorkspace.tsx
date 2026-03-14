@@ -39,11 +39,26 @@ export function AgentsWorkspace({
   createRequestToken,
 }: AgentsWorkspaceProps) {
   const connectedProviders = useMemo(
-    () =>
-      (authOverview?.providers ?? []).filter(
-        (provider) =>
-          provider.profiles.length > 0 || provider.environment.available,
-      ),
+    () => {
+      const connectedProviderIds = new Set(
+        (authOverview?.connections ?? []).map((connection) => connection.providerId),
+      );
+
+      return (authOverview?.providers ?? []).flatMap((provider) => {
+        const matchedMethods = provider.methods.filter((method) =>
+          connectedProviderIds.has(method.providerId),
+        );
+        const firstMethod = matchedMethods[0];
+        return matchedMethods.length > 0
+          ? [
+              {
+                providerId: firstMethod?.providerId ?? provider.id,
+                providerName: provider.name,
+              },
+            ]
+          : [];
+      });
+    },
     [authOverview],
   );
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -56,7 +71,7 @@ export function AgentsWorkspace({
 
   useEffect(() => {
     const nextProviderId =
-      authOverview?.selectedProviderId ?? connectedProviders[0]?.provider.id ?? "";
+      authOverview?.selectedProviderId ?? connectedProviders[0]?.providerId ?? "";
 
     setDraft((current) =>
       current.providerId
@@ -122,8 +137,8 @@ export function AgentsWorkspace({
   }, [createRequestToken]);
 
   const selectedProviderName =
-    connectedProviders.find((provider) => provider.provider.id === draft.providerId)
-      ?.provider.name ?? "selected provider";
+    connectedProviders.find((provider) => provider.providerId === draft.providerId)
+      ?.providerName ?? "selected provider";
   const canCreate =
     Boolean(client) &&
     Boolean(draft.name.trim()) &&
@@ -222,11 +237,11 @@ export function AgentsWorkspace({
               <span className="text-xs font-medium text-foreground">Provider</span>
               <div className="flex flex-wrap gap-2">
                 {connectedProviders.map((provider) => {
-                  const isSelected = provider.provider.id === draft.providerId;
+                  const isSelected = provider.providerId === draft.providerId;
 
                   return (
                     <button
-                      key={provider.provider.id}
+                      key={provider.providerId}
                       type="button"
                       className={cn(
                         "rounded-full border px-3 py-2 text-sm transition-all duration-200",
@@ -237,11 +252,11 @@ export function AgentsWorkspace({
                       onClick={() => {
                         setDraft((current) => ({
                           ...current,
-                          providerId: provider.provider.id,
+                          providerId: provider.providerId,
                         }));
                       }}
                     >
-                      {provider.provider.name}
+                      {provider.providerName}
                     </button>
                   );
                 })}
@@ -427,8 +442,9 @@ function providerLabel(
   }
 
   return (
-    authOverview?.providers.find((provider) => provider.provider.id === providerId)
-      ?.provider.name ?? providerId
+    authOverview?.providers.find((provider) =>
+      provider.methods.some((method) => method.providerId === providerId),
+    )?.name ?? providerId
   );
 }
 

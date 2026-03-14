@@ -35,7 +35,7 @@ This mirrors the intended long-term shape: Tauri is the secure host, the sidecar
 ## Runtime boundaries
 
 - `packages/core`: shared application behavior and canonical metadata used by both the CLI and sidecar.
-- `packages/core/auth`: Node-only provider auth subsystem for provider definitions, credential profile storage, selection rules, and environment fallback.
+- `packages/core/auth`: legacy CLI-only provider auth subsystem retained for scripted workflows while the desktop app migrates to the embedded runtime-backed provider catalog.
 - `packages/cli`: command entrypoint for operators and scripted workflows.
 - `packages/sidecar`: localhost HTTP server for the desktop shell, plus the embedded runtime supervisor, runtime client, and desktop-owned agent metadata store.
 
@@ -59,15 +59,11 @@ This keeps the runtime behavior aligned across surfaces instead of splitting pro
 
 ## Provider auth model
 
-- Provider auth lives in shared Node core, not in Rust and not directly in the CLI.
-- The CLI is the operator surface for login, selection, and status. It does not own provider resolution rules.
-- Auth state is stored in a versioned `auth-profiles.json` file under the user config directory, with optional override through `CAPYFIN_AUTH_STORE_PATH` for tests and isolated automation.
-- The auth store keeps three concepts explicit:
-  - Stored credential profiles keyed by provider and profile label.
-  - Per-provider profile ordering for deterministic resolution.
-  - Current selection through `activeProviderId` and `activeProfileId`.
-- Provider definitions are curated in core and enriched from the `pi-ai` OAuth registry so OAuth-capable providers and static-secret providers are surfaced through one catalog.
-- Environment credentials remain first-class. A provider can be selected from environment state even when no profile has been persisted, which keeps local development and CI flows scriptable without copying secrets into the auth store.
+- The desktop app gets its provider catalog directly from the embedded runtime through the Node sidecar.
+- The sidecar discovers supported auth choices at runtime, executes sign-in programmatically, and stores the resulting profiles in the runtime-owned `auth-profiles.json`.
+- Provider state lives under the app-managed runtime directories, not in the user shell environment and not in the frontend.
+- The frontend only talks to the CapyFin sidecar. It never calls the embedded runtime directly.
+- The CLI still exposes its own operator-oriented auth commands for scripted setup, but the desktop UI is driven by the embedded runtime’s supported providers and connection flows.
 
 ## Frontend boundaries
 

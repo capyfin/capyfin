@@ -1,6 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
 import {
   createUIMessageStream,
   createUIMessageStreamResponse,
@@ -9,6 +7,7 @@ import {
 import { WebSocket, type RawData } from "ws";
 import packageJson from "../../package.json" with { type: "json" };
 import {
+  type AuthOverview,
   type Agent,
   type AgentCatalog,
   type AgentSession,
@@ -19,19 +18,12 @@ import {
   type DeleteAgentResponse,
 } from "@capyfin/contracts";
 import { DEFAULT_AGENT_ID, normalizeAgentId } from "@capyfin/core/agents";
-import {
-  loadAuthStore,
-  type AuthProfile,
-  type ProviderAuthService,
-} from "@capyfin/core/auth";
 import type { AgentMetadataStoreService } from "./metadata-store.ts";
 import {
-  defaultModelForProvider,
   normalizeGatewayModelRef,
   splitGatewayModelRef,
 } from "./model-defaults.ts";
 import {
-  resolveGatewayAgentDir,
   resolveGatewaySessionFile,
   resolveGatewaySessionsDir,
   type EmbeddedGatewayPaths,
@@ -481,101 +473,26 @@ function reorderIds<T extends { id: string }>(items: T[], preferredId?: string):
   });
 }
 
-async function writeJsonFile(pathname: string, payload: unknown): Promise<void> {
-  await mkdir(dirname(pathname), { recursive: true, mode: 0o700 });
-  await writeFile(pathname, `${JSON.stringify(payload, null, 2)}\n`, {
-    encoding: "utf8",
-    mode: 0o600,
-  });
-}
-
-function mapProfileCredential(profile: AuthProfile): Record<string, unknown> {
-  const type = profile.type;
-  if (type === "api_key") {
-    return {
-      key: profile.key,
-      provider: profile.provider,
-      type: "api_key",
-    };
-  }
-
-  if (type === "token") {
-    return {
-      provider: profile.provider,
-      token: profile.token,
-      type: "token",
-    };
-  }
-
-  return {
-    ...(profile.credentials as Record<string, unknown>),
-    provider: profile.provider,
-    type: "oauth",
-  };
-}
-
 export class EmbeddedGatewayClient {
-  readonly #authService: ProviderAuthService;
+  readonly #authState: {
+    getOverview(): Promise<Pick<AuthOverview, "selectedModelId" | "selectedProviderId">>;
+  };
   readonly #metadataStore: AgentMetadataStoreService;
   readonly #paths: EmbeddedGatewayPaths;
   readonly #target: GatewayConnectionTarget;
 
   constructor(params: {
-    authService: ProviderAuthService;
+    authService: {
+      getOverview(): Promise<Pick<AuthOverview, "selectedModelId" | "selectedProviderId">>;
+    };
     metadataStore: AgentMetadataStoreService;
     paths: EmbeddedGatewayPaths;
     target: GatewayConnectionTarget;
   }) {
-    this.#authService = params.authService;
+    this.#authState = params.authService;
     this.#metadataStore = params.metadataStore;
     this.#paths = params.paths;
     this.#target = params.target;
-  }
-
-  async syncAuthProfiles(): Promise<void> {
-    const store = await loadAuthStore(this.#authService.getStorePath());
-    const profiles = Object.fromEntries(
-      Object.entries(store.profiles).map(([profileId, profile]) => [
-        profileId,
-        mapProfileCredential(profile),
-      ]),
-    );
-    const order = Object.fromEntries(
-      Object.entries(store.order).map(([providerId, profileIds]) => {
-        const activeProfileId =
-          store.activeProfileId &&
-          profileIds.includes(store.activeProfileId) &&
-          store.profiles[store.activeProfileId]?.provider === providerId
-            ? store.activeProfileId
-            : undefined;
-
-        return [
-          providerId,
-          activeProfileId
-            ? [activeProfileId, ...profileIds.filter((profileId) => profileId !== activeProfileId)]
-            : profileIds,
-        ];
-      }),
-    );
-
-    const payload = {
-      order,
-      profiles,
-      version: 1,
-    };
-    const catalog = await this.#metadataStore.listCatalog();
-    const agentIds = new Set(
-      [DEFAULT_AGENT_ID, ...catalog.agents.map((agent) => normalizeAgentId(agent.id))].filter(
-        Boolean,
-      ),
-    );
-
-    await Promise.all(
-      [...agentIds].map(async (agentId) => {
-        const authStorePath = `${resolveGatewayAgentDir(this.#paths, agentId)}/auth-profiles.json`;
-        await writeJsonFile(authStorePath, payload);
-      }),
-    );
   }
 
   async getCatalog(): Promise<AgentCatalog> {
@@ -624,7 +541,6 @@ export class EmbeddedGatewayClient {
     }
 
     await this.applyAgentWorkspace(metadata);
-    await this.syncAuthProfiles();
     return metadata;
   }
 
@@ -727,13 +643,13 @@ export class EmbeddedGatewayClient {
 
   async bootstrapConversation(agentId = DEFAULT_AGENT_ID): Promise<ChatBootstrap> {
     const agent = await this.getAgent(agentId);
-    const authOverview = await this.#authService.getOverview();
+    const authOverview = await this.#authState.getOverview();
     const fallbackProviderId = agent.providerId ?? authOverview.selectedProviderId;
     const fallbackModelRef =
       normalizeGatewayModelRef({
-        modelId: agent.modelId,
+        modelId: agent.modelId ?? authOverview.selectedModelId,
         providerId: fallbackProviderId,
-      }) ?? defaultModelForProvider(fallbackProviderId);
+      });
     const session = await this.ensureConversationSession({
       agent,
       ...(fallbackModelRef ? { fallbackModelRef } : {}),
@@ -765,13 +681,13 @@ export class EmbeddedGatewayClient {
     const agent = params.agentId
       ? await this.getAgent(params.agentId)
       : await this.getDefaultAgent();
-    const authOverview = await this.#authService.getOverview();
+    const authOverview = await this.#authState.getOverview();
     const fallbackProviderId = agent.providerId ?? authOverview.selectedProviderId;
     const fallbackModelRef =
       normalizeGatewayModelRef({
-        modelId: agent.modelId,
+        modelId: agent.modelId ?? authOverview.selectedModelId,
         providerId: fallbackProviderId,
-      }) ?? defaultModelForProvider(fallbackProviderId);
+      });
     const session = await this.ensureConversationSession({
       agent,
       ...(fallbackModelRef ? { fallbackModelRef } : {}),

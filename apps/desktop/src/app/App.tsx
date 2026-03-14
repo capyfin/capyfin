@@ -88,9 +88,7 @@ export function App() {
         runtimeError={runtimeError}
         onAuthOverviewChange={setAuthOverview}
         onContinue={() => {
-          window.location.hash = authOverview?.selectedProviderId
-            ? "#connections"
-            : "#chat";
+          window.location.hash = "#chat";
         }}
         onRetry={() => {
           setRetryToken((current) => current + 1);

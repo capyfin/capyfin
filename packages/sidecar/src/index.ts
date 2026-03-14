@@ -1,7 +1,7 @@
-import { ProviderAuthService } from "@capyfin/core/auth";
 import { serve } from "@hono/node-server";
 import packageJson from "../package.json" with { type: "json" };
-import { OAuthSessionManager } from "./auth/oauth-sessions.ts";
+import { RuntimeProviderAuthService } from "./auth/service.ts";
+import { RuntimeAuthSessionManager } from "./auth/sessions.ts";
 import { loadSidecarConfig, type SidecarConfig } from "./config.ts";
 import { EmbeddedGatewayClient } from "./internal-gateway/gateway-client.ts";
 import { AgentMetadataStoreService } from "./internal-gateway/metadata-store.ts";
@@ -15,25 +15,23 @@ export interface SidecarServerHandle {
 export async function startSidecarServer(
   config: SidecarConfig = loadSidecarConfig(),
 ): Promise<SidecarServerHandle> {
-  const authService = new ProviderAuthService();
   const gatewaySupervisor = new EmbeddedGatewaySupervisor(config);
   await gatewaySupervisor.start();
+  process.env.OPENCLAW_CONFIG_PATH = gatewaySupervisor.paths.configPath;
+  process.env.OPENCLAW_OAUTH_DIR = gatewaySupervisor.paths.oauthDir;
+  process.env.OPENCLAW_STATE_DIR = gatewaySupervisor.paths.stateDir;
   const metadataStore = new AgentMetadataStoreService(gatewaySupervisor.paths);
   await metadataStore.ensureDefaultAgent();
+  const authService = new RuntimeProviderAuthService(gatewaySupervisor.paths);
   const embeddedGateway = new EmbeddedGatewayClient({
     authService,
     metadataStore,
     paths: gatewaySupervisor.paths,
     target: gatewaySupervisor.connection,
   });
-  await embeddedGateway.syncAuthProfiles();
   const runtime = {
     authService,
-    authSessions: new OAuthSessionManager(() => authService, {
-      afterProfileStored: async () => {
-        await embeddedGateway.syncAuthProfiles();
-      },
-    }),
+    authSessions: new RuntimeAuthSessionManager(() => authService),
     config,
     embeddedGateway,
     gatewaySupervisor,

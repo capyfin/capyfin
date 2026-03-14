@@ -1,7 +1,6 @@
 import { parseArgs } from "node:util";
 
 const DEFAULT_HOSTNAME = "127.0.0.1";
-const DEFAULT_PORT = 19_111;
 const DEFAULT_USERNAME = "capyfin";
 
 export interface SidecarConfig {
@@ -39,10 +38,10 @@ export function loadSidecarConfig(
     );
   }
 
-  const port = Number.parseInt(portCandidate ?? String(DEFAULT_PORT), 10);
+  const port = Number.parseInt(portCandidate ?? "", 10);
   if (!Number.isInteger(port) || port <= 0 || port > 65_535) {
     throw new Error(
-      "Invalid sidecar port. Provide --port or CAPYFIN_SERVER_PORT.",
+      "Missing or invalid sidecar port. Provide --port or CAPYFIN_SERVER_PORT.",
     );
   }
 

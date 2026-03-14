@@ -8,10 +8,6 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./auth": {
-      "types": "./src/auth/index.ts",
-      "default": "./src/auth/index.ts"
-    },
     "./agents": {
       "types": "./src/agents/index.ts",
       "default": "./src/agents/index.ts"
@@ -32,9 +28,7 @@
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@capyfin/contracts": "workspace:*",
-    "@mariozechner/pi-ai": "^0.57.1",
-    "@mariozechner/pi-coding-agent": "^0.57.1"
+    "@capyfin/contracts": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

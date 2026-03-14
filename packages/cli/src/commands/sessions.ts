@@ -1,7 +1,7 @@
 import { parseArgs } from "node:util";
-import { AgentService } from "@capyfin/core/agents";
-import type { AgentSessionSummary as AgentSession } from "@capyfin/core/agents";
+import type { AgentSession } from "@capyfin/contracts";
 import type { ResolvedRunCliOptions } from "../app.ts";
+import { withEmbeddedGatewayContext } from "../runtime.ts";
 
 type OutputFormat = "text" | "json";
 
@@ -42,28 +42,21 @@ async function printSessions(
     strict: true,
   });
   const output = values.output as OutputFormat;
-  const sessions = await createAgentService(options).listSessions(values.agent);
+  const sessions = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
+    await embeddedGateway.listSessions(values.agent),
+  );
 
   if (output === "json") {
-    options.io.stdout(
-      `${JSON.stringify(
-        {
-          ...(values.agent ? { agentId: values.agent } : {}),
-          sessions,
-        },
-        null,
-        2,
-      )}\n`,
-    );
+    options.io.stdout(`${JSON.stringify(sessions, null, 2)}\n`);
     return;
   }
 
-  if (sessions.length === 0) {
+  if (sessions.sessions.length === 0) {
     options.io.stdout("No agent sessions have been created yet.\n");
     return;
   }
 
-  const lines = sessions.map(renderSession);
+  const lines = sessions.sessions.map(renderSession);
   options.io.stdout(`${lines.join("\n\n")}\n`);
 }
 
@@ -94,11 +87,13 @@ async function createSession(
     throw new Error("Agent id is required.");
   }
 
-  const session = await createAgentService(options).createSession({
-    agentId,
-    ...(values.label ? { label: values.label } : {}),
-    ...(values.prompt ? { initialPrompt: values.prompt } : {}),
-  });
+  const session = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
+    await embeddedGateway.createSession({
+      agentId,
+      ...(values.label ? { label: values.label } : {}),
+      ...(values.prompt ? { initialPrompt: values.prompt } : {}),
+    }),
+  );
 
   if (output === "json") {
     options.io.stdout(`${JSON.stringify(session, null, 2)}\n`);
@@ -106,13 +101,6 @@ async function createSession(
   }
 
   options.io.stdout(`${renderSession(session)}\n`);
-}
-
-function createAgentService(options: ResolvedRunCliOptions): AgentService {
-  return new AgentService({
-    ...(options.now ? { now: options.now } : {}),
-    ...(options.storePath ? { storePath: options.storePath } : {}),
-  });
 }
 
 function renderSession(session: AgentSession): string {

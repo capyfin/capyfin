@@ -12,17 +12,28 @@ export interface SidecarServerHandle {
   close(): Promise<void>;
 }
 
+export { RuntimeProviderAuthService } from "./auth/service.ts";
+export { RuntimeAuthSessionManager } from "./auth/sessions.ts";
+export {
+  ensureEmbeddedGatewayDirectories,
+  resolveEmbeddedGatewayPaths,
+  type EmbeddedGatewayPaths,
+} from "./internal-gateway/paths.ts";
+export { EmbeddedGatewaySupervisor } from "./internal-gateway/supervisor.ts";
+export { AgentMetadataStoreService } from "./internal-gateway/metadata-store.ts";
+export { EmbeddedGatewayClient } from "./internal-gateway/gateway-client.ts";
+
 export async function startSidecarServer(
   config: SidecarConfig = loadSidecarConfig(),
 ): Promise<SidecarServerHandle> {
-  const gatewaySupervisor = new EmbeddedGatewaySupervisor(config);
+  const gatewaySupervisor = new EmbeddedGatewaySupervisor(process.env);
   await gatewaySupervisor.start();
   process.env.OPENCLAW_CONFIG_PATH = gatewaySupervisor.paths.configPath;
   process.env.OPENCLAW_OAUTH_DIR = gatewaySupervisor.paths.oauthDir;
   process.env.OPENCLAW_STATE_DIR = gatewaySupervisor.paths.stateDir;
   const metadataStore = new AgentMetadataStoreService(gatewaySupervisor.paths);
   await metadataStore.ensureDefaultAgent();
-  const authService = new RuntimeProviderAuthService(gatewaySupervisor.paths);
+  const authService = new RuntimeProviderAuthService(gatewaySupervisor.paths, process.env);
   const embeddedGateway = new EmbeddedGatewayClient({
     authService,
     metadataStore,

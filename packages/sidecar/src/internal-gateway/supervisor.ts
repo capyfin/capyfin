@@ -1,6 +1,5 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { setTimeout as delay } from "node:timers/promises";
-import { type SidecarConfig } from "../config.ts";
 import { writeEmbeddedGatewayConfig } from "./config.ts";
 import { resolveGatewayCliEntrypoint } from "./package-paths.ts";
 import {
@@ -75,14 +74,19 @@ function pipeLogs(child: ChildProcess, prefix: string): void {
   });
 }
 
+function shouldPipeGatewayLogs(env: NodeJS.ProcessEnv): boolean {
+  return env.CAPYFIN_VERBOSE_GATEWAY?.trim() === "1";
+}
+
 export class EmbeddedGatewaySupervisor {
+  readonly #env: NodeJS.ProcessEnv;
   readonly #paths: EmbeddedGatewayPaths;
   #processState: EmbeddedGatewayProcessState | null = null;
   #stopping = false;
 
-  constructor(config: SidecarConfig) {
-    void config;
-    this.#paths = resolveEmbeddedGatewayPaths();
+  constructor(env: NodeJS.ProcessEnv = process.env) {
+    this.#env = env;
+    this.#paths = resolveEmbeddedGatewayPaths(env);
   }
 
   get paths(): EmbeddedGatewayPaths {
@@ -118,7 +122,7 @@ export class EmbeddedGatewaySupervisor {
     const command = resolveHostCommand(port, token);
     const child = spawn(command.command, command.args, {
       env: {
-        ...process.env,
+        ...this.#env,
         CAPYFIN_GATEWAY_PORT: String(port),
         CAPYFIN_GATEWAY_TOKEN: token,
         OPENCLAW_CONFIG_PATH: this.#paths.configPath,
@@ -130,7 +134,9 @@ export class EmbeddedGatewaySupervisor {
       stdio: ["ignore", "pipe", "pipe"],
     });
 
-    pipeLogs(child, "embedded");
+    if (shouldPipeGatewayLogs(this.#env)) {
+      pipeLogs(child, "embedded");
+    }
 
     const exitPromise = new Promise<never>((_, reject) => {
       child.once("exit", (code, signal) => {

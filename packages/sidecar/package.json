@@ -15,9 +15,10 @@
   ],
   "scripts": {
     "build": "tsup --config tsup.config.ts",
+    "bundle:prepare": "node scripts/prepare-bundle.mjs",
     "dev": "tsx src/cli.ts",
     "lint": "eslint src --ext .ts",
-    "test": "tsx --test src/auth/*.test.ts src/chat/*.test.ts src/server/routes/*.test.ts",
+    "test": "tsx --test src/auth/*.test.ts src/chat/*.test.ts src/internal-gateway/*.test.ts src/server/routes/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -29,9 +30,12 @@
     "@ai-sdk/google": "^3.0.43",
     "@ai-sdk/openai": "^3.0.41",
     "hono": "^4.12.7",
+    "openclaw": "2026.3.13",
+    "ws": "^8.18.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

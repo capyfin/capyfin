@@ -9,6 +9,7 @@
     "desktop:build": "pnpm --filter @capyfin/desktop tauri build",
     "desktop:dev": "pnpm --filter @capyfin/desktop tauri dev",
     "dev": "pnpm --filter @capyfin/desktop dev",
+    "sidecar:bundle": "pnpm --filter @capyfin/sidecar bundle:prepare",
     "sidecar:build": "pnpm --filter @capyfin/sidecar build",
     "sidecar:dev": "pnpm --filter @capyfin/sidecar dev",
     "format": "prettier --write .",

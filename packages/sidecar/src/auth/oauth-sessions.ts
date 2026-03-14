@@ -16,12 +16,21 @@ interface OAuthSessionRecord {
   snapshot: OAuthSession;
 }
 
+interface OAuthSessionManagerOptions {
+  afterProfileStored?: () => Promise<void> | void;
+}
+
 export class OAuthSessionManager {
   readonly #createAuthService: CreateAuthService;
+  readonly #afterProfileStored?: OAuthSessionManagerOptions["afterProfileStored"];
   readonly #sessions = new Map<string, OAuthSessionRecord>();
 
-  constructor(createAuthService: CreateAuthService) {
+  constructor(
+    createAuthService: CreateAuthService,
+    options: OAuthSessionManagerOptions = {},
+  ) {
     this.#createAuthService = createAuthService;
+    this.#afterProfileStored = options.afterProfileStored;
   }
 
   get(sessionId: string): OAuthSession | undefined {
@@ -123,6 +132,7 @@ export class OAuthSessionManager {
           type: "completed",
         },
       };
+      await this.#afterProfileStored?.();
     } catch (error) {
       const message = getErrorMessage(error);
       if (record.pendingPrompt) {

@@ -1,9 +1,8 @@
-import test from "node:test";
 import assert from "node:assert/strict";
+import test from "node:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { AgentService } from "@capyfin/core/agents";
 import { ProviderAuthService } from "@capyfin/core/auth";
 import { OAuthSessionManager } from "../../auth/oauth-sessions.ts";
 import { createAuthRoutes } from "./auth.ts";
@@ -15,22 +14,26 @@ async function createStorePath(prefix: string): Promise<string> {
 
 void test("auth routes expose overview and store credentials", async (context) => {
   const storePath = await createStorePath("capyfin-sidecar");
-  const createAuthService = (): ProviderAuthService =>
-    new ProviderAuthService({ storePath });
+  const authService = new ProviderAuthService({ storePath });
   const runtime = {
-    authSessions: new OAuthSessionManager(createAuthService),
+    authSessions: new OAuthSessionManager(() => authService),
+    authService,
     config: {
       hostname: "127.0.0.1",
       password: "password",
       port: 3000,
       username: "capyfin",
     },
-    createAgentService: () => new AgentService({ storePath: join(dirname(storePath), "catalog.json") }),
-    createAuthService,
+    embeddedGateway: {
+      syncAuthProfiles() {
+        return Promise.resolve();
+      },
+    },
+    gatewaySupervisor: {} as never,
     startedAt: Date.now(),
     version: "0.1.0-test",
   };
-  const app = createAuthRoutes(runtime);
+  const app = createAuthRoutes(runtime as never);
 
   context.after(async () => {
     await rm(dirname(storePath), { force: true, recursive: true });

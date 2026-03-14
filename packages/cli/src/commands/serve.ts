@@ -18,7 +18,7 @@ export async function runServe(
     throw new Error("Missing or invalid sidecar port. Provide --port.");
   }
 
-  const server = startSidecarServer({
+  const server = await startSidecarServer({
     hostname: readStringValue(values.hostname) ?? "127.0.0.1",
     password,
     port,
@@ -26,7 +26,7 @@ export async function runServe(
   });
 
   const shutdown = () => {
-    server.close();
+    void server.close();
   };
 
   process.on("SIGINT", shutdown);

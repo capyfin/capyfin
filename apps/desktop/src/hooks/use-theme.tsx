@@ -17,11 +17,12 @@ interface ThemeContextValue {
 }
 
 const STORAGE_KEY = "capyfin-theme";
+const noopSetTheme = (): void => undefined;
 
 const ThemeContext = createContext<ThemeContextValue>({
   theme: "system",
   resolvedTheme: "light",
-  setTheme: () => {},
+  setTheme: noopSetTheme,
 });
 
 function getSystemTheme(): ResolvedTheme {
@@ -53,9 +54,8 @@ function getStoredTheme(): Theme {
 
 export function ThemeProvider({ children }: PropsWithChildren) {
   const [theme, setThemeState] = useState<Theme>(getStoredTheme);
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
-    resolveTheme(getStoredTheme()),
-  );
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme);
+  const resolvedTheme = theme === "system" ? systemTheme : theme;
 
   const setTheme = useCallback((nextTheme: Theme) => {
     setThemeState(nextTheme);
@@ -67,26 +67,17 @@ export function ThemeProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
-    const resolved = resolveTheme(theme);
-    setResolvedTheme(resolved);
-
-    const root = document.documentElement;
-    root.classList.toggle("dark", resolved === "dark");
-  }, [theme]);
+    document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
+  }, [resolvedTheme]);
 
   useEffect(() => {
-    if (theme !== "system") {
-      return;
-    }
-
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     const handleChange = (): void => {
-      const resolved = resolveTheme("system");
-      setResolvedTheme(resolved);
-      document.documentElement.classList.toggle("dark", resolved === "dark");
+      setSystemTheme(resolveTheme("system"));
     };
 
+    handleChange();
     mediaQuery.addEventListener("change", handleChange);
 
     return () => {

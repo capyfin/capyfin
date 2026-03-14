@@ -102,7 +102,7 @@ export function ConnectionsWorkspace({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-5">
       {errorMessage ? (
         <MessageBanner tone="error">{errorMessage}</MessageBanner>
       ) : null}
@@ -114,41 +114,52 @@ export function ConnectionsWorkspace({
       <section className="min-w-0">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-base font-semibold tracking-tight text-foreground">
               Current connections
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="mt-0.5 text-[13px] text-muted-foreground">
               Pick the default connection the app should use, or remove old ones.
             </p>
           </div>
           <Button
             type="button"
             variant="outline"
+            size="sm"
             className="rounded-full"
             disabled={!client || isBusy}
             onClick={() => {
               void refreshOverview();
             }}
           >
-            <RefreshCcwIcon className="size-4" />
+            <RefreshCcwIcon className="size-3.5" />
             Refresh
           </Button>
         </div>
 
         {storedConnections.length === 0 ? (
-          <div className="border-t border-border/70 py-8 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
             No saved connections yet.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-border/70 bg-background">
+          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Connection</TableHead>
-                  <TableHead>Model</TableHead>
-                  <TableHead>Updated</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                    Provider
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                    Connection
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                    Model
+                  </TableHead>
+                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                    Updated
+                  </TableHead>
+                  <TableHead className="text-right text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -189,42 +200,49 @@ function ConnectionRow({
   const isDefault = connection.profile.isActiveProfile;
 
   return (
-    <TableRow>
-      <TableCell className="font-medium">{connection.providerName}</TableCell>
+    <TableRow className="border-border transition-colors hover:bg-muted/30">
+      <TableCell className="text-[13px] font-medium">{connection.providerName}</TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <span>{connection.profile.label}</span>
-          {isDefault ? <Badge variant="secondary">Default</Badge> : null}
+          <span className="text-[13px]">{connection.profile.label}</span>
+          {isDefault ? (
+            <Badge
+              variant="secondary"
+              className="rounded-full bg-primary/15 text-[10px] font-semibold text-primary"
+            >
+              Default
+            </Badge>
+          ) : null}
         </div>
       </TableCell>
-      <TableCell>{connection.modelLabel}</TableCell>
-      <TableCell>{formatDate(connection.profile.updatedAt)}</TableCell>
+      <TableCell className="text-[13px] text-muted-foreground">{connection.modelLabel}</TableCell>
+      <TableCell className="text-[13px] text-muted-foreground">{formatDate(connection.profile.updatedAt)}</TableCell>
       <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-1.5">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="rounded-full"
+            className="h-8 rounded-full px-3 text-xs"
             disabled={isBusy || isDefault}
             onClick={() => {
               void onSelectDefault(connection.profile.profileId);
             }}
           >
-            <CheckIcon className="size-4" />
+            <CheckIcon className="size-3.5" />
             Make default
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="rounded-full"
+            className="h-8 rounded-full px-3 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
             disabled={isBusy}
             onClick={() => {
               void onDelete(connection.profile.profileId);
             }}
           >
-            <Trash2Icon className="size-4" />
+            <Trash2Icon className="size-3.5" />
             Delete
           </Button>
         </div>
@@ -245,8 +263,8 @@ function MessageBanner({
       className={cn(
         "rounded-2xl border px-4 py-3 text-sm",
         tone === "error"
-          ? "border-amber-300/80 bg-amber-50 text-amber-900"
-          : "border-emerald-200 bg-emerald-50 text-emerald-900",
+          ? "border-warning/30 bg-warning/10 text-warning-foreground"
+          : "border-success/30 bg-success/10 text-success",
       )}
     >
       {children}

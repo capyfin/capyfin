@@ -1,15 +1,18 @@
 import { startSidecarServer } from "./index.ts";
 
-function main(): void {
-  const server = startSidecarServer();
+async function main(): Promise<void> {
+  const server = await startSidecarServer();
 
   const shutdown = () => {
     console.error("[sidecar] shutting down");
-    server.close();
+    void server.close();
   };
 
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 }
 
-main();
+void main().catch((error: unknown) => {
+  console.error("[sidecar] fatal", error);
+  process.exit(1);
+});

@@ -7,25 +7,22 @@ void test("chat routes expose bootstrap and stream endpoints", async () => {
   const app = createChatRoutes(
     {
       authSessions: {} as never,
+      authService: {} as never,
       config: {
         hostname: "127.0.0.1",
         password: "password",
         port: 3000,
         username: "capyfin",
       },
-      createAgentService: (() => {
-        throw new Error("unused");
-      }) as never,
-      createAuthService: (() => {
-        throw new Error("unused");
-      }) as never,
+      embeddedGateway: {} as never,
+      gatewaySupervisor: {} as never,
       startedAt: Date.now(),
       version: "0.1.0-test",
     },
     {
       createChatService: () => ({
         bootstrapConversation() {
-          return {
+          return Promise.resolve({
             agent: {
               agentDir: "/tmp/main",
               createdAt: new Date().toISOString(),
@@ -61,11 +58,11 @@ void test("chat routes expose bootstrap and stream endpoints", async () => {
               updatedAt: new Date().toISOString(),
               workspaceDir: "/tmp/main/workspace",
             },
-          };
+          });
         },
         streamConversation() {
           streamed = true;
-          return new Response("streaming", { status: 200 });
+          return Promise.resolve(new Response("streaming", { status: 200 }));
         },
       }),
     },

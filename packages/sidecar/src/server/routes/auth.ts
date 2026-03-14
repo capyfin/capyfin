@@ -15,7 +15,7 @@ export function createAuthRoutes(runtime: SidecarRuntime): Hono {
   const app = new Hono();
 
   app.get("/overview", async (context) => {
-    const authOverview = await runtime.createAuthService().getOverview();
+    const authOverview = await runtime.authService.getOverview();
     return context.json(authOverviewSchema.parse(authOverview));
   });
 
@@ -23,24 +23,23 @@ export function createAuthRoutes(runtime: SidecarRuntime): Hono {
     const payload = connectProviderSecretRequestSchema.parse(
       await context.req.json(),
     );
-    const summary = await runtime.createAuthService().saveSecretProfile(payload);
+    const summary = await runtime.authService.saveSecretProfile(payload);
+    await runtime.embeddedGateway.syncAuthProfiles();
 
     return context.json(storedProfileSummarySchema.parse(summary), 201);
   });
 
   app.post("/select", async (context) => {
     const payload = selectProviderRequestSchema.parse(await context.req.json());
-    const providerStatus = await runtime
-      .createAuthService()
-      .selectProvider(payload.selector);
+    const providerStatus = await runtime.authService.selectProvider(payload.selector);
+    await runtime.embeddedGateway.syncAuthProfiles();
 
     return context.json(providerStatusSchema.parse(providerStatus));
   });
 
   app.delete("/profiles/:profileId", async (context) => {
-    await runtime
-      .createAuthService()
-      .deleteProfile(context.req.param("profileId"));
+    await runtime.authService.deleteProfile(context.req.param("profileId"));
+    await runtime.embeddedGateway.syncAuthProfiles();
 
     return context.body(null, 204);
   });

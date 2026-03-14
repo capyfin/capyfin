@@ -1,14 +1,14 @@
 # CapyFin
 
-CapyFin is a sidecar-first Tauri desktop application scaffolded for long-term team ownership. The repository is split into a React desktop shell, a Rust native bootstrap layer, a Node application core, a Node sidecar API, and a Node CLI so additional finance workflows can be added without collapsing everything into one runtime.
+CapyFin is a sidecar-first Tauri desktop application scaffolded for long-term team ownership. The repository is split into a React desktop shell, a Rust native bootstrap layer, a Node sidecar API, an embedded local agent runtime managed by that sidecar, and a Node CLI so additional finance workflows can be added without exposing internal runtime setup to end users.
 
 ## Workspace layout
 
 - `apps/desktop`: React desktop shell and the Tauri runtime.
 - `packages/contracts`: shared TypeScript transport schemas and the application manifest.
-- `packages/core`: shared Node application core consumed by the sidecar and CLI.
+- `packages/core`: shared Node application core consumed by the CLI and sidecar auth flows.
 - `packages/cli`: operational Node CLI built on the shared application core.
-- `packages/sidecar`: Node sidecar API for localhost HTTP, health checks, and streaming.
+- `packages/sidecar`: Node sidecar API for localhost HTTP, health checks, streaming, and embedded runtime supervision.
 - `config/app-manifest.json`: cross-language manifest consumed by both Rust and TypeScript.
 - `docs`: lightweight engineering documentation for architecture and conventions.
 
@@ -37,9 +37,9 @@ pnpm cli -- agents create --name "Research" --provider openai --model gpt-5
 pnpm cli -- sessions create research --label "Morning brief"
 ```
 
-Provider credentials are managed through the CLI and stored in a versioned auth store under the user config directory, or at `CAPYFIN_AUTH_STORE_PATH` when an explicit path is provided. Shared auth behavior lives behind the Node-only `@capyfin/core/auth` entrypoint so the CLI and future sidecar workflows resolve providers through the same rules.
+Provider credentials are managed through the CLI and stored in a versioned auth store under the user config directory, or at `CAPYFIN_AUTH_STORE_PATH` when an explicit path is provided. Shared auth behavior lives behind the Node-only `@capyfin/core/auth` entrypoint so the CLI and desktop app resolve providers through the same rules.
 
-Agent metadata and session transcripts follow the same pattern. Agent CRUD and session creation live in the shared Node core behind `@capyfin/core/agents`, with a versioned catalog under the app config directory and per-agent transcript/session state backed by `@mariozechner/pi-coding-agent`'s `SessionManager`.
+On desktop, the sidecar starts and supervises an internal localhost-only agent runtime on demand. The sidecar owns port reservation, token generation, readiness checks, shutdown, and the runtime config/state directories. The frontend still talks only to the CapyFin sidecar. It never talks to the embedded runtime directly.
 
 ## Quality gates
 

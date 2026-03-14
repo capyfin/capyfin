@@ -15,6 +15,10 @@
     "./agents": {
       "types": "./src/agents/index.ts",
       "default": "./src/agents/index.ts"
+    },
+    "./config-paths": {
+      "types": "./src/config-paths.ts",
+      "default": "./src/config-paths.ts"
     }
   },
   "files": [

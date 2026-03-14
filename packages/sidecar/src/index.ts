@@ -1,23 +1,42 @@
-import { AgentService } from "@capyfin/core/agents";
 import { ProviderAuthService } from "@capyfin/core/auth";
 import { serve } from "@hono/node-server";
 import packageJson from "../package.json" with { type: "json" };
 import { OAuthSessionManager } from "./auth/oauth-sessions.ts";
 import { loadSidecarConfig, type SidecarConfig } from "./config.ts";
+import { EmbeddedGatewayClient } from "./internal-gateway/gateway-client.ts";
+import { AgentMetadataStoreService } from "./internal-gateway/metadata-store.ts";
+import { EmbeddedGatewaySupervisor } from "./internal-gateway/supervisor.ts";
 import { createSidecarApp } from "./server/app.ts";
 
 export interface SidecarServerHandle {
-  close(): void;
+  close(): Promise<void>;
 }
 
-export function startSidecarServer(config: SidecarConfig = loadSidecarConfig()): SidecarServerHandle {
-  const createAgentService = (): AgentService => new AgentService();
-  const createAuthService = (): ProviderAuthService => new ProviderAuthService();
+export async function startSidecarServer(
+  config: SidecarConfig = loadSidecarConfig(),
+): Promise<SidecarServerHandle> {
+  const authService = new ProviderAuthService();
+  const gatewaySupervisor = new EmbeddedGatewaySupervisor(config);
+  await gatewaySupervisor.start();
+  const metadataStore = new AgentMetadataStoreService(gatewaySupervisor.paths);
+  await metadataStore.ensureDefaultAgent();
+  const embeddedGateway = new EmbeddedGatewayClient({
+    authService,
+    metadataStore,
+    paths: gatewaySupervisor.paths,
+    target: gatewaySupervisor.connection,
+  });
+  await embeddedGateway.syncAuthProfiles();
   const runtime = {
-    authSessions: new OAuthSessionManager(createAuthService),
+    authService,
+    authSessions: new OAuthSessionManager(() => authService, {
+      afterProfileStored: async () => {
+        await embeddedGateway.syncAuthProfiles();
+      },
+    }),
     config,
-    createAgentService,
-    createAuthService,
+    embeddedGateway,
+    gatewaySupervisor,
     startedAt: Date.now(),
     version: packageJson.version,
   };
@@ -38,8 +57,9 @@ export function startSidecarServer(config: SidecarConfig = loadSidecarConfig()):
   );
 
   return {
-    close() {
+    async close() {
       server.close();
+      await gatewaySupervisor.stop();
     },
   };
 }

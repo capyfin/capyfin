@@ -2,7 +2,6 @@ import { chatBootstrapSchema } from "@capyfin/contracts";
 import { validateUIMessages } from "ai";
 import { Hono } from "hono";
 import { z } from "zod";
-import { AgentChatService } from "../../chat/service.ts";
 import type { SidecarRuntime } from "../context.ts";
 
 const chatRequestSchema = z.object({
@@ -22,7 +21,7 @@ const chatRequestSchema = z.object({
 
 interface ChatRouteOptions {
   createChatService?: () => Pick<
-    AgentChatService,
+    SidecarRuntime["embeddedGateway"],
     "bootstrapConversation" | "streamConversation"
   >;
 }
@@ -33,12 +32,7 @@ export function createChatRoutes(
 ): Hono {
   const app = new Hono();
   const createChatService =
-    options.createChatService ??
-    (() =>
-      new AgentChatService({
-        agentService: runtime.createAgentService(),
-        authService: runtime.createAuthService(),
-      }));
+    options.createChatService ?? (() => runtime.embeddedGateway);
 
   app.get("/bootstrap", async (context) => {
     const agentId = context.req.query("agentId")?.trim();

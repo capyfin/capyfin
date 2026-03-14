@@ -6,6 +6,7 @@ node_modules
 target
 coverage
 pnpm-debug.log*
+packages/sidecar/.bundle
 
 apps/desktop/dist
 apps/desktop/src-tauri/target

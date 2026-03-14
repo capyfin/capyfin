@@ -188,7 +188,10 @@ fn build_sidecar_command(app: &AppHandle) -> Result<Command, String> {
     }
 
     let entrypoint = sidecar_entrypoint(app)?;
-    let node_binary = std::env::var("CAPYFIN_NODE_BINARY").unwrap_or_else(|_| "node".to_string());
+    let node_binary = packaged_node_binary(app)
+        .and_then(|candidate| candidate.exists().then_some(candidate))
+        .or_else(|| std::env::var("CAPYFIN_NODE_BINARY").ok().map(PathBuf::from))
+        .unwrap_or_else(|| PathBuf::from("node"));
     let mut command = Command::new(node_binary);
     command.arg(entrypoint);
     Ok(command)
@@ -211,6 +214,13 @@ fn sidecar_entrypoint(app: &AppHandle) -> Result<PathBuf, String> {
         "Could not locate sidecar entrypoint. Expected {}",
         candidate.display()
     ))
+}
+
+fn packaged_node_binary(app: &AppHandle) -> Option<PathBuf> {
+    app.path()
+        .resource_dir()
+        .ok()
+        .map(|resource_dir| resource_dir.join("sidecar/node/bin/node"))
 }
 
 fn workspace_root() -> PathBuf {

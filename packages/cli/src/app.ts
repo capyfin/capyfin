@@ -151,7 +151,7 @@ function renderHelp(): string {
 Commands:
   metadata [--output text|json]
   workspace [--output text|json]
-  serve --hostname 127.0.0.1 --port 3001 --password secret [--username capyfin]
+  serve [--hostname 127.0.0.1] [--port 19111] --password secret [--username capyfin]
   auth providers [--output text|json]
   auth status [provider] [--output text|json]
   auth login [provider] [--api-key value | --token value | --oauth] [--profile label] [--skip-activate]

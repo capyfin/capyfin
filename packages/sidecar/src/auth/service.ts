@@ -373,8 +373,11 @@ function buildSelection(params: {
     params.connections.some((connection) => connection.providerId === defaultModel.providerId)
       ? defaultModel.providerId
       : undefined;
+  const fallbackConnection =
+    params.connections.find((connection) => connection.isDefault) ??
+    params.connections[0];
   const selectedProviderId =
-    defaultProviderWithConnection ?? params.connections.find((connection) => connection.isDefault)?.providerId;
+    defaultProviderWithConnection ?? fallbackConnection?.providerId;
   if (!selectedProviderId) {
     return {};
   }
@@ -382,11 +385,16 @@ function buildSelection(params: {
   const selectedProfileId =
     resolveSelectedProfileForProvider(params.config, params.store, selectedProviderId) ??
     params.connections.find((connection) => connection.providerId === selectedProviderId)?.profileId;
+  const selectedConnection = params.connections.find(
+    (connection) => connection.profileId === selectedProfileId,
+  );
 
   return {
     ...(defaultModel.providerId === selectedProviderId && defaultModel.modelId
       ? { selectedModelId: defaultModel.modelId }
-      : {}),
+      : selectedConnection?.activeModelId
+        ? { selectedModelId: selectedConnection.activeModelId }
+        : {}),
     ...(selectedProfileId ? { selectedProfileId } : {}),
     selectedProviderId,
   };
@@ -431,10 +439,12 @@ function createRuntimeEnv(): RuntimeEnvLike {
 }
 
 export class RuntimeProviderAuthService {
+  readonly #env: NodeJS.ProcessEnv;
   readonly #paths: EmbeddedGatewayPaths;
   readonly #runtimeEnv: RuntimeEnvLike;
 
-  constructor(paths: EmbeddedGatewayPaths) {
+  constructor(paths: EmbeddedGatewayPaths, env: NodeJS.ProcessEnv = process.env) {
+    this.#env = env;
     this.#paths = paths;
     this.#runtimeEnv = createRuntimeEnv();
   }
@@ -718,7 +728,7 @@ export class RuntimeProviderAuthService {
     const workspaceDir = join(this.#paths.workspacesDir, DEFAULT_AGENT_ID);
     const { groups } = buildAuthChoiceGroups({
       config,
-      env: process.env,
+      env: this.#env,
       includeSkip: false,
       store,
       workspaceDir,
@@ -741,7 +751,7 @@ export class RuntimeProviderAuthService {
             resolvePreferredProviderForAuthChoice({
               choice: option.value,
               config,
-              env: process.env,
+              env: this.#env,
               workspaceDir,
             }) ?? group.value,
         })),

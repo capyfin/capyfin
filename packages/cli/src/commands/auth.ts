@@ -1,9 +1,48 @@
 import { parseArgs } from "node:util";
-import { ProviderAuthService, type ProviderStatus } from "@capyfin/core/auth";
+import type {
+  AuthOverview,
+  ProviderConnectionInput,
+  ProviderDefinition,
+  ProviderMethod,
+  SavedConnection,
+} from "@capyfin/contracts";
 import type { CliIo } from "../io.ts";
 import type { ResolvedRunCliOptions } from "../app.ts";
+import { createCliAuthContext } from "../runtime.ts";
 
 type OutputFormat = "text" | "json";
+type AuthStepChoice = "interactive" | "secret";
+
+interface CliPrompterLike {
+  confirm(params: {
+    initialValue?: boolean;
+    message: string;
+  }): Promise<boolean>;
+  intro(title: string): Promise<void>;
+  multiselect<T>(params: {
+    initialValues?: T[];
+    message: string;
+    options: { hint?: string; label: string; value: T }[];
+    searchable?: boolean;
+  }): Promise<T[]>;
+  note(message: string, title?: string): Promise<void>;
+  outro(message: string): Promise<void>;
+  progress(label: string): {
+    stop(message?: string): void;
+    update(message: string): void;
+  };
+  select<T>(params: {
+    initialValue?: T;
+    message: string;
+    options: { hint?: string; label: string; value: T }[];
+  }): Promise<T>;
+  text(params: {
+    initialValue?: string;
+    message: string;
+    placeholder?: string;
+    validate?: (value: string) => string | undefined;
+  }): Promise<string>;
+}
 
 export async function runAuthCommand(
   argv: string[],
@@ -13,7 +52,7 @@ export async function runAuthCommand(
 
   switch (subcommand) {
     case "providers":
-      printProviders(argv.slice(1), options);
+      await printProviders(argv.slice(1), options);
       return;
     case "status":
       await printStatus(argv.slice(1), options);
@@ -22,14 +61,17 @@ export async function runAuthCommand(
       await login(argv.slice(1), options);
       return;
     case "select":
-      await selectProvider(argv.slice(1), options);
+      await selectConnection(argv.slice(1), options);
       return;
     default:
       throw new Error(`Unknown auth command: ${subcommand}`);
   }
 }
 
-function printProviders(argv: string[], options: ResolvedRunCliOptions): void {
+async function printProviders(
+  argv: string[],
+  options: ResolvedRunCliOptions,
+): Promise<void> {
   const { values } = parseArgs({
     args: argv,
     allowPositionals: true,
@@ -42,22 +84,20 @@ function printProviders(argv: string[], options: ResolvedRunCliOptions): void {
     strict: true,
   });
   const output = values.output as OutputFormat;
-  const service = createAuthService(options);
-  const providers = service.listProviders();
+  const { authService } = await createCliAuthContext(options);
+  const overview = await authService.getOverview();
 
   if (output === "json") {
-    writeJson(options.io, providers);
+    writeJson(options.io, overview.providers);
     return;
   }
 
   const lines = ["Available providers:"];
-
-  for (const provider of providers) {
+  for (const provider of overview.providers) {
     lines.push(
-      `- ${provider.name} (${provider.id}) [${provider.authMethods.map(formatAuthMethod).join(", ")}]`,
+      `- ${provider.name} (${provider.id}) [${provider.methods.map((method) => method.label).join(", ")}]`,
     );
   }
-
   options.io.stdout(`${lines.join("\n")}\n`);
 }
 
@@ -77,55 +117,48 @@ async function printStatus(
     strict: true,
   });
   const output = values.output as OutputFormat;
-  const service = createAuthService(options);
-  const providerId = positionals[0];
+  const { authService } = await createCliAuthContext(options);
+  const overview = await authService.getOverview();
+  const providerSelector = positionals[0]?.trim();
 
-  if (providerId) {
-    const providerStatus = await service.getProviderStatus(providerId);
+  if (providerSelector) {
+    const provider = resolveProvider(overview.providers, providerSelector);
+    if (!provider) {
+      throw new Error(`Unknown provider: ${providerSelector}`);
+    }
 
+    const status = buildProviderStatus(overview, provider);
     if (output === "json") {
-      writeJson(options.io, providerStatus);
+      writeJson(options.io, status);
       return;
     }
 
-    options.io.stdout(`${renderProviderStatus(providerStatus)}\n`);
+    options.io.stdout(`${renderProviderStatus(status)}\n`);
     return;
   }
 
-  const overview = await service.getOverview();
-  const visibleProviders = overview.providers.filter(
-    (provider) =>
-      provider.isSelectedProvider ||
-      provider.profiles.length > 0 ||
-      provider.environment.available,
-  );
-
   if (output === "json") {
-    writeJson(options.io, {
-      ...overview,
-      providers: visibleProviders,
-    });
+    writeJson(options.io, overview);
     return;
   }
 
   const lines = [
-    `Auth store: ${overview.storePath}`,
+    `Config: ${overview.configPath}`,
+    `Store: ${overview.storePath}`,
     `Selected provider: ${overview.selectedProviderId ?? "none"}`,
     `Selected profile: ${overview.selectedProfileId ?? "none"}`,
   ];
 
-  if (visibleProviders.length === 0) {
-    lines.push("", "No provider authentication has been configured yet.");
-    options.io.stdout(`${lines.join("\n")}\n`);
-    return;
+  if (overview.connections.length === 0) {
+    lines.push("", "No provider connections have been configured yet.");
+  } else {
+    lines.push("", "Current connections:");
+    for (const connection of overview.connections) {
+      lines.push(renderConnection(connection));
+    }
   }
 
-  lines.push("", "Configured providers:");
-  for (const provider of visibleProviders) {
-    lines.push(renderProviderStatus(provider));
-  }
-
-  options.io.stdout(`${lines.join("\n\n")}\n`);
+  options.io.stdout(`${lines.join("\n")}\n`);
 }
 
 async function login(
@@ -156,110 +189,74 @@ async function login(
     },
     strict: true,
   });
-  const service = createAuthService(options);
   const io = options.io;
-  const providerId =
-    positionals[0] ?? (await promptForProviderSelection(service, io));
-  const provider = service.listProviders().find((entry) => entry.id === providerId);
+  const { authService } = await createCliAuthContext(options);
+  const overview = await authService.getOverview();
+  const provider =
+    resolveProvider(
+      overview.providers,
+      positionals[0]?.trim() ??
+        (await promptForProviderSelection(overview.providers, io)),
+    ) ?? null;
 
   if (!provider) {
-    throw new Error(`Unknown provider: ${providerId}`);
+    throw new Error("Provider is required.");
   }
 
+  const explicitApiKey = readStringValue(values["api-key"]);
+  const explicitToken = readStringValue(values.token);
   const activate = !values["skip-activate"];
-  const profile = readStringValue(values.profile) ?? "default";
-  const secretValue = readStringValue(values["api-key"]) ?? readStringValue(values.token);
-
-  if (values.oauth) {
-    const summary = await service.loginWithOAuth({
-      activate,
-      callbacks: {
-        onAuth(info) {
-          io.stdout(`Open this URL in your browser:\n${info.url}\n`);
-          if (info.instructions) {
-            io.stdout(`${info.instructions}\n`);
-          }
-        },
-        onProgress(message) {
-          io.stdout(`${message}\n`);
-        },
-        onPrompt(prompt) {
-          const placeholder = prompt.placeholder ? ` (${prompt.placeholder})` : "";
-          return io.prompt(`${prompt.message}${placeholder}: `);
-        },
-      },
-      label: profile,
-      providerId,
-    });
-
-    io.stdout(
-      `Stored OAuth profile ${summary.profileId} for ${provider.name}${activate ? " and selected it." : "."}\n`,
-    );
-    return;
-  }
-
-  if (secretValue) {
-    const summary = await service.saveSecretProfile({
-      activate,
-      label: profile,
-      providerId,
-      secret: secretValue,
-    });
-
-    io.stdout(
-      `Stored profile ${summary.profileId} for ${provider.name}${activate ? " and selected it." : "."}\n`,
-    );
-    return;
-  }
-
-  const selectedMethod = await resolveInteractiveLoginMethod(provider, io);
-  if (selectedMethod === "oauth") {
-    const summary = await service.loginWithOAuth({
-      activate,
-      callbacks: {
-        onAuth(info) {
-          io.stdout(`Open this URL in your browser:\n${info.url}\n`);
-          if (info.instructions) {
-            io.stdout(`${info.instructions}\n`);
-          }
-        },
-        onProgress(message) {
-          io.stdout(`${message}\n`);
-        },
-        onPrompt(prompt) {
-          const placeholder = prompt.placeholder ? ` (${prompt.placeholder})` : "";
-          return io.prompt(`${prompt.message}${placeholder}: `);
-        },
-      },
-      label: profile,
-      providerId,
-    });
-
-    io.stdout(
-      `Stored OAuth profile ${summary.profileId} for ${provider.name}${activate ? " and selected it." : "."}\n`,
-    );
-    return;
-  }
-
-  const secretPrompt =
-    selectedMethod === "token"
-      ? `Enter ${provider.name} token: `
-      : `Enter ${provider.name} API key: `;
-  const secret = await io.promptSecret(secretPrompt);
-
-  const summary = await service.saveSecretProfile({
-    activate,
-    label: profile,
-    providerId,
-    secret,
+  const previousSelection = activate ? null : overview.selectedProfileId;
+  const selectedMethod = await resolveLoginMethod({
+    explicitChoice:
+      values.oauth || explicitApiKey || explicitToken
+        ? "secret"
+        : "interactive",
+    explicitOauth: values.oauth,
+    explicitToken: Boolean(explicitToken),
+    provider,
+    io,
   });
 
-  io.stdout(
-    `Stored profile ${summary.profileId} for ${provider.name}${activate ? " and selected it." : "."}\n`,
+  let connection: SavedConnection | undefined;
+  if (explicitApiKey || explicitToken) {
+    connection = await authService.connectSecret({
+      authChoice: selectedMethod.id,
+      secret: explicitApiKey ?? explicitToken ?? "",
+    });
+  } else if (selectedMethod.input === "api_key" || selectedMethod.input === "token") {
+    const secret = await io.promptSecret(
+      `Enter ${provider.name} ${selectedMethod.input === "token" ? "token" : "API key"}: `,
+    );
+    connection = await authService.connectSecret({
+      authChoice: selectedMethod.id,
+      secret,
+    });
+  } else {
+    const result = await authService.applyAuthChoice({
+      authChoice: selectedMethod.id,
+      prompter: createCliPrompter(io),
+    });
+    connection = result.connection;
+  }
+
+  if (!connection) {
+    throw new Error(`Connected ${provider.name}, but no profile was stored.`);
+  }
+
+  if (!activate && previousSelection && previousSelection !== connection.profileId) {
+    await authService.selectProfile(previousSelection);
+  }
+
+  const profileNote = readStringValue(values.profile);
+  const selectionSuffix =
+    activate && connection.isDefault ? " and selected it." : ".";
+  options.io.stdout(
+    `Stored profile ${connection.profileId} for ${provider.name}${profileNote ? ` (${profileNote})` : ""}${selectionSuffix}\n`,
   );
 }
 
-async function selectProvider(
+async function selectConnection(
   argv: string[],
   options: ResolvedRunCliOptions,
 ): Promise<void> {
@@ -269,57 +266,43 @@ async function selectProvider(
     options: {},
     strict: true,
   });
-  const selector = positionals[0];
+  const selector = positionals[0]?.trim();
 
   if (!selector) {
     throw new Error("Missing provider or profile identifier. Usage: capyfin auth select <provider|profile-id>");
   }
 
-  const service = createAuthService(options);
-  const providerStatus = await service.selectProvider(selector);
+  const { authService } = await createCliAuthContext(options);
+  const overview = await authService.getOverview();
+  const profileId = resolveProfileIdForSelector(overview, selector);
 
+  if (!profileId) {
+    throw new Error(`No saved connection matches "${selector}".`);
+  }
+
+  const connection = await authService.selectProfile(profileId);
   options.io.stdout(
-    `Selected ${providerStatus.provider.name} (${providerStatus.provider.id})${providerStatus.selectedProfileId ? ` using ${providerStatus.selectedProfileId}` : ""}.\n`,
+    `Selected ${connection.providerName}${connection.label ? ` (${connection.label})` : ""}.\n`,
   );
 }
 
-function createAuthService(options: ResolvedRunCliOptions): ProviderAuthService {
-  return new ProviderAuthService({
-    env: options.env,
-    ...(options.now ? { now: options.now } : {}),
-    ...(options.storePath ? { storePath: options.storePath } : {}),
-  });
-}
-
-function formatAuthMethod(method: string): string {
-  return method.replaceAll("_", "-");
-}
-
 async function promptForProviderSelection(
-  service: ProviderAuthService,
+  providers: ProviderDefinition[],
   io: CliIo,
 ): Promise<string> {
   if (!io.isInteractive) {
     throw new Error("Provider is required in non-interactive mode.");
   }
 
-  const providers = service.listProviders();
   io.stdout("Select a provider:\n");
   providers.forEach((provider, index) => {
     io.stdout(
-      `${String(index + 1)}. ${provider.name} (${provider.id}) [${provider.authMethods.map(formatAuthMethod).join(", ")}]\n`,
+      `${String(index + 1)}. ${provider.name} (${provider.id}) [${provider.methods.map((method) => method.label).join(", ")}]\n`,
     );
   });
 
-  const selection = await io.prompt(
-    `Enter a number (1-${String(providers.length)}): `,
-  );
+  const selection = await io.prompt(`Enter a number (1-${String(providers.length)}): `);
   const index = Number.parseInt(selection, 10) - 1;
-
-  if (!Number.isInteger(index) || index < 0 || index >= providers.length) {
-    throw new Error("Invalid provider selection.");
-  }
-
   const provider = providers[index];
   if (!provider) {
     throw new Error("Invalid provider selection.");
@@ -328,72 +311,290 @@ async function promptForProviderSelection(
   return provider.id;
 }
 
-async function resolveInteractiveLoginMethod(
-  provider: ProviderStatus["provider"],
-  io: CliIo,
-): Promise<"api_key" | "oauth" | "token"> {
-  const interactiveMethods = provider.authMethods.filter(
-    (method): method is "api_key" | "oauth" | "token" =>
-      method === "api_key" || method === "oauth" || method === "token",
-  );
-
-  if (interactiveMethods.length === 0) {
-    throw new Error(`${provider.name} does not support interactive login yet.`);
-  }
-
-  if (interactiveMethods.length === 1) {
-    const onlyMethod = interactiveMethods[0];
-    if (!onlyMethod) {
-      throw new Error(`${provider.name} does not support interactive login yet.`);
-    }
-
-    return onlyMethod;
-  }
-
-  if (!io.isInteractive) {
-    throw new Error(
-      `${provider.name} supports multiple auth methods. Pass --oauth or provide a static credential flag.`,
+async function resolveLoginMethod(params: {
+  explicitChoice: AuthStepChoice;
+  explicitOauth: boolean;
+  explicitToken: boolean;
+  io: CliIo;
+  provider: ProviderDefinition;
+}): Promise<ProviderMethod> {
+  if (params.explicitOauth) {
+    return (
+      params.provider.methods.find((method) => isInteractiveInput(method.input)) ??
+      failMissingMethod(params.provider, "interactive sign-in")
     );
   }
 
-  io.stdout(`Select an auth method for ${provider.name}:\n`);
-  interactiveMethods.forEach((method, index) => {
-    io.stdout(`${String(index + 1)}. ${formatAuthMethod(method)}\n`);
-  });
+  if (params.explicitToken) {
+    return (
+      params.provider.methods.find((method) => method.input === "token") ??
+      failMissingMethod(params.provider, "token")
+    );
+  }
 
-  const selection = await io.prompt(
-    `Enter a number (1-${String(interactiveMethods.length)}): `,
+  if (params.explicitChoice === "secret") {
+    return (
+      params.provider.methods.find((method) => method.input === "api_key") ??
+      params.provider.methods.find((method) => method.input === "token") ??
+      failMissingMethod(params.provider, "secret credential")
+    );
+  }
+
+  if (params.provider.methods.length === 1) {
+    const onlyMethod = params.provider.methods[0];
+    if (!onlyMethod) {
+      throw new Error(`${params.provider.name} does not expose any connection methods.`);
+    }
+    return onlyMethod;
+  }
+
+  if (!params.io.isInteractive) {
+    throw new Error(
+      `${params.provider.name} supports multiple connection methods. Pass --oauth, --api-key, or --token.`,
+    );
+  }
+
+  params.io.stdout(`Select a connection method for ${params.provider.name}:\n`);
+  params.provider.methods.forEach((method, index) => {
+    params.io.stdout(`${String(index + 1)}. ${method.label}\n`);
+  });
+  const selection = await params.io.prompt(
+    `Enter a number (1-${String(params.provider.methods.length)}): `,
   );
   const index = Number.parseInt(selection, 10) - 1;
-
-  if (!Number.isInteger(index) || index < 0 || index >= interactiveMethods.length) {
-    throw new Error("Invalid auth method selection.");
+  const method = params.provider.methods[index];
+  if (!method) {
+    throw new Error("Invalid connection method selection.");
   }
-
-  const selectedMethod = interactiveMethods[index];
-  if (!selectedMethod) {
-    throw new Error("Invalid auth method selection.");
-  }
-
-  return selectedMethod;
+  return method;
 }
 
-function renderProviderStatus(provider: ProviderStatus): string {
+function resolveProvider(
+  providers: ProviderDefinition[],
+  selector: string,
+): ProviderDefinition | undefined {
+  return providers.find((provider) => provider.id === selector.trim());
+}
+
+function buildProviderStatus(
+  overview: AuthOverview,
+  provider: ProviderDefinition,
+): {
+  connections: SavedConnection[];
+  provider: ProviderDefinition;
+  resolved?: {
+    source: "profile";
+  };
+  selectedProfileId?: string;
+  selectedConnection?: SavedConnection;
+} {
+  const providerIds = new Set(provider.methods.map((method) => method.providerId));
+  providerIds.add(provider.id);
+
+  const connections = overview.connections.filter((connection) =>
+    providerIds.has(connection.providerId),
+  );
+  const selectedConnection =
+    connections.find((connection) => connection.profileId === overview.selectedProfileId) ??
+    connections.find((connection) => connection.isDefault);
+
+  return {
+    connections,
+    provider,
+    ...(selectedConnection
+      ? {
+          resolved: {
+            source: "profile" as const,
+          },
+          selectedProfileId: selectedConnection.profileId,
+        }
+      : {}),
+    ...(selectedConnection ? { selectedConnection } : {}),
+  };
+}
+
+function renderProviderStatus(status: {
+  connections: SavedConnection[];
+  provider: ProviderDefinition;
+  resolved?: {
+    source: "profile";
+  };
+  selectedProfileId?: string;
+  selectedConnection?: SavedConnection;
+}): string {
   const lines = [
-    `${provider.isSelectedProvider ? "*" : "-"} ${provider.provider.name} (${provider.provider.id})`,
-    `  Methods: ${provider.provider.authMethods.map(formatAuthMethod).join(", ")}`,
-    `  Profiles: ${provider.profiles.length > 0 ? provider.profiles.map((profile) => `${profile.profileId}${profile.isActiveProfile ? " [active]" : ""}`).join(", ") : "none"}`,
-    `  Environment: ${provider.environment.available ? (provider.environment.sourceLabel ?? "configured") : "not configured"}`,
-    `  Resolution: ${provider.resolved ? provider.resolved.description : "none"}`,
+    `${status.provider.name} (${status.provider.id})`,
+    `  Methods: ${status.provider.methods.map((method) => method.label).join(", ")}`,
   ];
 
+  if (status.selectedConnection) {
+    lines.push(`  Selected: ${status.selectedProfileId ?? status.selectedConnection.profileId}`);
+  }
+
+  if (status.connections.length === 0) {
+    lines.push("  Saved connections: none");
+    return lines.join("\n");
+  }
+
+  lines.push("  Saved connections:");
+  for (const connection of status.connections) {
+    lines.push(`    ${renderConnection(connection)}`);
+  }
   return lines.join("\n");
 }
 
-function readStringValue(value: string | boolean | undefined): string | undefined {
-  return typeof value === "string" ? value : undefined;
+function renderConnection(connection: SavedConnection): string {
+  const parts = [
+    connection.profileId,
+    connection.providerName,
+    connection.activeModelId ?? "provider default",
+    connection.isDefault ? "default" : null,
+  ].filter((value): value is string => Boolean(value));
+  return `- ${parts.join(" · ")}`;
 }
 
-function writeJson(io: CliIo, value: unknown): void {
-  io.stdout(`${JSON.stringify(value, null, 2)}\n`);
+function resolveProfileIdForSelector(
+  overview: AuthOverview,
+  selector: string,
+): string | undefined {
+  const trimmed = selector.trim();
+  const directMatch = overview.connections.find(
+    (connection) => connection.profileId === trimmed,
+  );
+  if (directMatch) {
+    return directMatch.profileId;
+  }
+
+  const provider = resolveProvider(overview.providers, trimmed);
+  if (!provider) {
+    return undefined;
+  }
+
+  const status = buildProviderStatus(overview, provider);
+  return (
+    status.selectedConnection?.profileId ??
+    status.connections[0]?.profileId
+  );
+}
+
+function failMissingMethod(provider: ProviderDefinition, label: string): never {
+  throw new Error(`${provider.name} does not support ${label}.`);
+}
+
+function isInteractiveInput(input: ProviderConnectionInput): boolean {
+  return input === "oauth" || input === "device_code" || input === "custom";
+}
+
+function createCliPrompter(io: CliIo): CliPrompterLike {
+  return {
+    async confirm(params) {
+      if (!io.isInteractive) {
+        throw new Error("Interactive confirmation is required for this connection flow.");
+      }
+
+      const suffix = params.initialValue === false ? " [y/N]: " : " [Y/n]: ";
+      const answer = (await io.prompt(`${params.message}${suffix}`)).trim().toLowerCase();
+      if (!answer) {
+        return params.initialValue !== false;
+      }
+      return answer === "y" || answer === "yes";
+    },
+    intro(title) {
+      io.stdout(`${title}\n`);
+      return Promise.resolve();
+    },
+    async multiselect(params) {
+      if (!io.isInteractive) {
+        throw new Error("Interactive selection is required for this connection flow.");
+      }
+
+      io.stdout(`${params.message}\n`);
+      params.options.forEach((option, index) => {
+        io.stdout(`${String(index + 1)}. ${option.label}${option.hint ? ` - ${option.hint}` : ""}\n`);
+      });
+      const answer = await io.prompt("Select one or more numbers separated by commas: ");
+      const indexes = answer
+        .split(",")
+        .map((value) => Number.parseInt(value.trim(), 10) - 1)
+        .filter((value) => Number.isInteger(value));
+      const selected = indexes
+        .map((index) => params.options[index])
+        .filter((option): option is { hint?: string; label: string; value: typeof params.options[number]["value"] } => Boolean(option))
+        .map((option) => option.value);
+
+      if (selected.length === 0) {
+        throw new Error("At least one option must be selected.");
+      }
+
+      return selected;
+    },
+    note(message, title) {
+      io.stdout(`${title ? `${title}: ` : ""}${message}\n`);
+      return Promise.resolve();
+    },
+    outro(message) {
+      io.stdout(`${message}\n`);
+      return Promise.resolve();
+    },
+    progress(label) {
+      io.stdout(`${label}\n`);
+      return {
+        stop(message) {
+          if (message?.trim()) {
+            io.stdout(`${message.trim()}\n`);
+          }
+        },
+        update(message) {
+          io.stdout(`${message}\n`);
+        },
+      };
+    },
+    async select(params) {
+      if (!io.isInteractive) {
+        throw new Error("Interactive selection is required for this connection flow.");
+      }
+
+      io.stdout(`${params.message}\n`);
+      params.options.forEach((option, index) => {
+        io.stdout(`${String(index + 1)}. ${option.label}${option.hint ? ` - ${option.hint}` : ""}\n`);
+      });
+      const answer = await io.prompt(`Enter a number (1-${String(params.options.length)}): `);
+      const index = Number.parseInt(answer.trim(), 10) - 1;
+      const option = params.options[index];
+      if (!option) {
+        throw new Error("Invalid selection.");
+      }
+      return option.value;
+    },
+    async text(params) {
+      const prompt = `${params.message}${params.placeholder ? ` (${params.placeholder})` : ""}: `;
+      const value = isSecretPrompt(params.message, params.placeholder)
+        ? await io.promptSecret(prompt)
+        : await io.prompt(prompt);
+      const validationError = params.validate?.(value);
+      if (validationError) {
+        throw new Error(validationError);
+      }
+      return value;
+    },
+  };
+}
+
+function isSecretPrompt(message: string, placeholder?: string): boolean {
+  const haystack = `${message} ${placeholder ?? ""}`.toLowerCase();
+  return (
+    haystack.includes("api key") ||
+    haystack.includes("token") ||
+    haystack.includes("secret") ||
+    haystack.includes("password")
+  );
+}
+
+function readStringValue(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed === "" ? undefined : trimmed;
+}
+
+function writeJson(io: CliIo, payload: unknown): void {
+  io.stdout(`${JSON.stringify(payload, null, 2)}\n`);
 }

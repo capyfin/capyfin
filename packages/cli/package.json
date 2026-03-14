@@ -24,6 +24,7 @@
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@capyfin/contracts": "workspace:*",
     "@capyfin/core": "workspace:*",
     "@capyfin/sidecar": "workspace:*"
   },

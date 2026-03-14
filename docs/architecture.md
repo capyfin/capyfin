@@ -13,8 +13,8 @@
 - `apps/desktop`: React shell, dashboard features, and the sidecar client.
 - `apps/desktop/src-tauri`: Tauri bootstrap layer, sidecar supervision, and native capabilities.
 - `packages/contracts`: shared transport schemas and the repository manifest.
-- `packages/core`: shared Node application core for manifest access, auth/profile management, bootstrap payloads, and CLI-facing helpers.
-- `packages/cli`: operational Node CLI surface built on the shared core.
+- `packages/core`: shared manifest/bootstrap helpers and agent ID utilities.
+- `packages/cli`: operational Node CLI surface built on the embedded runtime adapter.
 - `packages/sidecar`: Node sidecar API that becomes the main application boundary and supervises the embedded agent runtime.
 - `config/app-manifest.json`: cross-language metadata that keeps Rust and TypeScript aligned.
 
@@ -34,9 +34,8 @@ This mirrors the intended long-term shape: Tauri is the secure host, the sidecar
 
 ## Runtime boundaries
 
-- `packages/core`: shared application behavior and canonical metadata used by both the CLI and sidecar.
-- `packages/core/auth`: legacy CLI-only provider auth subsystem retained for scripted workflows while the desktop app migrates to the embedded runtime-backed provider catalog.
-- `packages/cli`: command entrypoint for operators and scripted workflows.
+- `packages/core`: shared manifest/bootstrap behavior and small runtime-agnostic helpers.
+- `packages/cli`: command entrypoint for operators and scripted workflows, backed by the same embedded runtime the desktop app uses.
 - `packages/sidecar`: localhost HTTP server for the desktop shell, plus the embedded runtime supervisor, runtime client, and desktop-owned agent metadata store.
 
 This keeps the runtime behavior aligned across surfaces instead of splitting product logic between Node and Rust.
@@ -54,7 +53,7 @@ This keeps the runtime behavior aligned across surfaces instead of splitting pro
 - Agents are stored in a versioned catalog under the app config directory, with normalized IDs and one protected default agent (`main`).
 - Each agent owns an app-managed directory with a workspace folder plus a session area.
 - Session metadata is managed through the embedded runtime and mirrored into desktop-facing transport contracts by the sidecar.
-- The CLI keeps its own shared agent metadata flow for scripted setup, while the desktop app uses the sidecar-owned embedded runtime adapter.
+- The CLI and desktop app both operate through the embedded runtime adapter, so agent/session behavior stays aligned across surfaces.
 - Provider auth profiles are synced from the CapyFin auth store into each managed agent directory so runtime turns can resolve credentials without any user shell setup.
 
 ## Provider auth model
@@ -63,7 +62,7 @@ This keeps the runtime behavior aligned across surfaces instead of splitting pro
 - The sidecar discovers supported auth choices at runtime, executes sign-in programmatically, and stores the resulting profiles in the runtime-owned `auth-profiles.json`.
 - Provider state lives under the app-managed runtime directories, not in the user shell environment and not in the frontend.
 - The frontend only talks to the CapyFin sidecar. It never calls the embedded runtime directly.
-- The CLI still exposes its own operator-oriented auth commands for scripted setup, but the desktop UI is driven by the embedded runtime’s supported providers and connection flows.
+- The CLI exposes operator-oriented auth commands, but they are driven by the same runtime-backed provider catalog and connection flows as the desktop app.
 
 ## Frontend boundaries
 
@@ -88,8 +87,8 @@ This keeps startup concerns centralized and prevents ad hoc process management f
 - The root workspace owns shared tooling and task orchestration.
 - TypeScript stays in strict mode with type-aware ESLint rules.
 - `packages/contracts` is the only place where frontend and sidecar transport types should be defined.
-- `packages/core` is the only place where shared Node application behavior for the CLI and sidecar should live.
-- Provider auth changes should start in `packages/core/auth`, then be surfaced through CLI commands or sidecar endpoints, rather than implemented separately in each runtime.
+- `packages/core` should stay limited to manifest/bootstrap helpers and other runtime-agnostic utilities.
+- Provider, agent, session, and chat runtime changes should start in `packages/sidecar/src/internal-gateway` or `packages/sidecar/src/auth`, rather than being reimplemented in a parallel CLI-only layer.
 - Desktop runtime lifecycle changes should start in `packages/sidecar/src/internal-gateway`, where startup, readiness, auth, and shutdown behavior are centralized.
 - `config/app-manifest.json` is the source of truth for shared repository metadata across Rust and TypeScript.
 - Rust formatting and Clippy warnings are treated as part of the normal build hygiene.

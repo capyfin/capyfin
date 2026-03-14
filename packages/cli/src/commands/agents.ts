@@ -1,7 +1,7 @@
 import { parseArgs } from "node:util";
-import { AgentService } from "@capyfin/core/agents";
-import type { AgentRecord as Agent } from "@capyfin/core/agents";
+import type { Agent } from "@capyfin/contracts";
 import type { ResolvedRunCliOptions } from "../app.ts";
+import { withEmbeddedGatewayContext } from "../runtime.ts";
 
 type OutputFormat = "text" | "json";
 
@@ -45,7 +45,9 @@ async function printAgents(
     strict: true,
   });
   const output = values.output as OutputFormat;
-  const catalog = await createAgentService(options).getCatalog();
+  const catalog = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
+    await embeddedGateway.getCatalog(),
+  );
 
   if (output === "json") {
     options.io.stdout(`${JSON.stringify(catalog, null, 2)}\n`);
@@ -100,16 +102,18 @@ async function createAgent(
     strict: true,
   });
   const output = values.output as OutputFormat;
-  const agent = await createAgentService(options).createAgent({
-    ...(values.id ? { id: values.id } : {}),
-    ...(values.description ? { description: values.description } : {}),
-    ...(values.instructions ? { instructions: values.instructions } : {}),
-    ...(values.model ? { modelId: values.model } : {}),
-    name: requireValue(values.name, "Agent name is required."),
-    ...(values.provider ? { providerId: values.provider } : {}),
-    ...(values.workspace ? { workspaceDir: values.workspace } : {}),
-    ...(values.default ? { setAsDefault: true } : {}),
-  });
+  const agent = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
+    await embeddedGateway.createAgent({
+      ...(values.id ? { id: values.id } : {}),
+      ...(values.description ? { description: values.description } : {}),
+      ...(values.instructions ? { instructions: values.instructions } : {}),
+      ...(values.model ? { modelId: values.model } : {}),
+      name: requireValue(values.name, "Agent name is required."),
+      ...(values.provider ? { providerId: values.provider } : {}),
+      ...(values.workspace ? { workspaceDir: values.workspace } : {}),
+      ...(values.default ? { setAsDefault: true } : {}),
+    }),
+  );
 
   if (output === "json") {
     options.io.stdout(`${JSON.stringify(agent, null, 2)}\n`);
@@ -162,15 +166,17 @@ async function updateAgent(
     throw new Error("Agent id is required.");
   }
 
-  const agent = await createAgentService(options).updateAgent(agentId, {
-    ...(values.name ? { name: values.name } : {}),
-    ...(values.description ? { description: values.description } : {}),
-    ...(values.instructions ? { instructions: values.instructions } : {}),
-    ...(values.provider ? { providerId: values.provider } : {}),
-    ...(values.model ? { modelId: values.model } : {}),
-    ...(values.workspace ? { workspaceDir: values.workspace } : {}),
-    ...(values.default ? { setAsDefault: true } : {}),
-  });
+  const agent = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
+    await embeddedGateway.updateAgent(agentId, {
+      ...(values.name ? { name: values.name } : {}),
+      ...(values.description ? { description: values.description } : {}),
+      ...(values.instructions ? { instructions: values.instructions } : {}),
+      ...(values.provider ? { providerId: values.provider } : {}),
+      ...(values.model ? { modelId: values.model } : {}),
+      ...(values.workspace ? { workspaceDir: values.workspace } : {}),
+      ...(values.default ? { setAsDefault: true } : {}),
+    }),
+  );
 
   if (output === "json") {
     options.io.stdout(`${JSON.stringify(agent, null, 2)}\n`);
@@ -201,7 +207,9 @@ async function deleteAgent(
     throw new Error("Agent id is required.");
   }
 
-  const summary = await createAgentService(options).deleteAgent(agentId);
+  const summary = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
+    await embeddedGateway.deleteAgent(agentId),
+  );
   if (output === "json") {
     options.io.stdout(`${JSON.stringify(summary, null, 2)}\n`);
     return;
@@ -210,13 +218,6 @@ async function deleteAgent(
   options.io.stdout(
     `Deleted agent ${summary.agentId} and removed ${String(summary.deletedSessions)} sessions.\n`,
   );
-}
-
-function createAgentService(options: ResolvedRunCliOptions): AgentService {
-  return new AgentService({
-    ...(options.now ? { now: options.now } : {}),
-    ...(options.storePath ? { storePath: options.storePath } : {}),
-  });
 }
 
 function renderAgent(agent: Agent): string {

@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/theme-context";
 import { cn } from "@/lib/utils";
 
 interface AppHeaderProps {

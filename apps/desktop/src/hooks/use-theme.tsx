@@ -1,29 +1,16 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useState,
   type PropsWithChildren,
 } from "react";
-
-type Theme = "light" | "dark" | "system";
-type ResolvedTheme = "light" | "dark";
-
-interface ThemeContextValue {
-  theme: Theme;
-  resolvedTheme: ResolvedTheme;
-  setTheme: (theme: Theme) => void;
-}
+import {
+  ThemeContext,
+  type ResolvedTheme,
+  type Theme,
+} from "./theme-context";
 
 const STORAGE_KEY = "capyfin-theme";
-const noopSetTheme = (): void => undefined;
-
-const ThemeContext = createContext<ThemeContextValue>({
-  theme: "system",
-  resolvedTheme: "light",
-  setTheme: noopSetTheme,
-});
 
 function getSystemTheme(): ResolvedTheme {
   if (typeof window === "undefined") {
@@ -90,8 +77,4 @@ export function ThemeProvider({ children }: PropsWithChildren) {
       {children}
     </ThemeContext.Provider>
   );
-}
-
-export function useTheme(): ThemeContextValue {
-  return useContext(ThemeContext);
 }

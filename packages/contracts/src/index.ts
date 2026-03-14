@@ -37,82 +37,65 @@ export const sidecarBootstrapSchema = z.object({
   version: z.string().min(1).optional(),
 });
 
-export const providerAuthMethodSchema = z.enum([
+export const providerConnectionInputSchema = z.enum([
   "api_key",
   "oauth",
   "token",
-  "application_default",
-  "aws_sdk",
+  "device_code",
+  "custom",
 ]);
 
-export const providerDefinitionSchema = z.object({
+export const providerMethodSchema = z.object({
+  hint: z.string().min(1).optional(),
   id: z.string().min(1),
-  name: z.string().min(1),
-  authMethods: z.array(providerAuthMethodSchema).min(1),
-  envVars: z.array(z.string().min(1)),
-  secretType: z.enum(["api_key", "token"]).optional(),
-  oauthProviderId: z.string().min(1).optional(),
-  description: z.string().min(1).optional(),
+  input: providerConnectionInputSchema,
+  label: z.string().min(1),
+  providerId: z.string().min(1),
 });
 
-export const storedProfileSummarySchema = z.object({
+export const providerDefinitionSchema = z.object({
+  description: z.string().min(1).optional(),
+  id: z.string().min(1),
+  methods: z.array(providerMethodSchema).min(1),
+  name: z.string().min(1),
+});
+
+export const savedConnectionSchema = z.object({
+  activeModelId: z.string().min(1).optional(),
+  isDefault: z.boolean(),
+  label: z.string().min(1),
   profileId: z.string().min(1),
   providerId: z.string().min(1),
-  label: z.string().min(1),
+  providerName: z.string().min(1),
   type: z.enum(["api_key", "oauth", "token"]),
-  createdAt: z.string().min(1),
   updatedAt: z.string().min(1),
-  isActiveProfile: z.boolean(),
-});
-
-export const environmentAuthStatusSchema = z.object({
-  available: z.boolean(),
-  method: providerAuthMethodSchema.optional(),
-  sourceLabel: z.string().min(1).optional(),
-  envVars: z.array(z.string().min(1)),
-});
-
-export const resolvedProviderSourceSchema = z.object({
-  source: z.enum(["profile", "environment"]),
-  method: providerAuthMethodSchema,
-  profileId: z.string().min(1).optional(),
-  description: z.string().min(1),
-});
-
-export const providerStatusSchema = z.object({
-  provider: providerDefinitionSchema,
-  isSelectedProvider: z.boolean(),
-  isSelectedProfileProvider: z.boolean(),
-  profiles: z.array(storedProfileSummarySchema),
-  selectedProfileId: z.string().min(1).optional(),
-  environment: environmentAuthStatusSchema,
-  resolved: resolvedProviderSourceSchema.optional(),
 });
 
 export const authOverviewSchema = z.object({
+  configPath: z.string().min(1),
+  connections: z.array(savedConnectionSchema),
   storePath: z.string().min(1),
+  selectedModelId: z.string().min(1).optional(),
   selectedProviderId: z.string().min(1).optional(),
   selectedProfileId: z.string().min(1).optional(),
-  providers: z.array(providerStatusSchema),
+  providers: z.array(providerDefinitionSchema),
 });
 
 export const connectProviderSecretRequestSchema = z.object({
-  providerId: z.string().min(1),
-  label: z.string().min(1).optional(),
+  authChoice: z.string().min(1),
   secret: z.string().min(1),
 });
 
-export const selectProviderRequestSchema = z.object({
-  selector: z.string().min(1),
+export const selectConnectionRequestSchema = z.object({
+  profileId: z.string().min(1),
 });
 
-export const startOAuthSessionRequestSchema = z.object({
-  providerId: z.string().min(1),
-  label: z.string().min(1).optional(),
+export const startAuthSessionRequestSchema = z.object({
+  authChoice: z.string().min(1),
 });
 
-export const submitOAuthSessionPromptRequestSchema = z.object({
-  value: z.string(),
+export const respondAuthSessionRequestSchema = z.object({
+  value: z.union([z.string(), z.boolean(), z.array(z.string())]),
 });
 
 export const agentSchema = z.object({
@@ -201,24 +184,45 @@ export const chatBootstrapSchema = z.object({
   resolvedProviderId: z.string().min(1).optional(),
 });
 
-export const oauthSessionStepSchema = z.discriminatedUnion("type", [
+export const authSessionStepSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("working"),
     message: z.string().min(1),
   }),
   z.object({
     type: z.literal("auth_link"),
+    label: z.string().min(1).optional(),
     url: z.url(),
     instructions: z.string().min(1).optional(),
   }),
   z.object({
-    type: z.literal("prompt"),
+    type: z.literal("text_prompt"),
     message: z.string().min(1),
     placeholder: z.string().min(1).optional(),
     allowEmpty: z.boolean(),
+    secret: z.boolean(),
+  }),
+  z.object({
+    type: z.literal("select_prompt"),
+    allowMultiple: z.boolean(),
+    message: z.string().min(1),
+    options: z.array(
+      z.object({
+        hint: z.string().min(1).optional(),
+        label: z.string().min(1),
+        value: z.string().min(1),
+      }),
+    ).min(1),
+  }),
+  z.object({
+    type: z.literal("confirm_prompt"),
+    confirmLabel: z.string().min(1).optional(),
+    cancelLabel: z.string().min(1).optional(),
+    message: z.string().min(1),
   }),
   z.object({
     type: z.literal("completed"),
+    message: z.string().min(1).optional(),
   }),
   z.object({
     type: z.literal("error"),
@@ -226,16 +230,16 @@ export const oauthSessionStepSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export const oauthSessionSchema = z.object({
+export const authSessionSchema = z.object({
+  authChoice: z.string().min(1),
   id: z.string().min(1),
-  providerId: z.string().min(1),
+  methodLabel: z.string().min(1),
+  providerId: z.string().min(1).optional(),
   providerName: z.string().min(1),
   state: z.enum(["pending", "completed", "error"]),
-  step: oauthSessionStepSchema,
-  authUrl: z.url().optional(),
-  authInstructions: z.string().min(1).optional(),
+  step: authSessionStepSchema,
   progress: z.array(z.string()),
-  profile: storedProfileSummarySchema.optional(),
+  connection: savedConnectionSchema.optional(),
   error: z.string().min(1).optional(),
 });
 
@@ -244,25 +248,23 @@ export type AppManifest = z.infer<typeof appManifestSchema>;
 export type SidecarConnection = z.infer<typeof sidecarConnectionSchema>;
 export type SidecarHealth = z.infer<typeof sidecarHealthSchema>;
 export type SidecarBootstrap = z.infer<typeof sidecarBootstrapSchema>;
-export type ProviderAuthMethod = z.infer<typeof providerAuthMethodSchema>;
+export type ProviderConnectionInput = z.infer<typeof providerConnectionInputSchema>;
+export type ProviderMethod = z.infer<typeof providerMethodSchema>;
 export type ProviderDefinition = z.infer<typeof providerDefinitionSchema>;
-export type StoredProfileSummary = z.infer<typeof storedProfileSummarySchema>;
-export type EnvironmentAuthStatus = z.infer<typeof environmentAuthStatusSchema>;
-export type ResolvedProviderSource = z.infer<typeof resolvedProviderSourceSchema>;
-export type ProviderStatus = z.infer<typeof providerStatusSchema>;
+export type SavedConnection = z.infer<typeof savedConnectionSchema>;
 export type AuthOverview = z.infer<typeof authOverviewSchema>;
 export type ConnectProviderSecretRequest = z.infer<
   typeof connectProviderSecretRequestSchema
 >;
-export type SelectProviderRequest = z.infer<typeof selectProviderRequestSchema>;
-export type StartOAuthSessionRequest = z.infer<
-  typeof startOAuthSessionRequestSchema
+export type SelectConnectionRequest = z.infer<typeof selectConnectionRequestSchema>;
+export type StartAuthSessionRequest = z.infer<
+  typeof startAuthSessionRequestSchema
 >;
-export type SubmitOAuthSessionPromptRequest = z.infer<
-  typeof submitOAuthSessionPromptRequestSchema
+export type RespondAuthSessionRequest = z.infer<
+  typeof respondAuthSessionRequestSchema
 >;
-export type OAuthSessionStep = z.infer<typeof oauthSessionStepSchema>;
-export type OAuthSession = z.infer<typeof oauthSessionSchema>;
+export type AuthSessionStep = z.infer<typeof authSessionStepSchema>;
+export type AuthSession = z.infer<typeof authSessionSchema>;
 export type Agent = z.infer<typeof agentSchema>;
 export type AgentCatalog = z.infer<typeof agentCatalogSchema>;
 export type CreateAgentRequest = z.infer<typeof createAgentRequestSchema>;

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { CheckIcon, RefreshCcwIcon, Trash2Icon } from "lucide-react";
-import type { AuthOverview, StoredProfileSummary } from "@/app/types";
+import type { AuthOverview, SavedConnection } from "@/app/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,26 +26,7 @@ export function ConnectionsWorkspace({
   onAuthOverviewChange,
 }: ConnectionsWorkspaceProps) {
   const storedConnections = useMemo(
-    () =>
-      (authOverview?.providers ?? [])
-        .flatMap((providerStatus) =>
-          providerStatus.profiles.map((profile) => ({
-            modelLabel: resolveActiveModelLabel(providerStatus.provider.id),
-            profile,
-            providerId: providerStatus.provider.id,
-            providerName: resolveConnectionProviderName(
-              providerStatus.provider.id,
-              providerStatus.provider.name,
-            ),
-          })),
-        )
-        .sort((left, right) => {
-          if (left.profile.isActiveProfile !== right.profile.isActiveProfile) {
-            return left.profile.isActiveProfile ? -1 : 1;
-          }
-
-          return right.profile.updatedAt.localeCompare(left.profile.updatedAt);
-        }),
+    () => authOverview?.connections ?? [],
     [authOverview],
   );
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -71,7 +52,7 @@ export function ConnectionsWorkspace({
     setIsBusy(true);
 
     try {
-      await client.selectProvider(profileId);
+      await client.selectConnection(profileId);
       await refreshOverview();
       setFeedback("Default connection updated.");
     } catch (error) {
@@ -165,7 +146,7 @@ export function ConnectionsWorkspace({
               <TableBody>
                 {storedConnections.map((connection) => (
                   <ConnectionRow
-                    key={connection.profile.profileId}
+                    key={connection.profileId}
                     connection={connection}
                     isBusy={isBusy}
                     onDelete={handleDelete}
@@ -187,25 +168,18 @@ function ConnectionRow({
   onDelete,
   onSelectDefault,
 }: {
-  connection: {
-    modelLabel: string;
-    profile: StoredProfileSummary;
-    providerId: string;
-    providerName: string;
-  };
+  connection: SavedConnection;
   isBusy: boolean;
   onDelete: (profileId: string) => Promise<void>;
   onSelectDefault: (profileId: string) => Promise<void>;
 }) {
-  const isDefault = connection.profile.isActiveProfile;
-
   return (
     <TableRow className="border-border transition-colors hover:bg-muted/30">
       <TableCell className="text-[13px] font-medium">{connection.providerName}</TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <span className="text-[13px]">{connection.profile.label}</span>
-          {isDefault ? (
+          <span className="text-[13px]">{connection.label}</span>
+          {connection.isDefault ? (
             <Badge
               variant="secondary"
               className="rounded-full bg-primary/15 text-[10px] font-semibold text-primary"
@@ -215,8 +189,12 @@ function ConnectionRow({
           ) : null}
         </div>
       </TableCell>
-      <TableCell className="text-[13px] text-muted-foreground">{connection.modelLabel}</TableCell>
-      <TableCell className="text-[13px] text-muted-foreground">{formatDate(connection.profile.updatedAt)}</TableCell>
+      <TableCell className="text-[13px] text-muted-foreground">
+        {connection.activeModelId ?? "Provider default"}
+      </TableCell>
+      <TableCell className="text-[13px] text-muted-foreground">
+        {formatDate(connection.updatedAt)}
+      </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-1.5">
           <Button
@@ -224,9 +202,9 @@ function ConnectionRow({
             variant="ghost"
             size="sm"
             className="h-8 rounded-full px-3 text-xs"
-            disabled={isBusy || isDefault}
+            disabled={isBusy || connection.isDefault}
             onClick={() => {
-              void onSelectDefault(connection.profile.profileId);
+              void onSelectDefault(connection.profileId);
             }}
           >
             <CheckIcon className="size-3.5" />
@@ -239,7 +217,7 @@ function ConnectionRow({
             className="h-8 rounded-full px-3 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
             disabled={isBusy}
             onClick={() => {
-              void onDelete(connection.profile.profileId);
+              void onDelete(connection.profileId);
             }}
           >
             <Trash2Icon className="size-3.5" />
@@ -282,34 +260,4 @@ function formatDate(value: string): string {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Something went wrong.";
-}
-
-function resolveConnectionProviderName(
-  providerId: string,
-  fallbackName: string,
-): string {
-  if (providerId === "openai-codex") {
-    return "ChatGPT (Codex)";
-  }
-
-  return fallbackName;
-}
-
-function resolveActiveModelLabel(providerId: string): string {
-  switch (providerId) {
-    case "anthropic":
-      return "claude-sonnet-4-5";
-    case "google":
-    case "google-antigravity":
-    case "google-gemini-cli":
-    case "google-vertex":
-      return "gemini-2.5-pro";
-    case "openai":
-    case "openai-codex":
-    case "azure-openai-responses":
-    case "github-copilot":
-      return "gpt-5";
-    default:
-      return "provider default";
-  }
 }

@@ -193,8 +193,9 @@ function ChatSessionView({
   const isStreaming = status === "streaming" || status === "submitted";
   const providerName =
     authOverview?.providers.find(
-      (provider) => provider.provider.id === bootstrap.resolvedProviderId,
-    )?.provider.name ?? bootstrap.resolvedProviderId;
+      (provider) =>
+        provider.methods.some((method) => method.providerId === bootstrap.resolvedProviderId),
+    )?.name ?? bootstrap.resolvedProviderId;
 
   async function submitPrompt(prompt: string): Promise<void> {
     const nextPrompt = prompt.trim();

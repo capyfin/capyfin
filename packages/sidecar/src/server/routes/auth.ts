@@ -1,12 +1,11 @@
 import {
   authOverviewSchema,
+  authSessionSchema,
   connectProviderSecretRequestSchema,
-  oauthSessionSchema,
-  providerStatusSchema,
-  selectProviderRequestSchema,
-  startOAuthSessionRequestSchema,
-  storedProfileSummarySchema,
-  submitOAuthSessionPromptRequestSchema,
+  respondAuthSessionRequestSchema,
+  savedConnectionSchema,
+  selectConnectionRequestSchema,
+  startAuthSessionRequestSchema,
 } from "@capyfin/contracts";
 import { Hono } from "hono";
 import type { SidecarRuntime } from "../context.ts";
@@ -23,47 +22,43 @@ export function createAuthRoutes(runtime: SidecarRuntime): Hono {
     const payload = connectProviderSecretRequestSchema.parse(
       await context.req.json(),
     );
-    const summary = await runtime.authService.saveSecretProfile(payload);
-    await runtime.embeddedGateway.syncAuthProfiles();
+    const summary = await runtime.authService.connectSecret(payload);
 
-    return context.json(storedProfileSummarySchema.parse(summary), 201);
+    return context.json(savedConnectionSchema.parse(summary), 201);
   });
 
   app.post("/select", async (context) => {
-    const payload = selectProviderRequestSchema.parse(await context.req.json());
-    const providerStatus = await runtime.authService.selectProvider(payload.selector);
-    await runtime.embeddedGateway.syncAuthProfiles();
+    const payload = selectConnectionRequestSchema.parse(await context.req.json());
+    const connection = await runtime.authService.selectProfile(payload.profileId);
 
-    return context.json(providerStatusSchema.parse(providerStatus));
+    return context.json(savedConnectionSchema.parse(connection));
   });
 
   app.delete("/profiles/:profileId", async (context) => {
     await runtime.authService.deleteProfile(context.req.param("profileId"));
-    await runtime.embeddedGateway.syncAuthProfiles();
 
     return context.body(null, 204);
   });
 
-  app.post("/oauth/start", async (context) => {
-    const payload = startOAuthSessionRequestSchema.parse(await context.req.json());
-    const session = runtime.authSessions.start({
-      ...(payload.label ? { label: payload.label } : {}),
-      providerId: payload.providerId,
+  app.post("/sessions", async (context) => {
+    const payload = startAuthSessionRequestSchema.parse(await context.req.json());
+    const session = await runtime.authSessions.start({
+      authChoice: payload.authChoice,
     });
-    return context.json(oauthSessionSchema.parse(session), 202);
+    return context.json(authSessionSchema.parse(session), 202);
   });
 
-  app.get("/oauth/sessions/:sessionId", (context) => {
+  app.get("/sessions/:sessionId", (context) => {
     const session = runtime.authSessions.get(context.req.param("sessionId"));
     if (!session) {
-      return context.json({ error: "OAuth session not found" }, 404);
+      return context.json({ error: "Auth session not found" }, 404);
     }
 
-    return context.json(oauthSessionSchema.parse(session));
+    return context.json(authSessionSchema.parse(session));
   });
 
-  app.post("/oauth/sessions/:sessionId/respond", async (context) => {
-    const payload = submitOAuthSessionPromptRequestSchema.parse(
+  app.post("/sessions/:sessionId/respond", async (context) => {
+    const payload = respondAuthSessionRequestSchema.parse(
       await context.req.json(),
     );
     const session = runtime.authSessions.respond(
@@ -71,7 +66,7 @@ export function createAuthRoutes(runtime: SidecarRuntime): Hono {
       payload.value,
     );
 
-    return context.json(oauthSessionSchema.parse(session));
+    return context.json(authSessionSchema.parse(session));
   });
 
   return app;

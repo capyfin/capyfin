@@ -24,7 +24,6 @@
   "dependencies": {
     "@capyfin/core": "workspace:*",
     "@hono/node-server": "^1.19.11",
-    "@mariozechner/pi-ai": "^0.57.1",
     "ai": "^6.0.116",
     "@ai-sdk/anthropic": "^3.0.58",
     "@ai-sdk/google": "^3.0.43",

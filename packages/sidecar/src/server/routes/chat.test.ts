@@ -95,3 +95,51 @@ void test("chat routes expose bootstrap and stream endpoints", async () => {
   assert.equal(streamResponse.status, 200);
   assert.equal(streamed, true);
 });
+
+void test("chat routes normalize plain string messages from the transport", async () => {
+  let streamed = false;
+  const app = createChatRoutes(
+    {
+      authSessions: {} as never,
+      authService: {} as never,
+      config: {
+        hostname: "127.0.0.1",
+        password: "password",
+        port: 3000,
+        username: "capyfin",
+      },
+      embeddedGateway: {} as never,
+      gatewaySupervisor: {} as never,
+      startedAt: Date.now(),
+      version: "0.1.0-test",
+    },
+    {
+      createChatService: () => ({
+        bootstrapConversation() {
+          throw new Error("not used");
+        },
+        streamConversation({ message }) {
+          streamed = true;
+          assert.equal(message.role, "user");
+          assert.deepEqual(message.parts, [{ text: "hello", type: "text" }]);
+          return Promise.resolve(new Response("streaming", { status: 200 }));
+        },
+      }),
+    },
+  );
+
+  const streamResponse = await app.request("/", {
+    body: JSON.stringify({
+      agentId: "main",
+      message: "hello",
+      sessionId: "session-1",
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+
+  assert.equal(streamResponse.status, 200);
+  assert.equal(streamed, true);
+});

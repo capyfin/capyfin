@@ -497,6 +497,12 @@ export class EmbeddedGatewayClient {
 
   async getCatalog(): Promise<AgentCatalog> {
     const metadataCatalog = await this.#metadataStore.listCatalog();
+    const defaultAgent =
+      metadataCatalog.agents.find((agent) => agent.id === metadataCatalog.defaultAgentId) ??
+      metadataCatalog.agents[0];
+    if (defaultAgent) {
+      await this.ensureAgentExists(defaultAgent);
+    }
     const gatewayCatalog = await this.request<GatewayAgentListResult>("agents.list", {});
     const availableIds = new Set(
       gatewayCatalog.agents.map((agent) => normalizeAgentId(agent.id)),
@@ -546,6 +552,7 @@ export class EmbeddedGatewayClient {
 
   async updateAgent(agentId: string, payload: UpdateAgentRequest): Promise<Agent> {
     const metadata = await this.#metadataStore.updateAgent(agentId, payload);
+    await this.ensureAgentExists(metadata);
     const model = normalizeGatewayModelRef(metadata);
     await this.request("agents.update", {
       agentId: metadata.id,
@@ -607,6 +614,7 @@ export class EmbeddedGatewayClient {
 
   async createSession(payload: CreateAgentSessionRequest): Promise<AgentSession> {
     const agent = await this.getAgent(payload.agentId);
+    await this.ensureAgentExists(agent);
     const sessionKey = `agent:${agent.id}:session:${randomUUID()}`;
     const patch = await this.request<GatewaySessionsPatchResult>("sessions.patch", {
       key: sessionKey,
@@ -643,6 +651,7 @@ export class EmbeddedGatewayClient {
 
   async bootstrapConversation(agentId = DEFAULT_AGENT_ID): Promise<ChatBootstrap> {
     const agent = await this.getAgent(agentId);
+    await this.ensureAgentExists(agent);
     const authOverview = await this.#authState.getOverview();
     const fallbackProviderId = agent.providerId ?? authOverview.selectedProviderId;
     const fallbackModelRef =
@@ -681,6 +690,7 @@ export class EmbeddedGatewayClient {
     const agent = params.agentId
       ? await this.getAgent(params.agentId)
       : await this.getDefaultAgent();
+    await this.ensureAgentExists(agent);
     const authOverview = await this.#authState.getOverview();
     const fallbackProviderId = agent.providerId ?? authOverview.selectedProviderId;
     const fallbackModelRef =
@@ -853,7 +863,7 @@ export class EmbeddedGatewayClient {
         (candidate) => candidate.id === params.requestedSessionId,
       );
       if (existing) {
-        return existing;
+        return await this.syncConversationSession(existing, params.fallbackModelRef);
       }
     }
 
@@ -864,7 +874,10 @@ export class EmbeddedGatewayClient {
     });
     const latest = sessions.sessions[0];
     if (latest?.sessionId) {
-      return toAgentSession({ agent: params.agent, paths: this.#paths, row: latest });
+      return await this.syncConversationSession(
+        toAgentSession({ agent: params.agent, paths: this.#paths, row: latest }),
+        params.fallbackModelRef,
+      );
     }
 
     const key = `agent:${params.agent.id}:main`;
@@ -887,6 +900,25 @@ export class EmbeddedGatewayClient {
     };
   }
 
+  private async syncConversationSession(
+    session: AgentSession,
+    fallbackModelRef?: string,
+  ): Promise<AgentSession> {
+    if (!fallbackModelRef) {
+      return session;
+    }
+
+    const patch = await this.request<GatewaySessionsPatchResult>("sessions.patch", {
+      key: session.sessionKey,
+      model: fallbackModelRef,
+    });
+
+    return {
+      ...session,
+      updatedAt: new Date(patch.entry.updatedAt ?? Date.now()).toISOString(),
+    };
+  }
+
   private async request<T>(
     method: string,
     params?: unknown,
@@ -897,6 +929,32 @@ export class EmbeddedGatewayClient {
       return await client.request<T>(method, params, options);
     } finally {
       client.stop();
+    }
+  }
+
+  private async ensureAgentExists(agent: Agent): Promise<void> {
+    const gatewayCatalog = await this.request<GatewayAgentListResult>("agents.list", {});
+    const exists = gatewayCatalog.agents.some(
+      (candidate) => normalizeAgentId(candidate.id) === agent.id,
+    );
+
+    if (!exists) {
+      if (agent.id === DEFAULT_AGENT_ID) {
+        throw new Error(
+          `Embedded runtime default agent ${DEFAULT_AGENT_ID} is not configured.`,
+        );
+      }
+
+      const created = await this.request<{ agentId: string }>("agents.create", {
+        name: agent.name,
+        workspace: agent.workspaceDir,
+      });
+
+      if (normalizeAgentId(created.agentId) !== agent.id) {
+        throw new Error(
+          `Embedded runtime created agent ${created.agentId}, but ${agent.id} was expected.`,
+        );
+      }
     }
   }
 

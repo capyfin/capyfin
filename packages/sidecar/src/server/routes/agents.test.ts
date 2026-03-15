@@ -108,8 +108,37 @@ void test("agent routes manage agents and create sessions", async (context) => {
           sessions: agentId ? (sessions.get(agentId) ?? []) : [...sessions.values()].flat(),
         });
       },
-      updateAgent() {
-        return Promise.reject(new Error("unused"));
+      updateAgent(
+        agentId: string,
+        payload: {
+          modelId?: string;
+          providerId?: string;
+        },
+      ) {
+        const existing = agents.get(agentId);
+        assert.ok(existing);
+        const next = {
+          ...existing,
+          ...(payload.modelId !== undefined
+            ? payload.modelId
+              ? { modelId: payload.modelId }
+              : {}
+            : {}),
+          ...(payload.providerId !== undefined
+            ? payload.providerId
+              ? { providerId: payload.providerId }
+              : {}
+            : {}),
+          updatedAt: new Date().toISOString(),
+        };
+        if (payload.modelId !== undefined && !payload.modelId) {
+          delete next.modelId;
+        }
+        if (payload.providerId !== undefined && !payload.providerId) {
+          delete next.providerId;
+        }
+        agents.set(agentId, next);
+        return Promise.resolve(next);
       },
     },
     gatewaySupervisor: {} as never,
@@ -141,6 +170,24 @@ void test("agent routes manage agents and create sessions", async (context) => {
     agents: { id: string }[];
   };
   assert.ok(catalog.agents.some((agent) => agent.id === "research"));
+
+  const updateResponse = await app.request("/research", {
+    body: JSON.stringify({
+      modelId: "",
+      providerId: "anthropic",
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "PATCH",
+  });
+  assert.equal(updateResponse.status, 200);
+  const updatedAgent = (await updateResponse.json()) as {
+    modelId?: string;
+    providerId?: string;
+  };
+  assert.equal(updatedAgent.providerId, "anthropic");
+  assert.equal(updatedAgent.modelId, undefined);
 
   const sessionResponse = await app.request("/sessions", {
     body: JSON.stringify({

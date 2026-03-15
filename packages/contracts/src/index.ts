@@ -151,12 +151,12 @@ export const createAgentRequestSchema = z.object({
 });
 
 export const updateAgentRequestSchema = z.object({
-  name: z.string().min(1).optional(),
-  description: z.string().min(1).optional(),
-  instructions: z.string().min(1).optional(),
-  providerId: z.string().min(1).optional(),
-  modelId: z.string().min(1).optional(),
-  workspaceDir: z.string().min(1).optional(),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  instructions: z.string().optional(),
+  providerId: z.string().optional(),
+  modelId: z.string().optional(),
+  workspaceDir: z.string().optional(),
   setAsDefault: z.boolean().optional(),
 });
 

@@ -54,6 +54,42 @@ type AuthChoiceModule = {
   }): string | undefined;
 };
 
+type RuntimeModelCatalogEntry = {
+  contextWindow?: number;
+  id: string;
+  input?: string[];
+  name: string;
+  provider: string;
+  reasoning?: boolean;
+};
+
+type ModelCatalogModule = {
+  loadModelCatalog(params?: {
+    config?: GatewayConfig;
+    useCache?: boolean;
+  }): Promise<RuntimeModelCatalogEntry[]>;
+};
+
+type ModelSelectionModule = {
+  applyDefaultModelPrimaryUpdate(params: {
+    cfg: GatewayConfig;
+    field: "imageModel" | "model";
+    modelRaw: string;
+  }): GatewayConfig;
+  applyModelAllowlist(cfg: GatewayConfig, models: string[]): GatewayConfig;
+};
+
+type ProviderWizardModule = {
+  runProviderModelSelectedHook(params: {
+    agentDir?: string;
+    config: GatewayConfig;
+    env?: NodeJS.ProcessEnv;
+    model: string;
+    prompter: WizardPrompterLike;
+    workspaceDir?: string;
+  }): Promise<void>;
+};
+
 export type WizardPrompterLike = {
   confirm(params: {
     initialValue?: boolean;
@@ -93,6 +129,9 @@ export type RuntimeEnvLike = {
 
 let authChoiceModulePromise: Promise<AuthChoiceModule> | null = null;
 let authChoiceOptionsModulePromise: Promise<AuthChoiceOptionsModule> | null = null;
+let modelCatalogModulePromise: Promise<ModelCatalogModule> | null = null;
+let modelSelectionModulePromise: Promise<ModelSelectionModule> | null = null;
+let providerWizardModulePromise: Promise<ProviderWizardModule> | null = null;
 
 async function listDistModules(prefix: string): Promise<string[]> {
   const distDir = join(resolveGatewayPackageRoot(), "dist");
@@ -101,6 +140,36 @@ async function listDistModules(prefix: string): Promise<string[]> {
     .sort();
 
   return entries.map((entry) => pathToFileURL(join(distDir, entry)).href);
+}
+
+async function listModulesAt(pathWithinPackage: string): Promise<string[]> {
+  const directory = join(resolveGatewayPackageRoot(), pathWithinPackage);
+  const entries = (await readdir(directory))
+    .filter((entry) => entry.endsWith(".js"))
+    .sort();
+
+  return entries.map((entry) => pathToFileURL(join(directory, entry)).href);
+}
+
+async function loadNamedFunction<T extends (...args: never[]) => unknown>(params: {
+  functionName: string;
+  moduleUrls: string[];
+  errorMessage: string;
+}): Promise<T> {
+  for (const moduleUrl of params.moduleUrls) {
+    const module = (await import(moduleUrl)) as Record<string, unknown>;
+    const implementation = Object.values(module).find(
+      (value): value is T =>
+        typeof value === "function" &&
+        value.name === params.functionName,
+    );
+
+    if (implementation) {
+      return implementation;
+    }
+  }
+
+  throw new Error(params.errorMessage);
 }
 
 export async function loadAuthChoiceOptionsModule(): Promise<AuthChoiceOptionsModule> {
@@ -170,4 +239,62 @@ export async function loadAuthChoiceModule(): Promise<AuthChoiceModule> {
   })();
 
   return await authChoiceModulePromise;
+}
+
+export async function loadModelCatalogModule(): Promise<ModelCatalogModule> {
+  modelCatalogModulePromise ??= (async () => {
+    const moduleUrls = await listModulesAt("dist/plugin-sdk");
+    return {
+      loadModelCatalog: await loadNamedFunction<ModelCatalogModule["loadModelCatalog"]>({
+        errorMessage:
+          "Embedded runtime model catalog module is missing loadModelCatalog.",
+        functionName: "loadModelCatalog",
+        moduleUrls,
+      }),
+    };
+  })();
+
+  return await modelCatalogModulePromise;
+}
+
+export async function loadModelSelectionModule(): Promise<ModelSelectionModule> {
+  modelSelectionModulePromise ??= (async () => {
+    const helperModuleUrls = await listDistModules("provider-auth-helpers-");
+    const moduleUrls = await listDistModules("model-picker-");
+    return {
+      applyDefaultModelPrimaryUpdate:
+        await loadNamedFunction<ModelSelectionModule["applyDefaultModelPrimaryUpdate"]>({
+          errorMessage:
+            "Embedded runtime model selection module is missing applyDefaultModelPrimaryUpdate.",
+          functionName: "applyDefaultModelPrimaryUpdate",
+          moduleUrls: [...helperModuleUrls, ...moduleUrls],
+        }),
+      applyModelAllowlist:
+        await loadNamedFunction<ModelSelectionModule["applyModelAllowlist"]>({
+          errorMessage:
+            "Embedded runtime model selection module is missing applyModelAllowlist.",
+          functionName: "applyModelAllowlist",
+          moduleUrls,
+        }),
+    };
+  })();
+
+  return await modelSelectionModulePromise;
+}
+
+export async function loadProviderWizardModule(): Promise<ProviderWizardModule> {
+  providerWizardModulePromise ??= (async () => {
+    const moduleUrls = await listDistModules("provider-wizard-");
+    return {
+      runProviderModelSelectedHook:
+        await loadNamedFunction<ProviderWizardModule["runProviderModelSelectedHook"]>({
+          errorMessage:
+            "Embedded runtime provider wizard module is missing runProviderModelSelectedHook.",
+          functionName: "runProviderModelSelectedHook",
+          moduleUrls,
+        }),
+    };
+  })();
+
+  return await providerWizardModulePromise;
 }

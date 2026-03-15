@@ -5,6 +5,8 @@ import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
   type AuthOverview,
+  type ProviderModelCatalog,
+  type ProviderModelOption,
   type ProviderConnectionInput,
   type ProviderDefinition,
   type SavedConnection,
@@ -15,6 +17,9 @@ import { resolveGatewayAgentDir } from "../internal-gateway/paths.ts";
 import {
   loadAuthChoiceModule,
   loadAuthChoiceOptionsModule,
+  loadModelCatalogModule,
+  loadModelSelectionModule,
+  loadProviderWizardModule,
   type RuntimeEnvLike,
   type WizardPrompterLike,
 } from "./runtime-modules.ts";
@@ -400,6 +405,50 @@ function buildSelection(params: {
   };
 }
 
+function isSameProvider(left: string, right: string): boolean {
+  return left.trim().toLowerCase() === right.trim().toLowerCase();
+}
+
+function resolveCurrentModelRefForProvider(
+  config: GatewayConfig,
+  providerId: string,
+): string | undefined {
+  const defaultModelRef = resolveDefaultModelRef(config);
+  if (defaultModelRef) {
+    const primary = splitModelRef(defaultModelRef);
+    if (primary.providerId && isSameProvider(primary.providerId, providerId)) {
+      return defaultModelRef;
+    }
+  }
+
+  const models =
+    config.agents?.defaults?.models && typeof config.agents.defaults.models === "object"
+      ? (config.agents.defaults.models as Record<string, unknown>)
+      : {};
+  return Object.keys(models).find((modelRef) => {
+    const parsed = splitModelRef(modelRef);
+    return parsed.providerId ? isSameProvider(parsed.providerId, providerId) : false;
+  });
+}
+
+function buildAllowlistWithProviderModel(params: {
+  config: GatewayConfig;
+  modelRef: string;
+  providerId: string;
+}): string[] {
+  const existingModels =
+    params.config.agents?.defaults?.models && typeof params.config.agents.defaults.models === "object"
+      ? Object.keys(params.config.agents.defaults.models as Record<string, unknown>)
+      : [];
+  const keep = existingModels.filter(
+    (candidate) =>
+      !isSameProvider(splitModelRef(candidate).providerId ?? "", params.providerId) &&
+      candidate !== params.modelRef,
+  );
+
+  return [params.modelRef, ...keep];
+}
+
 function hasExistingSelection(config: GatewayConfig, store: RuntimeAuthStore): boolean {
   if (Object.keys(store.profiles).length > 0) {
     return true;
@@ -435,6 +484,26 @@ function createRuntimeEnv(): RuntimeEnvLike {
     log: (...args) => {
       console.log("[sidecar-auth]", ...args);
     },
+  };
+}
+
+function createPassivePrompter(): WizardPrompterLike {
+  const unsupported = (message: string): never => {
+    throw new Error(`Model selection needs unsupported interactive runtime input: ${message}`);
+  };
+
+  return {
+    confirm: ({ message }) => unsupported(message),
+    intro: () => Promise.resolve(),
+    multiselect: ({ message }) => unsupported(message),
+    note: () => Promise.resolve(),
+    outro: () => Promise.resolve(),
+    progress: () => ({
+      stop: () => undefined,
+      update: () => undefined,
+    }),
+    select: ({ message }) => unsupported(message),
+    text: ({ message }) => unsupported(message),
   };
 }
 
@@ -483,6 +552,118 @@ export class RuntimeProviderAuthService {
     };
   }
 
+  async getProviderModelCatalog(providerId: string): Promise<ProviderModelCatalog> {
+    const normalizedProviderId = providerId.trim();
+    if (!normalizedProviderId) {
+      throw new Error("Provider is required.");
+    }
+
+    const [{ loadModelCatalog }, config] = await Promise.all([
+      loadModelCatalogModule(),
+      this.#loadConfig(),
+    ]);
+    const currentModelRef = resolveCurrentModelRefForProvider(config, normalizedProviderId);
+    const catalog = await loadModelCatalog({
+      config,
+      useCache: false,
+    });
+    const selectedRef = currentModelRef?.trim();
+    const selected = splitModelRef(selectedRef);
+
+    const providerModels = catalog
+      .filter((entry) => isSameProvider(entry.provider, normalizedProviderId))
+      .map((entry): ProviderModelOption => {
+        const modelRef = `${entry.provider}/${entry.id}`;
+        return {
+          ...(entry.contextWindow ? { contextWindow: entry.contextWindow } : {}),
+          isSelected: selectedRef === modelRef,
+          label: entry.name.trim() || entry.id,
+          modelId: entry.id,
+          modelRef,
+          providerId: entry.provider,
+          ...(typeof entry.reasoning === "boolean" ? { reasoning: entry.reasoning } : {}),
+        };
+      });
+
+    if (selectedRef && !providerModels.some((entry) => entry.modelRef === selectedRef)) {
+      providerModels.unshift({
+        isSelected: true,
+        label: selected.modelId ?? selectedRef,
+        modelId: selected.modelId ?? selectedRef,
+        modelRef: selectedRef,
+        providerId: selected.providerId ?? normalizedProviderId,
+      });
+    }
+
+    return {
+      ...(selected.modelId ? { currentModelId: selected.modelId } : {}),
+      ...(selectedRef ? { currentModelRef: selectedRef } : {}),
+      models: providerModels,
+      providerId: normalizedProviderId,
+    };
+  }
+
+  async setProviderModel(params: {
+    modelRef: string;
+    providerId: string;
+  }): Promise<AuthOverview> {
+    const providerId = params.providerId.trim();
+    const modelRef = params.modelRef.trim();
+    if (!providerId || !modelRef) {
+      throw new Error("Provider and model are required.");
+    }
+
+    const [
+      { applyDefaultModelPrimaryUpdate, applyModelAllowlist },
+      { runProviderModelSelectedHook },
+      config,
+      store,
+    ] = await Promise.all([
+      loadModelSelectionModule(),
+      loadProviderWizardModule(),
+      this.#loadConfig(),
+      this.#loadStore(),
+    ]);
+
+    const currentSelection = buildSelection({
+      config,
+      connections: await this.#buildConnections({
+        config,
+        metadata: await this.#loadMetadata(),
+        providers: await this.#listProviders(),
+        store,
+      }),
+      store,
+    });
+
+    const nextConfig = isSameProvider(currentSelection.selectedProviderId ?? "", providerId)
+      ? applyDefaultModelPrimaryUpdate({
+          cfg: config,
+          field: "model",
+          modelRaw: modelRef,
+        })
+      : applyModelAllowlist(
+          config,
+          buildAllowlistWithProviderModel({
+            config,
+            modelRef,
+            providerId,
+          }),
+        );
+
+    await runProviderModelSelectedHook({
+      agentDir: resolveGatewayAgentDir(this.#paths, DEFAULT_AGENT_ID),
+      config: nextConfig,
+      env: this.#env,
+      model: modelRef,
+      prompter: createPassivePrompter(),
+      workspaceDir: join(this.#paths.workspacesDir, DEFAULT_AGENT_ID),
+    });
+
+    await writeJsonFile(this.getConfigPath(), nextConfig);
+    return await this.getOverview();
+  }
+
   async connectSecret(params: {
     authChoice: string;
     secret: string;
@@ -505,7 +686,8 @@ export class RuntimeProviderAuthService {
   }
 
   async selectProfile(profileId: string): Promise<SavedConnection> {
-    const [config, store, metadata] = await Promise.all([
+    const [{ applyDefaultModelPrimaryUpdate }, config, store, metadata] = await Promise.all([
+      loadModelSelectionModule(),
       this.#loadConfig(),
       this.#loadStore(),
       this.#loadMetadata(),
@@ -549,9 +731,18 @@ export class RuntimeProviderAuthService {
     const timestamp = new Date().toISOString();
     metadata.updatedAtByProfileId[profileId] = timestamp;
 
+    const configuredModelId = resolveConfiguredModelForProvider(config, providerId);
+    const nextConfig = configuredModelId
+      ? applyDefaultModelPrimaryUpdate({
+          cfg: config,
+          field: "model",
+          modelRaw: `${providerId}/${configuredModelId}`,
+        })
+      : config;
+
     await Promise.all([
       writeJsonFile(this.getStorePath(), store),
-      writeJsonFile(this.getConfigPath(), config),
+      writeJsonFile(this.getConfigPath(), nextConfig),
       this.#saveMetadata(metadata),
     ]);
 

@@ -7,6 +7,7 @@ export type {
   ChatBootstrap,
   ChatTranscriptMessage,
   ProviderDefinition,
+  ProviderModelCatalog,
   ProviderMethod,
   SavedConnection,
   SidecarBootstrap,

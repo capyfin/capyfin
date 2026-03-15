@@ -69,6 +69,22 @@ void test("auth routes expose overview and manage connections", async () => {
         deletedProfileId = profileId;
         return Promise.resolve();
       },
+      getProviderModelCatalog() {
+        return Promise.resolve({
+          currentModelId: "gpt-5",
+          currentModelRef: "openai/gpt-5",
+          models: [
+            {
+              isSelected: true,
+              label: "GPT-5",
+              modelId: "gpt-5",
+              modelRef: "openai/gpt-5",
+              providerId: "openai",
+            },
+          ],
+          providerId: "openai",
+        });
+      },
       getOverview() {
         return Promise.resolve({
           configPath: "/tmp/openclaw.json",
@@ -104,6 +120,30 @@ void test("auth routes expose overview and manage connections", async () => {
           updatedAt: new Date().toISOString(),
         });
       },
+      setProviderModel() {
+        return Promise.resolve({
+          configPath: "/tmp/openclaw.json",
+          connections: [],
+          providers: [
+            {
+              id: "openai",
+              methods: [
+                {
+                  id: "openai-codex",
+                  input: "oauth",
+                  label: "ChatGPT (Codex)",
+                  providerId: "openai",
+                },
+              ],
+              name: "OpenAI",
+            },
+          ],
+          selectedModelId: "gpt-5",
+          selectedProviderId: "openai",
+          selectedProfileId: "openai:default",
+          storePath: "/tmp/auth-profiles.json",
+        });
+      },
     },
     config: {
       hostname: "127.0.0.1",
@@ -133,6 +173,9 @@ void test("auth routes expose overview and manage connections", async () => {
   });
   assert.equal(connectResponse.status, 201);
 
+  const modelsResponse = await app.request("/providers/openai/models");
+  assert.equal(modelsResponse.status, 200);
+
   const selectResponse = await app.request("/select", {
     body: JSON.stringify({
       profileId: "openai:default",
@@ -143,6 +186,17 @@ void test("auth routes expose overview and manage connections", async () => {
     method: "POST",
   });
   assert.equal(selectResponse.status, 200);
+
+  const setModelResponse = await app.request("/providers/openai/model", {
+    body: JSON.stringify({
+      modelRef: "openai/gpt-5",
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+  assert.equal(setModelResponse.status, 200);
 
   const sessionResponse = await app.request("/sessions", {
     body: JSON.stringify({

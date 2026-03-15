@@ -19,6 +19,7 @@ import type {
   AuthOverview,
   AuthSession,
   ProviderDefinition,
+  ProviderModelCatalog,
 } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,10 +68,13 @@ export function ConnectionCenter({
   const [sessionInputValue, setSessionInputValue] = useState("");
   const [sessionSelections, setSessionSelections] = useState<string[]>([]);
   const [authSession, setAuthSession] = useState<AuthSession | null>(null);
+  const [modelCatalog, setModelCatalog] = useState<ProviderModelCatalog | null>(null);
+  const [selectedModelRef, setSelectedModelRef] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const openedAuthLinkRef = useRef<string | null>(null);
+  const handledCompletedSessionRef = useRef<string | null>(null);
 
   const connectedProviderIds = useMemo(
     () => new Set((authOverview?.connections ?? []).map((connection) => connection.providerId)),
@@ -119,6 +123,42 @@ export function ConnectionCenter({
     null;
 
   useEffect(() => {
+    if (!client || !selectedMethod) {
+      setModelCatalog(null);
+      setSelectedModelRef("");
+      return;
+    }
+
+    let cancelled = false;
+    const runtimeClient = client;
+    const runtimeMethod = selectedMethod;
+
+    async function loadProviderModels(): Promise<void> {
+      try {
+        const catalog = await runtimeClient.providerModels(runtimeMethod.providerId);
+        if (cancelled) {
+          return;
+        }
+        setErrorMessage(null);
+        setModelCatalog(catalog);
+        setSelectedModelRef(catalog.currentModelRef ?? catalog.models[0]?.modelRef ?? "");
+      } catch (error) {
+        if (!cancelled) {
+          setModelCatalog(null);
+          setSelectedModelRef("");
+          setErrorMessage(getErrorMessage(error));
+        }
+      }
+    }
+
+    void loadProviderModels();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, selectedMethod]);
+
+  useEffect(() => {
     if (!client || authSession?.state !== "pending") {
       return;
     }
@@ -142,8 +182,25 @@ export function ConnectionCenter({
         }
 
         if (nextSession.state === "completed") {
-          const nextOverview = await client.authOverview();
+          if (handledCompletedSessionRef.current === nextSession.id) {
+            return;
+          }
+          handledCompletedSessionRef.current = nextSession.id;
+          let nextOverview: AuthOverview;
+          if (selectedMethod && selectedModelRef.trim()) {
+            nextOverview = await client.setProviderModel(
+              selectedMethod.providerId,
+              selectedModelRef.trim(),
+            );
+          } else {
+            nextOverview = await client.authOverview();
+          }
+          const nextCatalog = selectedMethod
+            ? await client.providerModels(selectedMethod.providerId)
+            : null;
           onAuthOverviewChange(nextOverview);
+          setModelCatalog(nextCatalog);
+          setSelectedModelRef(nextCatalog?.currentModelRef ?? selectedModelRef);
           setFeedback(
             nextSession.connection
               ? `Connected ${nextSession.connection.providerName}.`
@@ -172,7 +229,7 @@ export function ConnectionCenter({
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [authSession, client, onAuthOverviewChange]);
+  }, [authSession, client, onAuthOverviewChange, selectedMethod, selectedModelRef]);
 
   async function handleSecretConnect(): Promise<void> {
     if (!client || !selectedMethod) {
@@ -188,9 +245,14 @@ export function ConnectionCenter({
         authChoice: selectedMethod.id,
         secret: secret.trim(),
       });
-      const nextOverview = await client.authOverview();
+      const nextOverview = selectedModelRef.trim()
+        ? await client.setProviderModel(selectedMethod.providerId, selectedModelRef.trim())
+        : await client.authOverview();
+      const nextCatalog = await client.providerModels(selectedMethod.providerId);
       startTransition(() => {
         onAuthOverviewChange(nextOverview);
+        setModelCatalog(nextCatalog);
+        setSelectedModelRef(nextCatalog.currentModelRef ?? selectedModelRef);
         setSecret("");
       });
       setFeedback(`Connected ${connection.providerName}.`);
@@ -215,6 +277,7 @@ export function ConnectionCenter({
         authChoice: selectedMethod.id,
       });
       openedAuthLinkRef.current = null;
+      handledCompletedSessionRef.current = null;
       setSessionInputValue("");
       setSessionSelections([]);
       setAuthSession(session);
@@ -288,12 +351,15 @@ export function ConnectionCenter({
                 className="rounded-full"
                 onClick={() => {
                   openedAuthLinkRef.current = null;
+                  handledCompletedSessionRef.current = null;
                   setAuthSession(null);
                   setErrorMessage(null);
                   setFeedback(null);
                   setSecret("");
                   setSessionInputValue("");
                   setSessionSelections([]);
+                  setModelCatalog(null);
+                  setSelectedModelRef("");
                   setStep("providers");
                 }}
               >
@@ -362,12 +428,15 @@ export function ConnectionCenter({
                     setSelectedProviderId(provider.id);
                     setSelectedMethodId(provider.methods[0]?.id ?? null);
                     openedAuthLinkRef.current = null;
+                    handledCompletedSessionRef.current = null;
                     setAuthSession(null);
                     setErrorMessage(null);
                     setFeedback(null);
                     setSecret("");
                     setSessionInputValue("");
                     setSessionSelections([]);
+                    setModelCatalog(null);
+                    setSelectedModelRef("");
                     setStep("configure");
                   }}
                 >
@@ -435,18 +504,45 @@ export function ConnectionCenter({
                       onClick={() => {
                         setSelectedMethodId(method.id);
                         openedAuthLinkRef.current = null;
+                        handledCompletedSessionRef.current = null;
                         setAuthSession(null);
                         setErrorMessage(null);
                         setFeedback(null);
                         setSecret("");
                         setSessionInputValue("");
                         setSessionSelections([]);
+                        setModelCatalog(null);
+                        setSelectedModelRef("");
                       }}
                     >
                       {method.label}
                     </button>
                   ))}
                 </div>
+
+                {modelCatalog && modelCatalog.models.length > 0 ? (
+                  <div className="max-w-xl space-y-2">
+                    <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                      Model
+                    </label>
+                    <select
+                      className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-base text-foreground outline-none transition-colors focus:border-primary"
+                      value={selectedModelRef}
+                      onChange={(event) => {
+                        setSelectedModelRef(event.target.value);
+                      }}
+                    >
+                      {modelCatalog.models.map((model) => (
+                        <option key={model.modelRef} value={model.modelRef}>
+                          {model.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      CapyFin will use this model for {formatProviderName(selectedProvider)}.
+                    </p>
+                  </div>
+                ) : null}
               </div>
 
               <div className="mt-10 max-w-3xl">

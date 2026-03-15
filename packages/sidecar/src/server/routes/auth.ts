@@ -2,8 +2,10 @@ import {
   authOverviewSchema,
   authSessionSchema,
   connectProviderSecretRequestSchema,
+  providerModelCatalogSchema,
   respondAuthSessionRequestSchema,
   savedConnectionSchema,
+  setProviderModelRequestSchema,
   selectConnectionRequestSchema,
   startAuthSessionRequestSchema,
 } from "@capyfin/contracts";
@@ -16,6 +18,13 @@ export function createAuthRoutes(runtime: SidecarRuntime): Hono {
   app.get("/overview", async (context) => {
     const authOverview = await runtime.authService.getOverview();
     return context.json(authOverviewSchema.parse(authOverview));
+  });
+
+  app.get("/providers/:providerId/models", async (context) => {
+    const catalog = await runtime.authService.getProviderModelCatalog(
+      context.req.param("providerId"),
+    );
+    return context.json(providerModelCatalogSchema.parse(catalog));
   });
 
   app.post("/credentials", async (context) => {
@@ -32,6 +41,16 @@ export function createAuthRoutes(runtime: SidecarRuntime): Hono {
     const connection = await runtime.authService.selectProfile(payload.profileId);
 
     return context.json(savedConnectionSchema.parse(connection));
+  });
+
+  app.post("/providers/:providerId/model", async (context) => {
+    const payload = setProviderModelRequestSchema.parse(await context.req.json());
+    const overview = await runtime.authService.setProviderModel({
+      modelRef: payload.modelRef,
+      providerId: context.req.param("providerId"),
+    });
+
+    return context.json(authOverviewSchema.parse(overview));
   });
 
   app.delete("/profiles/:profileId", async (context) => {

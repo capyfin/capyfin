@@ -81,6 +81,23 @@ export const authOverviewSchema = z.object({
   providers: z.array(providerDefinitionSchema),
 });
 
+export const providerModelOptionSchema = z.object({
+  contextWindow: z.number().positive().optional(),
+  isSelected: z.boolean(),
+  label: z.string().min(1),
+  modelId: z.string().min(1),
+  modelRef: z.string().min(1),
+  providerId: z.string().min(1),
+  reasoning: z.boolean().optional(),
+});
+
+export const providerModelCatalogSchema = z.object({
+  currentModelId: z.string().min(1).optional(),
+  currentModelRef: z.string().min(1).optional(),
+  models: z.array(providerModelOptionSchema),
+  providerId: z.string().min(1),
+});
+
 export const connectProviderSecretRequestSchema = z.object({
   authChoice: z.string().min(1),
   secret: z.string().min(1),
@@ -96,6 +113,10 @@ export const startAuthSessionRequestSchema = z.object({
 
 export const respondAuthSessionRequestSchema = z.object({
   value: z.union([z.string(), z.boolean(), z.array(z.string())]),
+});
+
+export const setProviderModelRequestSchema = z.object({
+  modelRef: z.string().min(1),
 });
 
 export const agentSchema = z.object({
@@ -253,6 +274,8 @@ export type ProviderMethod = z.infer<typeof providerMethodSchema>;
 export type ProviderDefinition = z.infer<typeof providerDefinitionSchema>;
 export type SavedConnection = z.infer<typeof savedConnectionSchema>;
 export type AuthOverview = z.infer<typeof authOverviewSchema>;
+export type ProviderModelOption = z.infer<typeof providerModelOptionSchema>;
+export type ProviderModelCatalog = z.infer<typeof providerModelCatalogSchema>;
 export type ConnectProviderSecretRequest = z.infer<
   typeof connectProviderSecretRequestSchema
 >;
@@ -263,6 +286,7 @@ export type StartAuthSessionRequest = z.infer<
 export type RespondAuthSessionRequest = z.infer<
   typeof respondAuthSessionRequestSchema
 >;
+export type SetProviderModelRequest = z.infer<typeof setProviderModelRequestSchema>;
 export type AuthSessionStep = z.infer<typeof authSessionStepSchema>;
 export type AuthSession = z.infer<typeof authSessionSchema>;
 export type Agent = z.infer<typeof agentSchema>;

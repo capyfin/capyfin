@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
-import { CheckIcon, RefreshCcwIcon, Trash2Icon } from "lucide-react";
-import type { AuthOverview, SavedConnection } from "@/app/types";
+import { useEffect, useMemo, useState } from "react";
+import { CheckIcon, LoaderCircleIcon, RefreshCcwIcon, Trash2Icon } from "lucide-react";
+import type { AuthOverview, ProviderModelCatalog, SavedConnection } from "@/app/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,8 @@ export function ConnectionsWorkspace({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [modelCatalogs, setModelCatalogs] = useState<Record<string, ProviderModelCatalog>>({});
+  const [modelBusyProviderId, setModelBusyProviderId] = useState<string | null>(null);
 
   async function refreshOverview(): Promise<void> {
     if (!client) {
@@ -41,6 +43,40 @@ export function ConnectionsWorkspace({
     const nextOverview = await client.authOverview();
     onAuthOverviewChange(nextOverview);
   }
+
+  useEffect(() => {
+    if (!client || storedConnections.length === 0) {
+      setModelCatalogs({});
+      return;
+    }
+
+    let cancelled = false;
+    const runtimeClient = client;
+
+    async function loadModelCatalogs(): Promise<void> {
+      const uniqueProviderIds = [...new Set(storedConnections.map((connection) => connection.providerId))];
+      const entries = await Promise.all(
+        uniqueProviderIds.map(async (providerId) => [
+          providerId,
+          await runtimeClient.providerModels(providerId),
+        ] as const),
+      );
+      if (cancelled) {
+        return;
+      }
+      setModelCatalogs(Object.fromEntries(entries));
+    }
+
+    void loadModelCatalogs().catch((error: unknown) => {
+      if (!cancelled) {
+        setErrorMessage(getErrorMessage(error));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, storedConnections]);
 
   async function handleSelectDefault(profileId: string): Promise<void> {
     if (!client) {
@@ -82,6 +118,31 @@ export function ConnectionsWorkspace({
     }
   }
 
+  async function handleSetModel(providerId: string, modelRef: string): Promise<void> {
+    if (!client) {
+      return;
+    }
+
+    setErrorMessage(null);
+    setFeedback(null);
+    setModelBusyProviderId(providerId);
+
+    try {
+      const nextOverview = await client.setProviderModel(providerId, modelRef);
+      onAuthOverviewChange(nextOverview);
+      const nextCatalog = await client.providerModels(providerId);
+      setModelCatalogs((current) => ({
+        ...current,
+        [providerId]: nextCatalog,
+      }));
+      setFeedback("Model updated.");
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setModelBusyProviderId(null);
+    }
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-5">
       {errorMessage ? (
@@ -99,7 +160,7 @@ export function ConnectionsWorkspace({
               Current connections
             </h2>
             <p className="mt-0.5 text-[13px] text-muted-foreground">
-              Pick the default connection the app should use, or remove old ones.
+              Pick the default connection the app should use, change its model, or remove old ones.
             </p>
           </div>
           <Button
@@ -107,7 +168,7 @@ export function ConnectionsWorkspace({
             variant="outline"
             size="sm"
             className="rounded-full"
-            disabled={!client || isBusy}
+            disabled={!client || isBusy || Boolean(modelBusyProviderId)}
             onClick={() => {
               void refreshOverview();
             }}
@@ -149,8 +210,11 @@ export function ConnectionsWorkspace({
                     key={connection.profileId}
                     connection={connection}
                     isBusy={isBusy}
+                    isUpdatingModel={modelBusyProviderId === connection.providerId}
+                    modelCatalog={modelCatalogs[connection.providerId]}
                     onDelete={handleDelete}
                     onSelectDefault={handleSelectDefault}
+                    onSetModel={handleSetModel}
                   />
                 ))}
               </TableBody>
@@ -165,14 +229,25 @@ export function ConnectionsWorkspace({
 function ConnectionRow({
   connection,
   isBusy,
+  isUpdatingModel,
+  modelCatalog,
   onDelete,
   onSelectDefault,
+  onSetModel,
 }: {
   connection: SavedConnection;
   isBusy: boolean;
+  isUpdatingModel: boolean;
+  modelCatalog: ProviderModelCatalog | undefined;
   onDelete: (profileId: string) => Promise<void>;
   onSelectDefault: (profileId: string) => Promise<void>;
+  onSetModel: (providerId: string, modelRef: string) => Promise<void>;
 }) {
+  const selectedModelRef =
+    modelCatalog?.currentModelRef ??
+    modelCatalog?.models[0]?.modelRef ??
+    (connection.activeModelId ? `${connection.providerId}/${connection.activeModelId}` : "");
+
   return (
     <TableRow className="border-border transition-colors hover:bg-muted/30">
       <TableCell className="text-[13px] font-medium">{connection.providerName}</TableCell>
@@ -189,8 +264,24 @@ function ConnectionRow({
           ) : null}
         </div>
       </TableCell>
-      <TableCell className="text-[13px] text-muted-foreground">
-        {connection.activeModelId ?? "Provider default"}
+      <TableCell>
+        <div className="flex min-w-[16rem] items-center gap-2">
+          <select
+            className="h-9 w-full rounded-xl border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary"
+            disabled={isUpdatingModel || !modelCatalog || modelCatalog.models.length === 0}
+            value={selectedModelRef}
+            onChange={(event) => {
+              void onSetModel(connection.providerId, event.target.value);
+            }}
+          >
+            {modelCatalog?.models.map((model) => (
+              <option key={model.modelRef} value={model.modelRef}>
+                {model.label}
+              </option>
+            ))}
+          </select>
+          {isUpdatingModel ? <LoaderCircleIcon className="size-4 animate-spin text-muted-foreground" /> : null}
+        </div>
       </TableCell>
       <TableCell className="text-[13px] text-muted-foreground">
         {formatDate(connection.updatedAt)}
@@ -202,7 +293,7 @@ function ConnectionRow({
             variant="ghost"
             size="sm"
             className="h-8 rounded-full px-3 text-xs"
-            disabled={isBusy || connection.isDefault}
+            disabled={isBusy || isUpdatingModel || connection.isDefault}
             onClick={() => {
               void onSelectDefault(connection.profileId);
             }}
@@ -215,7 +306,7 @@ function ConnectionRow({
             variant="ghost"
             size="sm"
             className="h-8 rounded-full px-3 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-            disabled={isBusy}
+            disabled={isBusy || isUpdatingModel}
             onClick={() => {
               void onDelete(connection.profileId);
             }}
@@ -259,5 +350,5 @@ function formatDate(value: string): string {
 }
 
 function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Something went wrong.";
+  return error instanceof Error ? error.message : String(error);
 }

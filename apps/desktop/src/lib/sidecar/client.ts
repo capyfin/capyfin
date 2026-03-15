@@ -6,9 +6,11 @@ import {
   chatBootstrapSchema,
   connectProviderSecretRequestSchema,
   createAgentRequestSchema,
+  providerModelCatalogSchema,
   createBasicAuthHeader,
   respondAuthSessionRequestSchema,
   savedConnectionSchema,
+  setProviderModelRequestSchema,
   selectConnectionRequestSchema,
   sidecarBootstrapSchema,
   sidecarConnectionSchema,
@@ -19,6 +21,7 @@ import {
   type AgentCatalog,
   type AuthSession,
   type ChatBootstrap,
+  type ProviderModelCatalog,
   type SavedConnection,
   type SidecarBootstrap,
   type SidecarConnection,
@@ -103,6 +106,21 @@ export class SidecarClient {
     return savedConnectionSchema.parse(
       await this.request("/auth/select", {
         body: JSON.stringify(selectConnectionRequestSchema.parse({ profileId })),
+        method: "POST",
+      }),
+    );
+  }
+
+  async providerModels(providerId: string): Promise<ProviderModelCatalog> {
+    return providerModelCatalogSchema.parse(
+      await this.request(`/auth/providers/${encodeURIComponent(providerId)}/models`),
+    );
+  }
+
+  async setProviderModel(providerId: string, modelRef: string): Promise<AuthOverview> {
+    return authOverviewSchema.parse(
+      await this.request(`/auth/providers/${encodeURIComponent(providerId)}/model`, {
+        body: JSON.stringify(setProviderModelRequestSchema.parse({ modelRef })),
         method: "POST",
       }),
     );

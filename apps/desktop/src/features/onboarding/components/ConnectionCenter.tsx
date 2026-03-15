@@ -6,6 +6,7 @@ import {
   ExternalLinkIcon,
   LoaderCircleIcon,
   RefreshCcwIcon,
+  XIcon,
 } from "lucide-react";
 import anthropicLogo from "simple-icons/icons/anthropic.svg?raw";
 import githubCopilotLogo from "simple-icons/icons/githubcopilot.svg?raw";
@@ -29,6 +30,7 @@ interface ConnectionCenterProps {
   authOverview: AuthOverview | null;
   client: SidecarClient | null;
   isLoading: boolean;
+  onClose?: () => void;
   onAuthOverviewChange: (nextOverview: AuthOverview) => void;
   onContinue: () => void;
   onRetry: () => void;
@@ -37,20 +39,21 @@ interface ConnectionCenterProps {
 
 type SetupStep = "providers" | "configure";
 
-const providerLogos: Partial<Record<string, { color: string; svg: string }>> = {
-  anthropic: { color: "#191919", svg: anthropicLogo },
-  copilot: { color: "#171515", svg: githubCopilotLogo },
+const providerLogos: Partial<Record<string, { color: string; darkColor?: string; svg: string }>> = {
+  anthropic: { color: "#191919", darkColor: "#e8e8e8", svg: anthropicLogo },
+  copilot: { color: "#171515", darkColor: "#e0e0e0", svg: githubCopilotLogo },
   google: { color: "#4285F4", svg: googleGeminiLogo },
   huggingface: { color: "#FFD21E", svg: huggingFaceLogo },
   mistral: { color: "#FF7000", svg: mistralLogo },
-  openrouter: { color: "#111111", svg: openRouterLogo },
-  "ai-gateway": { color: "#111111", svg: vercelLogo },
+  openrouter: { color: "#111111", darkColor: "#e0e0e0", svg: openRouterLogo },
+  "ai-gateway": { color: "#111111", darkColor: "#e0e0e0", svg: vercelLogo },
 };
 
 export function ConnectionCenter({
   authOverview,
   client,
   isLoading,
+  onClose,
   onAuthOverviewChange,
   onContinue,
   onRetry,
@@ -259,17 +262,17 @@ export function ConnectionCenter({
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(8,145,178,0.08),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.06),_transparent_24%),linear-gradient(180deg,_#fffdf8_0%,_#fffdf8_42%,_#fcfaf3_100%)] px-6 py-8 text-slate-900 lg:px-12 lg:py-10">
+    <main className="ambient-glow relative min-h-screen overflow-hidden bg-background px-6 py-8 text-foreground lg:px-12 lg:py-10">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col">
         <header className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-sm font-semibold uppercase tracking-[0.38em] text-emerald-700">
+            <div className="text-sm font-semibold uppercase tracking-[0.38em] text-primary">
               CapyFin
             </div>
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-900 lg:text-6xl">
+            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-foreground lg:text-6xl">
               {step === "providers" ? "Connect a provider" : selectedProvider?.name ?? "Connection"}
             </h1>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
               {step === "providers"
                 ? "Choose the model provider you want to use. You can always add more later."
                 : selectedProvider?.description ??
@@ -296,6 +299,17 @@ export function ConnectionCenter({
               >
                 <ArrowLeftIcon className="size-4" />
                 Back
+              </Button>
+            ) : null}
+            {onClose ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full"
+                onClick={onClose}
+              >
+                <XIcon className="size-4" />
+                Close
               </Button>
             ) : null}
             <Button
@@ -327,7 +341,7 @@ export function ConnectionCenter({
 
           {isLoading && !authOverview ? (
             <div className="flex flex-1 items-center justify-center py-12">
-              <div className="flex items-center gap-3 text-sm text-slate-500">
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <LoaderCircleIcon className="size-4 animate-spin" />
                 Loading providers
               </div>
@@ -339,10 +353,10 @@ export function ConnectionCenter({
                   key={provider.id}
                   type="button"
                   className={cn(
-                    "group rounded-3xl border bg-white/85 p-5 text-left shadow-[0_20px_50px_-32px_rgba(15,23,42,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_24px_65px_-34px_rgba(15,23,42,0.34)]",
+                    "group rounded-3xl border bg-card p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md",
                     connectedProviderIds.has(resolveProviderConnectionId(provider))
-                      ? "border-emerald-200"
-                      : "border-slate-200/80",
+                      ? "border-success/40"
+                      : "border-border",
                   )}
                   onClick={() => {
                     setSelectedProviderId(provider.id);
@@ -361,18 +375,18 @@ export function ConnectionCenter({
                     <div className="flex items-center gap-4">
                       <ProviderMark provider={provider} />
                       <div>
-                        <div className="text-2xl font-semibold tracking-tight text-slate-900">
+                        <div className="text-2xl font-semibold tracking-tight text-foreground">
                           {formatProviderName(provider)}
                         </div>
                         {provider.description ? (
-                          <p className="mt-1 text-sm leading-6 text-slate-500">
+                          <p className="mt-1 text-sm leading-6 text-muted-foreground">
                             {provider.description}
                           </p>
                         ) : null}
                       </div>
                     </div>
                     {connectedProviderIds.has(resolveProviderConnectionId(provider)) ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
                         <CheckIcon className="size-3.5" />
                         Connected
                       </span>
@@ -383,7 +397,7 @@ export function ConnectionCenter({
                     {provider.methods.map((method) => (
                       <span
                         key={method.id}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600"
+                        className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-muted-foreground"
                       >
                         {method.label}
                       </span>
@@ -398,10 +412,10 @@ export function ConnectionCenter({
                 <div className="flex items-center gap-4">
                   <ProviderMark provider={selectedProvider} />
                   <div>
-                    <div className="text-3xl font-semibold tracking-tight text-slate-900">
+                    <div className="text-3xl font-semibold tracking-tight text-foreground">
                       {formatProviderName(selectedProvider)}
                     </div>
-                    <p className="mt-2 text-base text-slate-500">
+                    <p className="mt-2 text-base text-muted-foreground">
                       Choose the connection method you want to use.
                     </p>
                   </div>
@@ -415,8 +429,8 @@ export function ConnectionCenter({
                       className={cn(
                         "rounded-full border px-5 py-3 text-base transition-colors",
                         method.id === selectedMethod.id
-                          ? "border-slate-900 bg-slate-900 text-white"
-                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900",
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
                       )}
                       onClick={() => {
                         setSelectedMethodId(method.id);
@@ -439,16 +453,16 @@ export function ConnectionCenter({
                 {selectedMethod.input === "api_key" || selectedMethod.input === "token" ? (
                   <div className="space-y-5">
                     <div className="space-y-2">
-                      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                      <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                         {selectedMethod.label}
                       </h2>
-                      <p className="text-base leading-7 text-slate-500">
+                      <p className="text-base leading-7 text-muted-foreground">
                         {selectedMethod.hint ?? "Paste the credential you want CapyFin to use."}
                       </p>
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                         {selectedMethod.input === "token" ? "Token" : "API key"}
                       </label>
                       <Input
@@ -486,10 +500,10 @@ export function ConnectionCenter({
                 ) : (
                   <div className="space-y-5">
                     <div className="space-y-2">
-                      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                      <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                         {selectedMethod.label}
                       </h2>
-                      <p className="text-base leading-7 text-slate-500">
+                      <p className="text-base leading-7 text-muted-foreground">
                         {selectedMethod.hint ??
                           "Continue the sign-in flow in the browser, then finish any remaining steps here."}
                       </p>
@@ -535,8 +549,8 @@ export function ConnectionCenter({
                 )}
               </div>
 
-              <div className="mt-auto flex items-center justify-between gap-4 border-t border-slate-200 pt-8">
-                <p className="text-sm text-slate-500">
+              <div className="mt-auto flex items-center justify-between gap-4 border-t border-border pt-8">
+                <p className="text-sm text-muted-foreground">
                   Continue after one provider is connected and selected.
                 </p>
                 <Button
@@ -567,10 +581,10 @@ function Banner({
   return (
     <div
       className={cn(
-        "rounded-3xl border px-5 py-4 text-base",
+        "rounded-2xl border px-5 py-4 text-sm",
         tone === "error"
-          ? "border-amber-300 bg-amber-50/90 text-amber-900"
-          : "border-emerald-200 bg-emerald-50/90 text-emerald-800",
+          ? "border-warning/30 bg-warning/10 text-warning-foreground"
+          : "border-success/30 bg-success/10 text-success",
       )}
     >
       {children}
@@ -599,7 +613,7 @@ function AuthSessionPanel({
 
   if (step.type === "working") {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
         <LoaderCircleIcon className="size-4 animate-spin" />
         {step.message}
       </div>
@@ -608,7 +622,7 @@ function AuthSessionPanel({
 
   if (step.type === "completed") {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+      <div className="rounded-2xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
         {step.message ?? "Connection completed."}
       </div>
     );
@@ -616,7 +630,7 @@ function AuthSessionPanel({
 
   if (step.type === "error") {
     return (
-      <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      <div className="rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
         {step.message}
       </div>
     );
@@ -624,10 +638,10 @@ function AuthSessionPanel({
 
   if (step.type === "auth_link") {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
-        <div className="font-medium text-slate-900">{step.label ?? "Browser sign-in ready"}</div>
+      <div className="rounded-2xl border border-border bg-card px-4 py-4 text-sm text-muted-foreground">
+        <div className="font-medium text-foreground">{step.label ?? "Browser sign-in ready"}</div>
         {step.instructions ? (
-          <p className="mt-1 leading-6 text-slate-500">{step.instructions}</p>
+          <p className="mt-1 leading-6 text-muted-foreground">{step.instructions}</p>
         ) : null}
         <Button
           type="button"
@@ -646,8 +660,8 @@ function AuthSessionPanel({
 
   if (step.type === "confirm_prompt") {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-        <p className="text-sm leading-6 text-slate-700">{step.message}</p>
+      <div className="rounded-2xl border border-border bg-card px-4 py-4">
+        <p className="text-sm leading-6 text-foreground">{step.message}</p>
         <div className="mt-4 flex gap-2">
           <Button
             type="button"
@@ -677,8 +691,8 @@ function AuthSessionPanel({
 
   if (step.type === "text_prompt") {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-        <label className="block text-sm font-medium text-slate-900">{step.message}</label>
+      <div className="rounded-2xl border border-border bg-card px-4 py-4">
+        <label className="block text-sm font-medium text-foreground">{step.message}</label>
         <Input
           type={step.secret ? "password" : "text"}
           className="mt-3"
@@ -703,8 +717,8 @@ function AuthSessionPanel({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
-      <p className="text-sm font-medium text-slate-900">{step.message}</p>
+    <div className="rounded-2xl border border-border bg-card px-4 py-4">
+      <p className="text-sm font-medium text-foreground">{step.message}</p>
       <div className="mt-4 flex flex-wrap gap-2">
         {step.options.map((option) => {
           const isSelected = selections.includes(option.value);
@@ -715,8 +729,8 @@ function AuthSessionPanel({
               className={cn(
                 "rounded-full border px-3 py-2 text-sm transition-colors",
                 isSelected
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900",
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
               )}
               onClick={() => {
                 if (step.allowMultiple) {
@@ -754,7 +768,7 @@ function ProviderMark({ provider }: { provider: ProviderDefinition }) {
 
   if (!logo) {
     return (
-      <div className="flex size-14 items-center justify-center rounded-2xl border border-slate-200 bg-white text-lg font-semibold text-slate-700">
+      <div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-muted text-lg font-semibold text-foreground">
         {provider.name.charAt(0)}
       </div>
     );
@@ -762,10 +776,13 @@ function ProviderMark({ provider }: { provider: ProviderDefinition }) {
 
   return (
     <div
-      className="flex size-14 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm"
+      className="provider-mark flex size-14 items-center justify-center rounded-2xl border border-border bg-card shadow-sm [&_svg]:size-7"
       aria-hidden="true"
       dangerouslySetInnerHTML={{
-        __html: logo.svg.replace("<svg ", `<svg fill="${logo.color}" `),
+        __html: logo.svg.replace(
+          "<svg ",
+          `<svg fill="var(--provider-mark-color, ${logo.color})" style="--provider-mark-dark-color: ${logo.darkColor ?? logo.color}" `,
+        ),
       }}
     />
   );

@@ -80,6 +80,8 @@ export function App() {
   }, []);
 
   if (!authOverview?.selectedProviderId || hashView === "connections-add") {
+    const isReusableConnectionFlow = Boolean(authOverview?.selectedProviderId);
+
     return (
       <ConnectionCenter
         authOverview={authOverview}
@@ -93,6 +95,13 @@ export function App() {
         onRetry={() => {
           setRetryToken((current) => current + 1);
         }}
+        {...(isReusableConnectionFlow
+          ? {
+              onClose: () => {
+                window.location.hash = "#connections";
+              },
+            }
+          : {})}
       />
     );
   }

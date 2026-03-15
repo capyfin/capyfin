@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { chatBootstrapSchema } from "@capyfin/contracts";
 import { validateUIMessages } from "ai";
 import { Hono } from "hono";
@@ -6,16 +7,19 @@ import type { SidecarRuntime } from "../context.ts";
 
 const chatRequestSchema = z.object({
   agentId: z.string().min(1).optional(),
-  message: z.object({
-    id: z.string().min(1),
-    parts: z.array(
-      z.object({
-        text: z.string(),
-        type: z.literal("text"),
-      }),
-    ).min(1),
-    role: z.literal("user"),
-  }),
+  message: z.union([
+    z.string().min(1),
+    z.object({
+      id: z.string().min(1),
+      parts: z.array(
+        z.object({
+          text: z.string(),
+          type: z.literal("text"),
+        }),
+      ).min(1),
+      role: z.literal("user"),
+    }),
+  ]),
   sessionId: z.string().min(1).optional(),
 });
 
@@ -42,8 +46,21 @@ export function createChatRoutes(
 
   app.post("/", async (context) => {
     const payload = chatRequestSchema.parse(await context.req.json());
+    const normalizedMessage =
+      typeof payload.message === "string"
+        ? {
+            id: randomUUID(),
+            parts: [
+              {
+                text: payload.message.trim(),
+                type: "text" as const,
+              },
+            ],
+            role: "user" as const,
+          }
+        : payload.message;
     const messages = await validateUIMessages({
-      messages: [payload.message],
+      messages: [normalizedMessage],
     });
     const message = messages[0];
     if (!message) {

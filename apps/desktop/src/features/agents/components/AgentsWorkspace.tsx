@@ -44,20 +44,16 @@ export function AgentsWorkspace({
   createRequestToken,
 }: AgentsWorkspaceProps) {
   const connectedProviders = useMemo(
-    () => {
-      const uniqueProviders = new Map<string, ConnectedProviderOption>();
-
-      for (const connection of authOverview?.connections ?? []) {
-        if (!uniqueProviders.has(connection.providerId)) {
-          uniqueProviders.set(connection.providerId, {
+    () =>
+      [...new Map(
+        (authOverview?.connections ?? []).map((connection) => [
+          connection.providerId,
+          {
             providerId: connection.providerId,
             providerName: connection.providerName,
-          });
-        }
-      }
-
-      return [...uniqueProviders.values()];
-    },
+          },
+        ]),
+      ).values()],
     [authOverview],
   );
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -232,38 +228,9 @@ export function AgentsWorkspace({
     }
   }
 
-  async function handleUpdateAgentProvider(
-    agentId: string,
-    nextProviderId: string,
-  ): Promise<void> {
-    if (!client) {
-      return;
-    }
-
-    setBusyAgentId(agentId);
-    setErrorMessage(null);
-    setFeedback(null);
-
-    try {
-      const updatedAgent = await client.updateAgent(agentId, {
-        modelId: "",
-        providerId: nextProviderId,
-      });
-
-      setAgents((current) =>
-        current.map((agent) => (agent.id === agentId ? updatedAgent : agent)),
-      );
-      setFeedback(`Updated ${updatedAgent.name}.`);
-    } catch (error) {
-      setErrorMessage(getErrorMessage(error));
-    } finally {
-      setBusyAgentId(null);
-    }
-  }
-
   async function handleUpdateAgentModel(
     agentId: string,
-    providerId: string,
+    effectiveProviderId: string,
     nextModelId: string,
   ): Promise<void> {
     if (!client) {
@@ -275,9 +242,11 @@ export function AgentsWorkspace({
     setFeedback(null);
 
     try {
-      const updatedAgent = await client.updateAgent(agentId, {
-        modelId: nextModelId,
-        providerId,
+      const updatedAgent = await updateAgentWithFallback(client, agentId, {
+        ...(nextModelId.trim() ? { modelId: nextModelId } : { modelId: "" }),
+        ...(effectiveProviderId === authOverview?.selectedProviderId
+          ? {}
+          : { providerId: effectiveProviderId }),
       });
 
       setAgents((current) =>
@@ -459,99 +428,92 @@ export function AgentsWorkspace({
               </div>
             </div>
           ) : (
-            agents.map((agent, index) => (
-              <article
-                key={agent.id}
-                className={cn(
-                  "grid gap-3 px-5 py-4 transition-colors hover:bg-muted/30 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.8fr)_auto] lg:items-center lg:px-6",
-                  index !== 0 && "border-t border-border",
-                )}
-              >
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-sm font-medium text-foreground">
-                      {agent.name}
-                    </h3>
-                    {agent.isDefault ? (
-                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                        Default
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="text-[13px] leading-relaxed text-muted-foreground">
-                    {agent.description ??
-                      "Ready for finance planning, research, and execution support."}
-                  </p>
-                </div>
+            agents.map((agent, index) => {
+              const effectiveProviderId = resolveAgentProviderId(agent, authOverview);
+              const effectiveModelCatalog = effectiveProviderId
+                ? modelCatalogs[effectiveProviderId]
+                : undefined;
 
-                <div className="grid gap-3 text-[13px] text-muted-foreground sm:grid-cols-2 lg:grid-cols-1">
-                  <label className="grid gap-1.5">
-                    <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
-                      Provider
-                    </span>
-                    <select
-                      className="h-9 rounded-xl border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={busyAgentId === agent.id || connectedProviders.length === 0}
-                      value={agent.providerId ?? ""}
-                      onChange={(event) => {
-                        void handleUpdateAgentProvider(agent.id, event.target.value);
-                      }}
-                    >
-                      <option value="">Select provider</option>
-                      {connectedProviders.map((provider) => (
-                        <option key={provider.providerId} value={provider.providerId}>
-                          {provider.providerName}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className="grid gap-1.5">
-                    <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
-                      Model
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <select
-                        className="h-9 w-full rounded-xl border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
-                        disabled={
-                          busyAgentId === agent.id ||
-                          !agent.providerId ||
-                          !modelCatalogs[agent.providerId]
-                        }
-                        value={agent.modelId ?? ""}
-                        onChange={(event) => {
-                          if (!agent.providerId) {
-                            return;
-                          }
-
-                          void handleUpdateAgentModel(
-                            agent.id,
-                            agent.providerId,
-                            event.target.value,
-                          );
-                        }}
-                      >
-                        <option value="">Provider default</option>
-                        {agent.providerId
-                          ? modelCatalogs[agent.providerId]?.models.map((model) => (
-                              <option key={model.modelRef} value={model.modelId}>
-                                {model.label}
-                              </option>
-                            ))
-                          : null}
-                      </select>
-                      {busyAgentId === agent.id ? (
-                        <LoaderCircleIcon className="size-4 animate-spin text-muted-foreground" />
+              return (
+                <article
+                  key={agent.id}
+                  className={cn(
+                    "grid gap-3 px-5 py-4 transition-colors hover:bg-muted/30 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.8fr)_auto] lg:items-center lg:px-6",
+                    index !== 0 && "border-t border-border",
+                  )}
+                >
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm font-medium text-foreground">
+                        {agent.name}
+                      </h3>
+                      {agent.isDefault ? (
+                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                          Default
+                        </span>
                       ) : null}
                     </div>
-                  </label>
-                </div>
+                    <p className="text-[13px] leading-relaxed text-muted-foreground">
+                      {agent.description ??
+                        "Ready for finance planning, research, and execution support."}
+                    </p>
+                  </div>
 
-                <div className="text-[13px] text-muted-foreground">
-                  {formatTimestamp(agent.updatedAt)}
-                </div>
-              </article>
-            ))
+                  <div className="grid gap-3 text-[13px] text-muted-foreground sm:grid-cols-2 lg:grid-cols-1">
+                    <div className="grid gap-1.5">
+                      <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
+                        Provider
+                      </span>
+                      <span className="text-foreground">
+                        {providerLabel(effectiveProviderId, connectedProviders)}
+                      </span>
+                    </div>
+
+                    <label className="grid gap-1.5">
+                      <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
+                        Model
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <select
+                          className="h-9 w-full rounded-xl border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
+                          disabled={
+                            busyAgentId === agent.id ||
+                            !effectiveProviderId ||
+                            !effectiveModelCatalog
+                          }
+                          value={agent.modelId ?? ""}
+                          onChange={(event) => {
+                            if (!effectiveProviderId) {
+                              return;
+                            }
+
+                            void handleUpdateAgentModel(
+                              agent.id,
+                              effectiveProviderId,
+                              event.target.value,
+                            );
+                          }}
+                        >
+                          <option value="">Provider default</option>
+                          {effectiveModelCatalog?.models.map((model) => (
+                            <option key={model.modelRef} value={model.modelId}>
+                              {model.label}
+                            </option>
+                          ))}
+                        </select>
+                        {busyAgentId === agent.id ? (
+                          <LoaderCircleIcon className="size-4 animate-spin text-muted-foreground" />
+                        ) : null}
+                      </div>
+                    </label>
+                  </div>
+
+                  <div className="text-[13px] text-muted-foreground">
+                    {formatTimestamp(agent.updatedAt)}
+                  </div>
+                </article>
+              );
+            })
           )}
         </div>
       </section>
@@ -569,4 +531,54 @@ function formatTimestamp(value: string): string {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Something went wrong.";
+}
+
+function resolveAgentProviderId(
+  agent: Agent,
+  authOverview: AuthOverview | null,
+): string | undefined {
+  return agent.providerId ?? authOverview?.selectedProviderId;
+}
+
+function providerLabel(
+  providerId: string | undefined,
+  connectedProviders: ConnectedProviderOption[],
+): string {
+  if (!providerId) {
+    return "No provider connected";
+  }
+
+  return (
+    connectedProviders.find((provider) => provider.providerId === providerId)?.providerName ??
+    providerId
+  );
+}
+
+async function updateAgentWithFallback(
+  client: SidecarClient,
+  agentId: string,
+  payload: {
+    modelId?: string;
+    providerId?: string;
+  },
+): Promise<Agent> {
+  if (typeof client.updateAgent === "function") {
+    return client.updateAgent(agentId, payload);
+  }
+
+  const response = await fetch(client.createApiUrl(`/agents/${encodeURIComponent(agentId)}`), {
+    body: JSON.stringify(payload),
+    headers: (() => {
+      const headers = client.createAuthHeaders();
+      headers.set("Content-Type", "application/json");
+      return headers;
+    })(),
+    method: "PATCH",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Sidecar request failed with status ${String(response.status)}.`);
+  }
+
+  return response.json() as Promise<Agent>;
 }

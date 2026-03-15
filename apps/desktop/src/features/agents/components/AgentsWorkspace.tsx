@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { buildAgentModelUpdatePayload } from "@/features/agents/model-selection";
 import { cn } from "@/lib/utils";
 import { SidecarClient } from "@/lib/sidecar/client";
 
@@ -229,7 +230,7 @@ export function AgentsWorkspace({
   }
 
   async function handleUpdateAgentModel(
-    agentId: string,
+    agent: Agent,
     effectiveProviderId: string,
     nextModelId: string,
   ): Promise<void> {
@@ -237,20 +238,24 @@ export function AgentsWorkspace({
       return;
     }
 
-    setBusyAgentId(agentId);
+    setBusyAgentId(agent.id);
     setErrorMessage(null);
     setFeedback(null);
 
     try {
-      const updatedAgent = await updateAgentWithFallback(client, agentId, {
-        ...(nextModelId.trim() ? { modelId: nextModelId } : { modelId: "" }),
-        ...(effectiveProviderId === authOverview?.selectedProviderId
-          ? {}
-          : { providerId: effectiveProviderId }),
-      });
+      const updatedAgent = await updateAgentWithFallback(
+        client,
+        agent.id,
+        buildAgentModelUpdatePayload({
+          agent,
+          effectiveProviderId,
+          nextModelId,
+          selectedProviderId: authOverview?.selectedProviderId,
+        }),
+      );
 
       setAgents((current) =>
-        current.map((agent) => (agent.id === agentId ? updatedAgent : agent)),
+        current.map((currentAgent) => (currentAgent.id === agent.id ? updatedAgent : currentAgent)),
       );
       setFeedback(`Updated ${updatedAgent.name}.`);
     } catch (error) {
@@ -488,7 +493,7 @@ export function AgentsWorkspace({
                             }
 
                             void handleUpdateAgentModel(
-                              agent.id,
+                              agent,
                               effectiveProviderId,
                               event.target.value,
                             );
@@ -540,10 +545,7 @@ function resolveAgentProviderId(
   return agent.providerId ?? authOverview?.selectedProviderId;
 }
 
-function providerLabel(
-  providerId: string | undefined,
-  connectedProviders: ConnectedProviderOption[],
-): string {
+function providerLabel(providerId: string | undefined, connectedProviders: ConnectedProviderOption[]): string {
   if (!providerId) {
     return "No provider connected";
   }

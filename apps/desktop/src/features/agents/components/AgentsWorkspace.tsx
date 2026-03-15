@@ -1,6 +1,6 @@
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { BotIcon, LoaderCircleIcon, PlusIcon, RefreshCcwIcon, SparklesIcon } from "lucide-react";
-import type { Agent, AuthOverview } from "@/app/types";
+import type { Agent, AuthOverview, ProviderModelCatalog } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,6 +27,11 @@ interface CreateAgentDraft {
   providerId: string;
 }
 
+interface ConnectedProviderOption {
+  providerId: string;
+  providerName: string;
+}
+
 const EMPTY_DRAFT: CreateAgentDraft = {
   modelId: "",
   name: "",
@@ -40,33 +45,29 @@ export function AgentsWorkspace({
 }: AgentsWorkspaceProps) {
   const connectedProviders = useMemo(
     () => {
-      const connectedProviderIds = new Set(
-        (authOverview?.connections ?? []).map((connection) => connection.providerId),
-      );
+      const uniqueProviders = new Map<string, ConnectedProviderOption>();
 
-      return (authOverview?.providers ?? []).flatMap((provider) => {
-        const matchedMethods = provider.methods.filter((method) =>
-          connectedProviderIds.has(method.providerId),
-        );
-        const firstMethod = matchedMethods[0];
-        return matchedMethods.length > 0
-          ? [
-              {
-                providerId: firstMethod?.providerId ?? provider.id,
-                providerName: provider.name,
-              },
-            ]
-          : [];
-      });
+      for (const connection of authOverview?.connections ?? []) {
+        if (!uniqueProviders.has(connection.providerId)) {
+          uniqueProviders.set(connection.providerId, {
+            providerId: connection.providerId,
+            providerName: connection.providerName,
+          });
+        }
+      }
+
+      return [...uniqueProviders.values()];
     },
     [authOverview],
   );
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [modelCatalogs, setModelCatalogs] = useState<Record<string, ProviderModelCatalog>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [busyAgentId, setBusyAgentId] = useState<string | null>(null);
   const [draft, setDraft] = useState<CreateAgentDraft>(EMPTY_DRAFT);
 
   useEffect(() => {
@@ -82,6 +83,39 @@ export function AgentsWorkspace({
           },
     );
   }, [authOverview?.selectedProviderId, connectedProviders]);
+
+  useEffect(() => {
+    if (!client || connectedProviders.length === 0) {
+      setModelCatalogs({});
+      return;
+    }
+
+    let cancelled = false;
+    const runtimeClient = client;
+
+    async function loadModelCatalogs(): Promise<void> {
+      const entries = await Promise.all(
+        connectedProviders.map(async (provider) => [
+          provider.providerId,
+          await runtimeClient.providerModels(provider.providerId),
+        ] as const),
+      );
+
+      if (!cancelled) {
+        setModelCatalogs(Object.fromEntries(entries));
+      }
+    }
+
+    void loadModelCatalogs().catch((error: unknown) => {
+      if (!cancelled) {
+        setErrorMessage(getErrorMessage(error));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client, connectedProviders]);
 
   useEffect(() => {
     let cancelled = false;
@@ -139,6 +173,7 @@ export function AgentsWorkspace({
   const selectedProviderName =
     connectedProviders.find((provider) => provider.providerId === draft.providerId)
       ?.providerName ?? "selected provider";
+  const selectedProviderCatalog = draft.providerId ? modelCatalogs[draft.providerId] : undefined;
   const canCreate =
     Boolean(client) &&
     Boolean(draft.name.trim()) &&
@@ -197,6 +232,65 @@ export function AgentsWorkspace({
     }
   }
 
+  async function handleUpdateAgentProvider(
+    agentId: string,
+    nextProviderId: string,
+  ): Promise<void> {
+    if (!client) {
+      return;
+    }
+
+    setBusyAgentId(agentId);
+    setErrorMessage(null);
+    setFeedback(null);
+
+    try {
+      const updatedAgent = await client.updateAgent(agentId, {
+        modelId: "",
+        providerId: nextProviderId,
+      });
+
+      setAgents((current) =>
+        current.map((agent) => (agent.id === agentId ? updatedAgent : agent)),
+      );
+      setFeedback(`Updated ${updatedAgent.name}.`);
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setBusyAgentId(null);
+    }
+  }
+
+  async function handleUpdateAgentModel(
+    agentId: string,
+    providerId: string,
+    nextModelId: string,
+  ): Promise<void> {
+    if (!client) {
+      return;
+    }
+
+    setBusyAgentId(agentId);
+    setErrorMessage(null);
+    setFeedback(null);
+
+    try {
+      const updatedAgent = await client.updateAgent(agentId, {
+        modelId: nextModelId,
+        providerId,
+      });
+
+      setAgents((current) =>
+        current.map((agent) => (agent.id === agentId ? updatedAgent : agent)),
+      );
+      setFeedback(`Updated ${updatedAgent.name}.`);
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setBusyAgentId(null);
+    }
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5">
       {errorMessage ? (
@@ -233,46 +327,47 @@ export function AgentsWorkspace({
               />
             </label>
 
-            <div className="grid gap-2 text-sm">
+            <label className="grid gap-2 text-sm">
               <span className="text-xs font-medium text-foreground">Provider</span>
-              <div className="flex flex-wrap gap-2">
-                {connectedProviders.map((provider) => {
-                  const isSelected = provider.providerId === draft.providerId;
+              <select
+                className="h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                value={draft.providerId}
+                onChange={(event) => {
+                  const nextProviderId = event.target.value;
+                  setDraft((current) => ({
+                    ...current,
+                    modelId: "",
+                    providerId: nextProviderId,
+                  }));
+                }}
+              >
+                <option value="">Select provider</option>
+                {connectedProviders.map((provider) => (
+                  <option key={provider.providerId} value={provider.providerId}>
+                    {provider.providerName}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-                  return (
-                    <button
-                      key={provider.providerId}
-                      type="button"
-                      className={cn(
-                        "rounded-full border px-3 py-2 text-sm transition-all duration-200",
-                        isSelected
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-secondary text-foreground hover:bg-accent",
-                      )}
-                      onClick={() => {
-                        setDraft((current) => ({
-                          ...current,
-                          providerId: provider.providerId,
-                        }));
-                      }}
-                    >
-                      {provider.providerName}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <label className="grid gap-2 text-sm lg:col-span-2">
+            <label className="grid gap-2 text-sm">
               <span className="text-xs font-medium text-foreground">Model</span>
-              <Input
-                placeholder={`Optional, for example ${exampleModelForProvider(draft.providerId)}`}
+              <select
+                className="h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={!draft.providerId}
                 value={draft.modelId}
                 onChange={(event) => {
-                  const nextValue = event.target.value;
-                  setDraft((current) => ({ ...current, modelId: nextValue }));
+                  const nextModelId = event.target.value;
+                  setDraft((current) => ({ ...current, modelId: nextModelId }));
                 }}
-              />
+              >
+                <option value="">Provider default</option>
+                {selectedProviderCatalog?.models.map((model) => (
+                  <option key={model.modelRef} value={model.modelId}>
+                    {model.label}
+                  </option>
+                ))}
+              </select>
             </label>
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-3 border-t border-border bg-muted/30 sm:flex-row sm:items-center sm:justify-between">
@@ -389,24 +484,68 @@ export function AgentsWorkspace({
                   </p>
                 </div>
 
-                <dl className="grid gap-1.5 text-[13px] text-muted-foreground sm:grid-cols-2 lg:grid-cols-1">
-                  <div>
-                    <dt className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
+                <div className="grid gap-3 text-[13px] text-muted-foreground sm:grid-cols-2 lg:grid-cols-1">
+                  <label className="grid gap-1.5">
+                    <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
                       Provider
-                    </dt>
-                    <dd className="mt-0.5 text-foreground">
-                      {providerLabel(agent.providerId, authOverview)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
+                    </span>
+                    <select
+                      className="h-9 rounded-xl border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={busyAgentId === agent.id || connectedProviders.length === 0}
+                      value={agent.providerId ?? ""}
+                      onChange={(event) => {
+                        void handleUpdateAgentProvider(agent.id, event.target.value);
+                      }}
+                    >
+                      <option value="">Select provider</option>
+                      {connectedProviders.map((provider) => (
+                        <option key={provider.providerId} value={provider.providerId}>
+                          {provider.providerName}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="grid gap-1.5">
+                    <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
                       Model
-                    </dt>
-                    <dd className="mt-0.5 text-foreground">
-                      {agent.modelId ?? "Provider default"}
-                    </dd>
-                  </div>
-                </dl>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <select
+                        className="h-9 w-full rounded-xl border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={
+                          busyAgentId === agent.id ||
+                          !agent.providerId ||
+                          !modelCatalogs[agent.providerId]
+                        }
+                        value={agent.modelId ?? ""}
+                        onChange={(event) => {
+                          if (!agent.providerId) {
+                            return;
+                          }
+
+                          void handleUpdateAgentModel(
+                            agent.id,
+                            agent.providerId,
+                            event.target.value,
+                          );
+                        }}
+                      >
+                        <option value="">Provider default</option>
+                        {agent.providerId
+                          ? modelCatalogs[agent.providerId]?.models.map((model) => (
+                              <option key={model.modelRef} value={model.modelId}>
+                                {model.label}
+                              </option>
+                            ))
+                          : null}
+                      </select>
+                      {busyAgentId === agent.id ? (
+                        <LoaderCircleIcon className="size-4 animate-spin text-muted-foreground" />
+                      ) : null}
+                    </div>
+                  </label>
+                </div>
 
                 <div className="text-[13px] text-muted-foreground">
                   {formatTimestamp(agent.updatedAt)}
@@ -420,38 +559,14 @@ export function AgentsWorkspace({
   );
 }
 
-function exampleModelForProvider(providerId: string): string {
-  switch (providerId) {
-    case "openai":
-      return "gpt-5";
-    case "anthropic":
-      return "claude-sonnet-4";
-    case "google":
-      return "gemini-2.5-pro";
-    default:
-      return "provider default";
-  }
-}
-
-function providerLabel(
-  providerId: string | undefined,
-  authOverview: AuthOverview | null,
-): string {
-  if (!providerId) {
-    return "Provider not set";
-  }
-
-  return (
-    authOverview?.providers.find((provider) =>
-      provider.methods.some((method) => method.providerId === providerId),
-    )?.name ?? providerId
-  );
-}
-
 function formatTimestamp(value: string): string {
   return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Something went wrong.";
 }

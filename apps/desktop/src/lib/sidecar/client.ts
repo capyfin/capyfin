@@ -6,6 +6,7 @@ import {
   chatBootstrapSchema,
   connectProviderSecretRequestSchema,
   createAgentRequestSchema,
+  updateAgentRequestSchema,
   providerModelCatalogSchema,
   createBasicAuthHeader,
   respondAuthSessionRequestSchema,
@@ -86,6 +87,26 @@ export class SidecarClient {
       await this.request("/agents", {
         body: JSON.stringify(createAgentRequestSchema.parse(payload)),
         method: "POST",
+      }),
+    );
+  }
+
+  async updateAgent(
+    agentId: string,
+    payload: {
+      name?: string;
+      description?: string;
+      instructions?: string;
+      providerId?: string;
+      modelId?: string;
+      workspaceDir?: string;
+      setAsDefault?: boolean;
+    },
+  ): Promise<Agent> {
+    return agentSchema.parse(
+      await this.request(`/agents/${encodeURIComponent(agentId)}`, {
+        body: JSON.stringify(updateAgentRequestSchema.parse(payload)),
+        method: "PATCH",
       }),
     );
   }

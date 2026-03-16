@@ -54,7 +54,7 @@ type AuthChoiceModule = {
   }): string | undefined;
 };
 
-type RuntimeModelCatalogEntry = {
+export type RuntimeModelCatalogEntry = {
   contextWindow?: number;
   id: string;
   input?: string[];

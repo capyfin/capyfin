@@ -5,7 +5,7 @@ export function defaultModelForProvider(
     case "anthropic":
       return "claude-sonnet-4-5";
     case "github-copilot":
-      return "openai-codex/gpt-5.4";
+      return "github-copilot/gpt-4o";
     case "google":
       return "gemini-2.5-pro";
     case "openai":

@@ -1,6 +1,6 @@
 import { sidecarConnectionSchema, type SidecarConnection } from "@capyfin/contracts";
 
-const DEV_DEFAULT_SIDECAR_URL = "http://127.0.0.1:19110";
+const DEV_DEFAULT_SIDECAR_URL = "";
 const DEV_DEFAULT_USERNAME = "capyfin";
 const DEV_DEFAULT_PASSWORD = "capyfin-dev-password";
 
@@ -32,7 +32,11 @@ export function resolveBrowserDevConnection(
   const connection = {
     isSidecar: true,
     password: password && password.length > 0 ? password : DEV_DEFAULT_PASSWORD,
-    url: url && url.length > 0 ? url : DEV_DEFAULT_SIDECAR_URL,
+    url:
+      url && url.length > 0
+        ? url
+        : DEV_DEFAULT_SIDECAR_URL ||
+          (typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:1510"),
     username: username && username.length > 0 ? username : DEV_DEFAULT_USERNAME,
   };
 

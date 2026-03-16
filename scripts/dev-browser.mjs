@@ -14,7 +14,6 @@ const sharedEnv = {
   CAPYFIN_SERVER_PORT: port,
   CAPYFIN_SERVER_USERNAME: username,
   VITE_CAPYFIN_BROWSER_SIDECAR_PASSWORD: password,
-  VITE_CAPYFIN_BROWSER_SIDECAR_URL: `http://${hostname}:${port}`,
   VITE_CAPYFIN_BROWSER_SIDECAR_USERNAME: username,
 };
 

@@ -21,6 +21,25 @@ void test("resolveBrowserDevConnection returns a dev browser connection", () => 
   });
 });
 
+void test("resolveBrowserDevConnection falls back to proxy URL when no sidecar URL is set", () => {
+  const connection = resolveBrowserDevConnection(
+    {
+      DEV: true,
+      VITE_CAPYFIN_BROWSER_SIDECAR_PASSWORD: "dev-secret",
+      VITE_CAPYFIN_BROWSER_SIDECAR_USERNAME: "capyfin",
+    },
+    false,
+  );
+
+  assert.ok(connection);
+  assert.equal(connection.username, "capyfin");
+  assert.equal(connection.password, "dev-secret");
+  assert.ok(
+    connection.url.startsWith("http"),
+    "Falls back to an HTTP origin when no explicit sidecar URL is provided",
+  );
+});
+
 void test("resolveBrowserDevConnection stays disabled outside browser dev mode", () => {
   assert.equal(
     resolveBrowserDevConnection(

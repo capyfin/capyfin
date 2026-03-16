@@ -56,6 +56,14 @@ export default defineConfig({
     strictPort: true,
     host: host ?? false,
     ...(hmr ? { hmr } : {}),
+    proxy: host
+      ? undefined
+      : {
+          "/agents": { target: "http://127.0.0.1:19110", changeOrigin: true },
+          "/chat": { target: "http://127.0.0.1:19110", changeOrigin: true },
+          "/auth": { target: "http://127.0.0.1:19110", changeOrigin: true },
+          "/global": { target: "http://127.0.0.1:19110", changeOrigin: true },
+        },
     watch: {
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],

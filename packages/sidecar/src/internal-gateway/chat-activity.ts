@@ -88,10 +88,9 @@ function mapLifecycleEvent(
   if (phase === "start") {
     return createChunk(
       createActivityBase(event, {
-        detail: "Planning the next response.",
         id: `run:${event.runId}:status`,
         kind: "status",
-        label: "Thinking through your request",
+        label: "Thinking",
         status: "active",
       }),
     );
@@ -100,10 +99,9 @@ function mapLifecycleEvent(
   if (phase === "end") {
     return createChunk(
       createActivityBase(event, {
-        detail: "Response is ready.",
         id: `run:${event.runId}:status`,
         kind: "status",
-        label: "Wrapping up the response",
+        label: "Finished thinking",
         status: "complete",
       }),
     );

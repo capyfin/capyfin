@@ -1,30 +1,31 @@
 import { useChat } from "@ai-sdk/react";
 import {
-  ArrowUpIcon,
   BotIcon,
-  BrainCogIcon,
+  ClipboardIcon,
   LoaderCircleIcon,
   SparklesIcon,
-  SquareIcon,
-  WrenchIcon,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import type { ChatActivity } from "@capyfin/contracts";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AuthOverview, ChatBootstrap } from "@/app/types";
 import {
-  ChainOfThought,
-  ChainOfThoughtContent,
-  ChainOfThoughtHeader,
-  ChainOfThoughtStep,
-  ChainOfThoughtToolIcon,
-} from "@/components/ai-elements/chain-of-thought";
+  Message,
+  MessageAction,
+  MessageActions,
+  MessageContent,
+  MessageResponse,
+  MessageToolbar,
+} from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputSubmit,
+  PromptInputTextarea,
+} from "@/components/ai-elements/prompt-input";
 import {
   Reasoning,
   ReasoningContent,
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   chatDataPartSchemas,
   getActivityParts,
@@ -33,7 +34,6 @@ import {
   type ChatUIMessage,
 } from "@/features/chat/message-parts";
 import { createChatTransport } from "@/features/chat/transport";
-import { cn } from "@/lib/utils";
 import { SidecarClient } from "@/lib/sidecar/client";
 
 interface ChatWorkspaceProps {
@@ -106,7 +106,7 @@ export function ChatWorkspace({
       <div className="flex flex-1 items-center justify-center">
         <div className="flex flex-col items-center gap-2.5">
           <LoaderCircleIcon className="size-5 animate-spin text-muted-foreground/50" />
-          <p className="text-[12px] text-muted-foreground">Loading chat</p>
+          <p className="text-sm text-muted-foreground">Loading chat</p>
         </div>
       </div>
     );
@@ -115,21 +115,20 @@ export function ChatWorkspace({
   if (!bootstrap) {
     return (
       <div className="flex flex-1 flex-col items-start gap-3 px-4 py-6 lg:px-6">
-        <div className="rounded-lg border border-warning/20 bg-warning/8 px-3.5 py-2.5 text-[13px] text-warning-foreground">
+        <div className="rounded-lg border border-warning/20 bg-warning/8 px-3.5 py-2.5 text-sm text-warning-foreground">
           {errorMessage ?? "Chat is unavailable right now."}
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="h-8 rounded-md text-[12px]"
             onClick={() => {
               setRefreshToken((current) => current + 1);
             }}
           >
             Retry
           </Button>
-          <Button asChild size="sm" className="h-8 rounded-md text-[12px]">
+          <Button asChild size="sm">
             <a href="#connections">Manage providers</a>
           </Button>
         </div>
@@ -156,9 +155,7 @@ function ChatSessionView({
   bootstrap: ChatBootstrap;
   client: SidecarClient | null;
 }) {
-  const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [transport] = useState(
     () =>
       createChatTransport({
@@ -181,16 +178,6 @@ function ChatSessionView({
   });
 
   useEffect(() => {
-    const target = textareaRef.current;
-    if (!target) {
-      return;
-    }
-
-    target.style.height = "0px";
-    target.style.height = `${String(target.scrollHeight)}px`;
-  }, [draft]);
-
-  useEffect(() => {
     const list = listRef.current;
     if (!list) {
       return;
@@ -210,27 +197,28 @@ function ChatSessionView({
         provider.methods.some((method) => method.providerId === bootstrap.resolvedProviderId),
     )?.name ?? bootstrap.resolvedProviderId;
 
-  async function submitPrompt(prompt: string): Promise<void> {
-    const nextPrompt = prompt.trim();
-    if (!nextPrompt || isStreaming) {
-      return;
-    }
-
-    setDraft("");
-    await sendMessage({ text: nextPrompt });
-  }
+  const handleSubmit = useCallback(
+    async (prompt: { text: string }) => {
+      const text = prompt.text.trim();
+      if (!text || isStreaming) {
+        return;
+      }
+      await sendMessage({ text });
+    },
+    [isStreaming, sendMessage],
+  );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Agent/provider bar */}
-      <div className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5 lg:px-5">
+      <div className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5 lg:px-6">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-            <BotIcon className="size-2.5" />
+          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+            <BotIcon className="size-3" />
             {bootstrap.agent.name}
           </span>
           {providerName ? (
-            <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+            <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
               {providerName}
               {bootstrap.resolvedModelId ? ` / ${bootstrap.resolvedModelId}` : ""}
             </span>
@@ -241,10 +229,10 @@ function ChatSessionView({
       {/* Messages area */}
       <div
         ref={listRef}
-        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-6 lg:px-5"
+        className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 lg:px-6"
       >
         {messages.length === 0 ? (
-          <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 py-8 text-center">
+          <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
             <div className="space-y-3">
               <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <SparklesIcon className="size-5" />
@@ -253,7 +241,7 @@ function ChatSessionView({
                 <h1 className="text-lg font-semibold tracking-tight text-foreground">
                   Start a conversation
                 </h1>
-                <p className="text-[13px] leading-relaxed text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   Ask {bootstrap.agent.name} about planning, analysis, and finance decisions.
                 </p>
               </div>
@@ -264,9 +252,9 @@ function ChatSessionView({
                 <button
                   key={prompt}
                   type="button"
-                  className="rounded-lg border border-border/60 bg-card px-3 py-3 text-left text-[12px] leading-relaxed text-muted-foreground transition-all duration-150 hover:border-primary/30 hover:bg-accent hover:text-foreground"
+                  className="rounded-lg border border-border/60 bg-card px-3.5 py-3 text-left text-sm leading-relaxed text-muted-foreground transition-all duration-150 hover:border-primary/30 hover:bg-accent hover:text-foreground"
                   onClick={() => {
-                    void submitPrompt(prompt);
+                    void handleSubmit({ text: prompt });
                   }}
                 >
                   {prompt}
@@ -276,219 +264,126 @@ function ChatSessionView({
           </div>
         ) : (
           messages.map((message) => (
-            <article
+            <ChatMessage
               key={message.id}
-              className={cn(
-                "flex w-full",
-                message.role === "user" ? "justify-end" : "justify-start",
-              )}
-            >
-              <MessageBubble
-                agentName={bootstrap.agent.name}
-                isStreaming={isStreaming && latestMessage?.id === message.id}
-                message={message}
-              />
-            </article>
+              isStreaming={isStreaming && latestMessage?.id === message.id}
+              message={message}
+            />
           ))
         )}
 
         {isStreaming && latestMessage?.role === "user" ? (
-          <article className="flex w-full justify-start">
-            <PendingAssistantState agentName={bootstrap.agent.name} />
-          </article>
+          <Message from="assistant">
+            <Reasoning isStreaming>
+              <ReasoningTrigger />
+            </Reasoning>
+          </Message>
         ) : null}
 
         {error ? (
-          <div className="rounded-lg border border-destructive/20 bg-destructive/8 px-3.5 py-2.5 text-[13px] text-destructive">
+          <div className="rounded-lg border border-destructive/20 bg-destructive/8 px-3.5 py-2.5 text-sm text-destructive">
             {error.message}
           </div>
         ) : null}
       </div>
 
-      {/* Chat input area */}
-      <div className="border-t border-border/60 bg-card/50 px-4 py-3 lg:px-5">
-        <form
-          className="flex w-full flex-col gap-1.5"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void submitPrompt(draft);
-          }}
+      {/* Chat input */}
+      <div className="border-t border-border/60 px-4 py-3 lg:px-6">
+        <PromptInput
+          onSubmit={handleSubmit}
+          className="mx-auto max-w-3xl"
         >
-          <div className="rounded-lg border border-border/60 bg-background p-2.5 transition-colors focus-within:border-primary/40">
-            <Textarea
-              ref={textareaRef}
-              className="max-h-40 min-h-[56px] resize-none border-0 bg-transparent px-0 py-0 text-[13px] shadow-none placeholder:text-muted-foreground/50 focus-visible:ring-0"
-              placeholder="Ask about planning, analysis, or finance workflows..."
-              value={draft}
-              onChange={(event) => {
-                setDraft(event.target.value);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
-                  void submitPrompt(draft);
-                }
-              }}
-            />
-            <div className="flex items-center justify-between gap-2 pt-1.5">
-              <p className="text-[11px] text-muted-foreground/50">
-                {isStreaming
-                  ? "Generating..."
-                  : "Enter to send"}
-              </p>
-              <div className="flex items-center gap-1.5">
-                {isStreaming ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 rounded-md px-2.5 text-[11px]"
-                    onClick={() => {
-                      void stop();
-                    }}
-                  >
-                    <SquareIcon className="size-2.5 fill-current" />
-                    Stop
-                  </Button>
-                ) : null}
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="h-7 rounded-md px-3 text-[11px]"
-                  disabled={!draft.trim() || isStreaming}
-                >
-                  {isStreaming ? (
-                    <LoaderCircleIcon className="size-3 animate-spin" />
-                  ) : (
-                    <ArrowUpIcon className="size-3" />
-                  )}
-                  Send
-                </Button>
-              </div>
-            </div>
-          </div>
-        </form>
+          <PromptInputTextarea
+            placeholder={`Message ${bootstrap.agent.name}...`}
+            disabled={isStreaming}
+          />
+          <PromptInputSubmit
+            status={status}
+            onStop={() => {
+              void stop();
+            }}
+          />
+        </PromptInput>
       </div>
     </div>
   );
 }
 
-function MessageBubble({
-  agentName,
+function ChatMessage({
   isStreaming,
   message,
 }: {
-  agentName: string;
   isStreaming: boolean;
   message: ChatUIMessage;
 }) {
   const activityParts = getActivityParts(message);
   const reasoningText = getReasoningText(message);
   const textParts = getTextParts(message);
-  const hasAssistantActivity = message.role === "assistant" && activityParts.length > 0;
-  const showReasoningFallback =
+  const fullText = textParts.join("\n\n");
+  const isThinking =
     message.role === "assistant" &&
     isStreaming &&
-    activityParts.length === 0 &&
-    reasoningText.length === 0 &&
-    textParts.length === 0;
+    activityParts.some((activity) => activity.status === "active");
 
   if (message.role === "user") {
     return (
-      <div className="max-w-[min(640px,80%)] rounded-lg bg-primary px-3.5 py-2.5 text-primary-foreground">
-        <div className="space-y-1.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.15em] opacity-50">
-            You
-          </p>
-          <div className="space-y-1.5 text-[13px] leading-6">
-            {textParts.map((part, index) => (
-              <p key={`${message.id}-${String(index)}`} className="whitespace-pre-wrap">
-                {part}
-              </p>
-            ))}
-          </div>
-        </div>
-      </div>
+      <Message from="user">
+        <MessageContent>
+          {textParts.map((part, index) => (
+            <p key={`${message.id}-${String(index)}`} className="whitespace-pre-wrap">
+              {part}
+            </p>
+          ))}
+        </MessageContent>
+      </Message>
     );
   }
 
   return (
-    <div className="flex w-full max-w-[min(720px,88%)] flex-col gap-3">
-      <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/70">
-        {agentName}
-      </p>
-
-      {hasAssistantActivity ? (
-        <AssistantActivityStrip activities={activityParts} isStreaming={isStreaming} />
-      ) : null}
-
-      {reasoningText || showReasoningFallback ? (
-        <Reasoning
-          className="max-w-xl"
-          defaultOpen={Boolean(reasoningText)}
-          isStreaming={showReasoningFallback}
-        >
+    <Message from="assistant">
+      {activityParts.length > 0 || isThinking ? (
+        <Reasoning isStreaming={isThinking} defaultOpen={false}>
           <ReasoningTrigger />
-          <ReasoningContent>
-            {reasoningText || "The assistant is working through the next response."}
-          </ReasoningContent>
         </Reasoning>
       ) : null}
 
-      {textParts.length > 0 ? (
-        <div className="rounded-lg border border-border/60 bg-card px-3.5 py-2.5 text-card-foreground">
-          <div className="space-y-1.5 text-[13px] leading-6">
-            {textParts.map((part, index) => (
-              <p key={`${message.id}-${String(index)}`} className="whitespace-pre-wrap">
-                {part}
-              </p>
-            ))}
-          </div>
-        </div>
+      {reasoningText ? (
+        <Reasoning defaultOpen={false}>
+          <ReasoningTrigger />
+          <ReasoningContent>{reasoningText}</ReasoningContent>
+        </Reasoning>
       ) : null}
-    </div>
+
+      {fullText ? (
+        <MessageContent>
+          <MessageResponse>{fullText}</MessageResponse>
+          <MessageToolbar>
+            <MessageActions>
+              <CopyAction text={fullText} />
+            </MessageActions>
+          </MessageToolbar>
+        </MessageContent>
+      ) : null}
+    </Message>
   );
 }
 
-function AssistantActivityStrip({
-  activities,
-  isStreaming,
-}: {
-  activities: ChatActivity[];
-  isStreaming: boolean;
-}) {
-  const activeCount = activities.filter((activity) => activity.status === "active").length;
+function CopyAction({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
 
   return (
-    <ChainOfThought className="max-w-xl" defaultOpen={isStreaming}>
-      <ChainOfThoughtHeader activeCount={activeCount}>
-        {isStreaming ? "Working through your request" : "What the assistant did"}
-      </ChainOfThoughtHeader>
-      <ChainOfThoughtContent>
-        {activities.map((activity) => (
-          <ChainOfThoughtStep
-            key={activity.id}
-            icon={activity.kind === "tool" ? <ChainOfThoughtToolIcon /> : activity.kind === "status" ? <BrainCogIcon className="size-3.5 text-primary" /> : <WrenchIcon className="size-3.5 text-primary" />}
-            status={activity.status}
-            title={activity.label}
-            {...(activity.detail ? { detail: activity.detail } : {})}
-          />
-        ))}
-      </ChainOfThoughtContent>
-    </ChainOfThought>
-  );
-}
-
-function PendingAssistantState({ agentName }: { agentName: string }) {
-  return (
-    <div className="flex w-full max-w-[min(720px,88%)] flex-col gap-3">
-      <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/70">
-        {agentName}
-      </p>
-      <Reasoning className="max-w-xl" isStreaming>
-        <ReasoningTrigger />
-      </Reasoning>
-    </div>
+    <MessageAction
+      tooltip={copied ? "Copied!" : "Copy"}
+      onClick={() => {
+        void navigator.clipboard.writeText(text);
+        setCopied(true);
+        window.setTimeout(() => {
+          setCopied(false);
+        }, 1500);
+      }}
+    >
+      <ClipboardIcon className="size-3.5" />
+    </MessageAction>
   );
 }
 

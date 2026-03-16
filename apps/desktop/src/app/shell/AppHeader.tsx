@@ -1,11 +1,4 @@
 import { MonitorIcon, MoonIcon, PlusIcon, SunIcon } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -23,12 +16,6 @@ export function AppHeader({
   onAddConnection,
   onCreateAgent,
 }: AppHeaderProps) {
-  const today = new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "long",
-    weekday: "long",
-    year: "numeric",
-  }).format(new Date());
   const pageTitle =
     currentView === "connections"
       ? "Connections"
@@ -37,53 +24,44 @@ export function AppHeader({
         : "Chat";
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-card/80 backdrop-blur-xl backdrop-saturate-150">
-      <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
-        <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground" />
+    <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      <div className="flex h-12 items-center gap-3 px-4 lg:px-5">
+        <SidebarTrigger className="-ml-1 text-muted-foreground/70 hover:text-foreground" />
         <Separator
           orientation="vertical"
           className="hidden data-[orientation=vertical]:h-4 sm:block"
         />
 
         <div className="min-w-0 flex-1">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden text-xs md:block">
-                Workspace
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="text-xs font-medium">
-                  {pageTitle}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">{today}</p>
+          <h1 className="text-[13px] font-medium text-foreground">
+            {pageTitle}
+          </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <ThemeToggle />
 
           {currentView === "connections" ? (
             <Button
               size="sm"
-              className="hidden rounded-full px-4 lg:inline-flex"
+              variant="outline"
+              className="ml-1 hidden h-7 rounded-md px-2.5 text-[12px] font-medium lg:inline-flex"
               onClick={onAddConnection}
             >
-              <PlusIcon className="size-3.5" />
-              Add connection
+              <PlusIcon className="size-3" />
+              Add
             </Button>
           ) : null}
 
           {currentView === "agents" ? (
             <Button
               size="sm"
-              className="hidden rounded-full px-4 lg:inline-flex"
+              variant="outline"
+              className="ml-1 hidden h-7 rounded-md px-2.5 text-[12px] font-medium lg:inline-flex"
               onClick={onCreateAgent}
             >
-              <PlusIcon className="size-3.5" />
-              Create Agent
+              <PlusIcon className="size-3" />
+              New agent
             </Button>
           ) : null}
         </div>
@@ -102,23 +80,23 @@ function ThemeToggle() {
   ];
 
   return (
-    <div className="flex items-center rounded-full border border-border bg-secondary p-0.5">
+    <div className="flex items-center rounded-md border border-border/60 bg-muted/50 p-0.5">
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
           title={option.label}
           className={cn(
-            "flex size-7 items-center justify-center rounded-full transition-all duration-200",
+            "flex size-6 items-center justify-center rounded-[3px] transition-all duration-150",
             theme === option.value
-              ? "bg-card text-foreground shadow-sm"
+              ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
           )}
           onClick={() => {
             setTheme(option.value);
           }}
         >
-          <option.icon className="size-3.5" />
+          <option.icon className="size-3" />
         </button>
       ))}
     </div>

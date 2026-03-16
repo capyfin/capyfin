@@ -22,6 +22,7 @@ import {
   loadModelSelectionModule,
   loadProviderWizardModule,
   type RuntimeEnvLike,
+  type RuntimeModelCatalogEntry,
   type WizardPrompterLike,
 } from "./runtime-modules.ts";
 
@@ -88,6 +89,42 @@ type GitHubDeviceTokenResponse =
       error_description?: string;
       error_uri?: string;
     };
+
+export function buildProviderModelCatalog(params: {
+  catalog: RuntimeModelCatalogEntry[];
+  currentModelRef?: string;
+  providerId: string;
+}): ProviderModelCatalog {
+  const normalizedProviderId = params.providerId.trim();
+  const selectedRef = params.currentModelRef?.trim();
+  const selected = splitModelRef(selectedRef);
+
+  const models = params.catalog
+    .filter((entry) => isSameProvider(entry.provider, normalizedProviderId))
+    .map((entry): ProviderModelOption => {
+      const modelRef = `${entry.provider}/${entry.id}`;
+      const label = entry.name.trim();
+      return {
+        ...(entry.contextWindow ? { contextWindow: entry.contextWindow } : {}),
+        isSelected: selectedRef === modelRef,
+        label: label.length > 0 ? label : entry.id,
+        modelId: entry.id,
+        modelRef,
+        providerId: entry.provider,
+        ...(typeof entry.reasoning === "boolean" ? { reasoning: entry.reasoning } : {}),
+      };
+    });
+
+  const hasSelectedModel =
+    Boolean(selectedRef) && models.some((entry) => entry.modelRef === selectedRef);
+
+  return {
+    ...(hasSelectedModel && selected.modelId ? { currentModelId: selected.modelId } : {}),
+    ...(hasSelectedModel && selectedRef ? { currentModelRef: selectedRef } : {}),
+    models,
+    providerId: normalizedProviderId,
+  };
+}
 
 function createEmptyAuthStore(): RuntimeAuthStore {
   return {
@@ -690,40 +727,11 @@ export class RuntimeProviderAuthService {
       config,
       useCache: false,
     });
-    const selectedRef = currentModelRef?.trim();
-    const selected = splitModelRef(selectedRef);
-
-    const providerModels = catalog
-      .filter((entry) => isSameProvider(entry.provider, normalizedProviderId))
-      .map((entry): ProviderModelOption => {
-        const modelRef = `${entry.provider}/${entry.id}`;
-        return {
-          ...(entry.contextWindow ? { contextWindow: entry.contextWindow } : {}),
-          isSelected: selectedRef === modelRef,
-          label: entry.name.trim() || entry.id,
-          modelId: entry.id,
-          modelRef,
-          providerId: entry.provider,
-          ...(typeof entry.reasoning === "boolean" ? { reasoning: entry.reasoning } : {}),
-        };
-      });
-
-    if (selectedRef && !providerModels.some((entry) => entry.modelRef === selectedRef)) {
-      providerModels.unshift({
-        isSelected: true,
-        label: selected.modelId ?? selectedRef,
-        modelId: selected.modelId ?? selectedRef,
-        modelRef: selectedRef,
-        providerId: selected.providerId ?? normalizedProviderId,
-      });
-    }
-
-    return {
-      ...(selected.modelId ? { currentModelId: selected.modelId } : {}),
-      ...(selectedRef ? { currentModelRef: selectedRef } : {}),
-      models: providerModels,
+    return buildProviderModelCatalog({
+      catalog,
+      ...(currentModelRef ? { currentModelRef } : {}),
       providerId: normalizedProviderId,
-    };
+    });
   }
 
   async setProviderModel(params: {

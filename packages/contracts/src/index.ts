@@ -205,6 +205,24 @@ export const chatBootstrapSchema = z.object({
   resolvedProviderId: z.string().min(1).optional(),
 });
 
+export const chatActivityStatusSchema = z.enum([
+  "pending",
+  "active",
+  "complete",
+  "error",
+]);
+
+export const chatActivitySchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(["status", "tool", "compaction"]),
+  label: z.string().min(1),
+  detail: z.string().min(1).optional(),
+  status: chatActivityStatusSchema,
+  sequence: z.number().int().nonnegative().optional(),
+  timestamp: z.string().min(1).optional(),
+  toolName: z.string().min(1).optional(),
+});
+
 export const authSessionStepSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("working"),
@@ -301,6 +319,8 @@ export type CreateAgentSessionRequest = z.infer<
 >;
 export type ChatTranscriptMessage = z.infer<typeof chatTranscriptMessageSchema>;
 export type ChatBootstrap = z.infer<typeof chatBootstrapSchema>;
+export type ChatActivityStatus = z.infer<typeof chatActivityStatusSchema>;
+export type ChatActivity = z.infer<typeof chatActivitySchema>;
 
 export const appManifest = appManifestSchema.parse(appManifestJson);
 

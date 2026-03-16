@@ -1,5 +1,4 @@
 import { type AuthOverview } from "@capyfin/contracts";
-import { Channel, invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
@@ -8,10 +7,8 @@ import { ChatWorkspace } from "@/features/chat/components/ChatWorkspace";
 import { ConnectionsWorkspace } from "@/features/connections/components/ConnectionsWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { initializeSidecarConnection } from "@/lib/runtime/connection";
 import { SidecarClient } from "@/lib/sidecar/client";
-import type { SidecarConnection } from "@/app/types";
-
-type InitStep = "sidecar_waiting" | "sidecar_ready" | "done";
 type AppView = "connections" | "connections-add" | "chat" | "agents";
 
 export function App() {
@@ -33,12 +30,7 @@ export function App() {
       }
 
       try {
-        const connection = await invoke<SidecarConnection>(
-          "await_initialization",
-          {
-            events: new Channel<InitStep>(),
-          },
-        );
+        const connection = await initializeSidecarConnection();
         const client = SidecarClient.fromConnection(connection);
         const overview = await client.authOverview();
 

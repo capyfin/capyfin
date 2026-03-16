@@ -33,11 +33,7 @@ interface AgentMetadataStore {
 
 const STORE_VERSION = 1 as const;
 
-const DEFAULT_AGENT_INSTRUCTIONS = [
-  "You are CapyFin Main, the default financial operations agent.",
-  "Help with planning, analysis, workflows, and execution support.",
-  "Be concise, practical, and explicit about risk or uncertainty.",
-].join("\n");
+const DEFAULT_AGENT_INSTRUCTIONS = "";
 
 function createEmptyStore(): AgentMetadataStore {
   return {
@@ -240,7 +236,7 @@ export class AgentMetadataStoreService {
     const workspaceDir = join(this.#paths.workspacesDir, DEFAULT_AGENT_ID);
     const metadata: StoredAgentMetadata = {
       createdAt: timestamp,
-      description: "Primary CapyFin finance orchestration agent.",
+      description: "Default workspace agent.",
       id: DEFAULT_AGENT_ID,
       instructions: DEFAULT_AGENT_INSTRUCTIONS,
       name: "Main",
@@ -292,7 +288,7 @@ export class AgentMetadataStoreService {
       ...(payload.description ? { description: payload.description.trim() } : {}),
       id: normalizedId,
       instructions:
-        payload.instructions?.trim() ?? `You are ${payload.name.trim()}, a CapyFin agent.`,
+        payload.instructions?.trim() ?? "",
       ...(payload.modelId ? { modelId: payload.modelId.trim() } : {}),
       name: payload.name.trim(),
       ...(payload.providerId ? { providerId: payload.providerId.trim() } : {}),

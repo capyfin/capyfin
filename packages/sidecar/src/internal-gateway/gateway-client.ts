@@ -33,6 +33,7 @@ import {
   type EmbeddedGatewayPaths,
 } from "./paths.ts";
 import { createSignedGatewayDevice } from "./device-identity.ts";
+import { loadPackagedTemplate } from "./workspace-bootstrap.ts";
 import type {
   CreateAgentRequest,
   UpdateAgentRequest,
@@ -950,22 +951,29 @@ export class EmbeddedGatewayClient {
   }
 
   async applyAgentWorkspace(agent: Agent): Promise<void> {
-    const descriptionLine = agent.description?.trim()
-      ? `\nDescription: ${agent.description.trim()}\n`
-      : "\n";
+    const hasCustomInstructions = Boolean(agent.instructions.trim());
+
+    const soulContent = hasCustomInstructions
+      ? `# SOUL.md - ${agent.name}\n\n${agent.instructions.trim()}\n`
+      : await loadPackagedTemplate("SOUL.md");
+    const identityContent = hasCustomInstructions
+      ? `# IDENTITY.md - ${agent.name}\n\n- Name: ${agent.name}\n`
+      : await loadPackagedTemplate("IDENTITY.md");
+    const userContent = await loadPackagedTemplate("USER.md");
+
     await this.request("agents.files.set", {
       agentId: agent.id,
-      content: `# SOUL.md - ${agent.name}\n\n${agent.instructions.trim()}\n`,
+      content: soulContent,
       name: "SOUL.md",
     });
     await this.request("agents.files.set", {
       agentId: agent.id,
-      content: `# IDENTITY.md - ${agent.name}\n\n- Name: ${agent.name}${descriptionLine}`,
+      content: identityContent,
       name: "IDENTITY.md",
     });
     await this.request("agents.files.set", {
       agentId: agent.id,
-      content: `# USER.md - CapyFin Workspace\n\n- Product: CapyFin\n- Agent ID: ${agent.id}\n`,
+      content: userContent,
       name: "USER.md",
     });
     if (normalizeGatewayModelRef(agent)) {

@@ -6,6 +6,7 @@ import { loadSidecarConfig, type SidecarConfig } from "./config.ts";
 import { EmbeddedGatewayClient } from "./internal-gateway/gateway-client.ts";
 import { AgentMetadataStoreService } from "./internal-gateway/metadata-store.ts";
 import { EmbeddedGatewaySupervisor } from "./internal-gateway/supervisor.ts";
+import { migrateLegacyDefaultWorkspacePersona } from "./internal-gateway/workspace-bootstrap.ts";
 import { createSidecarApp } from "./server/app.ts";
 
 export interface SidecarServerHandle {
@@ -32,7 +33,8 @@ export async function startSidecarServer(
   process.env.OPENCLAW_OAUTH_DIR = gatewaySupervisor.paths.oauthDir;
   process.env.OPENCLAW_STATE_DIR = gatewaySupervisor.paths.stateDir;
   const metadataStore = new AgentMetadataStoreService(gatewaySupervisor.paths);
-  await metadataStore.ensureDefaultAgent();
+  const defaultAgent = await metadataStore.ensureDefaultAgent();
+  await migrateLegacyDefaultWorkspacePersona(defaultAgent.workspaceDir);
   const authService = new RuntimeProviderAuthService(gatewaySupervisor.paths, process.env);
   const embeddedGateway = new EmbeddedGatewayClient({
     authService,

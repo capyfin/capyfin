@@ -12,6 +12,7 @@ import {
   type AgentCatalog,
   type AgentSession,
   type AgentSessionList,
+  type ChatActivity,
   type ChatBootstrap,
   type ChatTranscriptMessage,
   type CreateAgentSessionRequest,
@@ -25,6 +26,7 @@ import {
   normalizeGatewayModelRef,
   splitGatewayModelRef,
 } from "./model-defaults.ts";
+import { toChatActivityChunk } from "./chat-activity.ts";
 import {
   resolveGatewaySessionFile,
   resolveGatewaySessionsDir,
@@ -100,6 +102,7 @@ interface PendingGatewayRequest {
 }
 
 interface GatewayRpcClientOptions {
+  caps?: string[];
   clientDisplayName?: string;
   clientName?: string;
   connectDelayMs?: number;
@@ -322,7 +325,7 @@ class GatewayRpcClient {
         "connect",
         {
           auth: this.#options.token ? { token: this.#options.token } : undefined,
-          caps: [],
+          caps: this.#options.caps ?? [],
           client: {
             displayName: this.#options.clientDisplayName,
             id: this.#options.clientName ?? CLIENT_NAME,
@@ -359,6 +362,15 @@ interface GatewayChatEvent {
   runId: string;
   sessionKey: string;
   state: "aborted" | "delta" | "error" | "final";
+}
+
+interface GatewayAgentEventPayload {
+  data?: Record<string, unknown>;
+  runId: string;
+  seq: number;
+  sessionKey?: string;
+  stream: string;
+  ts?: number;
 }
 
 interface GatewaySessionRow {
@@ -791,7 +803,7 @@ export class EmbeddedGatewayClient {
     }
 
     const bootstrap = await this.bootstrapConversation(agent.id);
-    const originalMessages = [
+    const originalMessages: UIMessage<unknown, { activity: ChatActivity }>[] = [
       ...bootstrap.messages.map((message) => ({
         id: message.id,
         parts: message.text
@@ -799,15 +811,17 @@ export class EmbeddedGatewayClient {
           : [],
         role: message.role,
       })),
-      params.message,
+      params.message as UIMessage<unknown, { activity: ChatActivity }>,
     ];
     const assistantMessageId = randomUUID();
+    const assistantTextPartId = `${assistantMessageId}:text`;
 
-    const stream = createUIMessageStream<UIMessage>({
+    const stream = createUIMessageStream<UIMessage<unknown, { activity: ChatActivity }>>({
       execute: async ({ writer }) => {
         let runId = "";
         let currentAssistantText = "";
         let started = false;
+        let messageStarted = false;
         let finishedResolve!: () => void;
         let finishedReject!: (error: Error) => void;
         const finished = new Promise<void>((resolve, reject) => {
@@ -815,8 +829,37 @@ export class EmbeddedGatewayClient {
           finishedReject = reject;
         });
 
+        function ensureMessageStarted(): void {
+          if (messageStarted) {
+            return;
+          }
+
+          writer.write({
+            messageId: assistantMessageId,
+            type: "start",
+          });
+          messageStarted = true;
+        }
+
         const streamClient = await this.connect({
+          caps: ["tool-events"],
           onEvent: (event) => {
+            if (event.event === "agent" && event.payload && typeof event.payload === "object") {
+              const payload = event.payload as GatewayAgentEventPayload;
+              if (payload.sessionKey !== session.sessionKey || payload.runId !== runId) {
+                return;
+              }
+
+              const activityChunk = toChatActivityChunk(payload);
+              if (!activityChunk) {
+                return;
+              }
+
+              ensureMessageStarted();
+              writer.write(activityChunk);
+              return;
+            }
+
             const payload =
               event.event === "chat" && event.payload && typeof event.payload === "object"
                 ? (event.payload as GatewayChatEvent)
@@ -829,14 +872,15 @@ export class EmbeddedGatewayClient {
               const fullText = extractMessageText(payload.message?.content);
               const nextDelta = fullText.slice(currentAssistantText.length);
               if (!started && fullText) {
-                writer.write({ id: assistantMessageId, type: "text-start" });
+                ensureMessageStarted();
+                writer.write({ id: assistantTextPartId, type: "text-start" });
                 started = true;
               }
               if (nextDelta) {
                 currentAssistantText = fullText;
                 writer.write({
                   delta: nextDelta,
-                  id: assistantMessageId,
+                  id: assistantTextPartId,
                   type: "text-delta",
                 });
               }
@@ -847,17 +891,18 @@ export class EmbeddedGatewayClient {
               const fullText = extractMessageText(payload.message?.content);
               const trailing = fullText.slice(currentAssistantText.length);
               if (!started) {
-                writer.write({ id: assistantMessageId, type: "text-start" });
+                ensureMessageStarted();
+                writer.write({ id: assistantTextPartId, type: "text-start" });
                 started = true;
               }
               if (trailing) {
                 writer.write({
                   delta: trailing,
-                  id: assistantMessageId,
+                  id: assistantTextPartId,
                   type: "text-delta",
                 });
               }
-              writer.write({ id: assistantMessageId, type: "text-end" });
+              writer.write({ id: assistantTextPartId, type: "text-end" });
               writer.write({ finishReason: "stop", type: "finish" });
               finishedResolve();
               return;
@@ -1056,6 +1101,7 @@ export class EmbeddedGatewayClient {
   }
 
   private async connect(options?: {
+    caps?: string[];
     onEvent?: (event: GatewayEventFrame) => void;
   }): Promise<{
     request<T = unknown>(
@@ -1071,6 +1117,7 @@ export class EmbeddedGatewayClient {
         clientDisplayName: "CapyFin",
         clientName: CLIENT_NAME,
         connectDelayMs: 0,
+        ...(options?.caps ? { caps: options.caps } : {}),
         identityPath: this.#paths.deviceIdentityPath,
         mode: CLIENT_MODE,
         onClose: (code, reason) => {

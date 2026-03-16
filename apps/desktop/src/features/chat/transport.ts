@@ -1,10 +1,11 @@
 import {
   DefaultChatTransport,
   type ChatTransport,
-  type UIMessage,
   type UIMessageChunk,
 } from "ai";
+import type { ChatActivity } from "@capyfin/contracts";
 import type { SidecarClient } from "@/lib/sidecar/client";
+import type { ChatUIMessage } from "./message-parts";
 
 interface CreateChatTransportParams {
   agentId: string;
@@ -13,7 +14,7 @@ interface CreateChatTransportParams {
 }
 
 interface TauriChatStreamChunkEvent {
-  chunk: UIMessageChunk;
+  chunk: UIMessageChunk<unknown, { activity: ChatActivity }>;
   type: "chunk";
 }
 
@@ -37,7 +38,7 @@ function isTauriRuntime(): boolean {
 
 function createBrowserTransport(
   params: CreateChatTransportParams,
-): ChatTransport<UIMessage> {
+): ChatTransport<ChatUIMessage> {
   return new DefaultChatTransport({
     api: params.client?.createApiUrl("/chat") ?? "/chat",
     ...(params.client ? { headers: params.client.createAuthHeaders() } : {}),
@@ -57,7 +58,7 @@ function createBrowserTransport(
 
 function createDesktopTransport(
   params: CreateChatTransportParams,
-): ChatTransport<UIMessage> {
+): ChatTransport<ChatUIMessage> {
   return {
     reconnectToStream() {
       return Promise.resolve(null);
@@ -70,7 +71,7 @@ function createDesktopTransport(
 
       const [{ Channel, invoke }] = await Promise.all([import("@tauri-apps/api/core")]);
 
-      return new ReadableStream<UIMessageChunk>({
+      return new ReadableStream<UIMessageChunk<unknown, { activity: ChatActivity }>>({
         start(controller) {
           const events = new Channel<TauriChatStreamEvent>();
           let closed = false;
@@ -120,7 +121,7 @@ function createDesktopTransport(
 
 export function createChatTransport(
   params: CreateChatTransportParams,
-): ChatTransport<UIMessage> {
+): ChatTransport<ChatUIMessage> {
   if (isTauriRuntime()) {
     return createDesktopTransport(params);
   }

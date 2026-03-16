@@ -590,7 +590,7 @@ function resolveCurrentModelRefForProvider(
   });
 }
 
-function buildAllowlistWithProviderModel(params: {
+export function buildAllowlistWithProviderModel(params: {
   config: GatewayConfig;
   modelRef: string;
   providerId: string;
@@ -767,20 +767,21 @@ export class RuntimeProviderAuthService {
       store,
     });
 
+    const allowlistedConfig = applyModelAllowlist(
+      config,
+      buildAllowlistWithProviderModel({
+        config,
+        modelRef,
+        providerId,
+      }),
+    );
     const nextConfig = isSameProvider(currentSelection.selectedProviderId ?? "", providerId)
       ? applyDefaultModelPrimaryUpdate({
-          cfg: config,
+          cfg: allowlistedConfig,
           field: "model",
           modelRaw: modelRef,
         })
-      : applyModelAllowlist(
-          config,
-          buildAllowlistWithProviderModel({
-            config,
-            modelRef,
-            providerId,
-          }),
-        );
+      : allowlistedConfig;
 
     await runProviderModelSelectedHook({
       agentDir: resolveGatewayAgentDir(this.#paths, DEFAULT_AGENT_ID),

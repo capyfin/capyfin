@@ -16,10 +16,12 @@ import {
   type ChatTranscriptMessage,
   type CreateAgentSessionRequest,
   type DeleteAgentResponse,
+  type ProviderModelCatalog,
 } from "@capyfin/contracts";
 import { DEFAULT_AGENT_ID, normalizeAgentId } from "@capyfin/core/agents";
 import type { AgentMetadataStoreService } from "./metadata-store.ts";
 import {
+  defaultModelForProvider,
   normalizeGatewayModelRef,
   splitGatewayModelRef,
 } from "./model-defaults.ts";
@@ -473,9 +475,82 @@ function reorderIds<T extends { id: string }>(items: T[], preferredId?: string):
   });
 }
 
+function sameProvider(left?: string, right?: string): boolean {
+  const normalizedLeft = left?.trim();
+  const normalizedRight = right?.trim();
+  if (!normalizedLeft || !normalizedRight) {
+    return false;
+  }
+  return normalizedLeft.toLowerCase() === normalizedRight.toLowerCase();
+}
+
+function addModelCandidate(target: string[], modelRef?: string): void {
+  const normalized = modelRef?.trim();
+  if (!normalized || target.includes(normalized)) {
+    return;
+  }
+  target.push(normalized);
+}
+
+export function resolveCompatibleAgentModelRef(params: {
+  agent: Agent;
+  authOverview: Pick<AuthOverview, "selectedModelId" | "selectedProviderId">;
+  providerCatalog: {
+    currentModelRef?: string | undefined;
+    models: ProviderModelCatalog["models"];
+    providerId: string;
+  };
+}): string | undefined {
+  const effectiveProviderId =
+    params.agent.providerId?.trim() ?? params.authOverview.selectedProviderId?.trim();
+  if (!effectiveProviderId) {
+    return normalizeGatewayModelRef({
+      modelId: params.agent.modelId,
+      providerId: params.agent.providerId,
+    });
+  }
+
+  const allowedModelRefs = new Set<string>(
+    params.providerCatalog.models
+      .map((entry) => entry.modelRef.trim())
+      .filter((entry) => entry.length > 0),
+  );
+  const candidates: string[] = [];
+
+  if (params.agent.providerId?.trim()) {
+    addModelCandidate(
+      candidates,
+      normalizeGatewayModelRef({
+        modelId: params.agent.modelId,
+        providerId: params.agent.providerId,
+      }),
+    );
+  }
+
+  if (
+    params.authOverview.selectedModelId?.trim() &&
+    sameProvider(params.authOverview.selectedProviderId, effectiveProviderId)
+  ) {
+    addModelCandidate(
+      candidates,
+      normalizeGatewayModelRef({
+        modelId: params.authOverview.selectedModelId,
+        providerId: effectiveProviderId,
+      }),
+    );
+  }
+
+  addModelCandidate(candidates, params.providerCatalog.currentModelRef);
+  addModelCandidate(candidates, defaultModelForProvider(effectiveProviderId));
+  addModelCandidate(candidates, params.providerCatalog.models[0]?.modelRef);
+
+  return candidates.find((candidate) => allowedModelRefs.has(candidate)) ?? candidates[0];
+}
+
 export class EmbeddedGatewayClient {
   readonly #authState: {
     getOverview(): Promise<Pick<AuthOverview, "selectedModelId" | "selectedProviderId">>;
+    getProviderModelCatalog(providerId: string): Promise<ProviderModelCatalog>;
   };
   readonly #metadataStore: AgentMetadataStoreService;
   readonly #paths: EmbeddedGatewayPaths;
@@ -484,6 +559,7 @@ export class EmbeddedGatewayClient {
   constructor(params: {
     authService: {
       getOverview(): Promise<Pick<AuthOverview, "selectedModelId" | "selectedProviderId">>;
+      getProviderModelCatalog(providerId: string): Promise<ProviderModelCatalog>;
     };
     metadataStore: AgentMetadataStoreService;
     paths: EmbeddedGatewayPaths;
@@ -615,13 +691,16 @@ export class EmbeddedGatewayClient {
   async createSession(payload: CreateAgentSessionRequest): Promise<AgentSession> {
     const agent = await this.getAgent(payload.agentId);
     await this.ensureAgentExists(agent);
+    const authOverview = await this.#authState.getOverview();
+    const fallbackModelRef = await this.#resolveCompatibleModelRef({
+      agent,
+      authOverview,
+    });
     const sessionKey = `agent:${agent.id}:session:${randomUUID()}`;
     const patch = await this.request<GatewaySessionsPatchResult>("sessions.patch", {
       key: sessionKey,
       ...(payload.label?.trim() ? { label: payload.label.trim() } : {}),
-      ...(normalizeGatewayModelRef(agent)
-        ? { model: normalizeGatewayModelRef(agent) }
-        : {}),
+      ...(fallbackModelRef ? { model: fallbackModelRef } : {}),
     });
 
     if (payload.initialPrompt?.trim()) {
@@ -653,12 +732,10 @@ export class EmbeddedGatewayClient {
     const agent = await this.getAgent(agentId);
     await this.ensureAgentExists(agent);
     const authOverview = await this.#authState.getOverview();
-    const fallbackProviderId = agent.providerId ?? authOverview.selectedProviderId;
-    const fallbackModelRef =
-      normalizeGatewayModelRef({
-        modelId: agent.modelId ?? authOverview.selectedModelId,
-        providerId: fallbackProviderId,
-      });
+    const fallbackModelRef = await this.#resolveCompatibleModelRef({
+      agent,
+      authOverview,
+    });
     const session = await this.ensureConversationSession({
       agent,
       ...(fallbackModelRef ? { fallbackModelRef } : {}),
@@ -692,17 +769,19 @@ export class EmbeddedGatewayClient {
       : await this.getDefaultAgent();
     await this.ensureAgentExists(agent);
     const authOverview = await this.#authState.getOverview();
-    const fallbackProviderId = agent.providerId ?? authOverview.selectedProviderId;
-    const fallbackModelRef =
-      normalizeGatewayModelRef({
-        modelId: agent.modelId ?? authOverview.selectedModelId,
-        providerId: fallbackProviderId,
-      });
+    const fallbackModelRef = await this.#resolveCompatibleModelRef({
+      agent,
+      authOverview,
+    });
     const session = await this.ensureConversationSession({
       agent,
       ...(fallbackModelRef ? { fallbackModelRef } : {}),
       ...(params.sessionId ? { requestedSessionId: params.sessionId } : {}),
     });
+    const fallbackProviderId =
+      splitGatewayModelRef(fallbackModelRef).providerId ??
+      agent.providerId ??
+      authOverview.selectedProviderId;
     const userText = params.message.parts
       .flatMap((part) => (part.type === "text" ? [part.text] : []))
       .join("\n")
@@ -956,6 +1035,24 @@ export class EmbeddedGatewayClient {
         );
       }
     }
+  }
+
+  async #resolveCompatibleModelRef(params: {
+    agent: Agent;
+    authOverview: Pick<AuthOverview, "selectedModelId" | "selectedProviderId">;
+  }): Promise<string | undefined> {
+    const effectiveProviderId =
+      params.agent.providerId?.trim() ?? params.authOverview.selectedProviderId?.trim();
+    if (!effectiveProviderId) {
+      return normalizeGatewayModelRef(params.agent);
+    }
+
+    const providerCatalog = await this.#authState.getProviderModelCatalog(effectiveProviderId);
+    return resolveCompatibleAgentModelRef({
+      agent: params.agent,
+      authOverview: params.authOverview,
+      providerCatalog,
+    });
   }
 
   private async connect(options?: {

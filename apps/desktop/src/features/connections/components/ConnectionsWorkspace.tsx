@@ -144,7 +144,7 @@ export function ConnectionsWorkspace({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4">
       {errorMessage ? (
         <MessageBanner tone="error">{errorMessage}</MessageBanner>
       ) : null}
@@ -154,52 +154,52 @@ export function ConnectionsWorkspace({
       ) : null}
 
       <section className="min-w-0">
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold tracking-tight text-foreground">
+            <h2 className="text-[14px] font-semibold text-foreground">
               Current connections
             </h2>
-            <p className="mt-0.5 text-[13px] text-muted-foreground">
-              Pick the default connection the app should use, change its model, or remove old ones.
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
+              Manage default connections, models, and credentials.
             </p>
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="rounded-full"
+            className="h-7 rounded-md text-[11px] text-muted-foreground"
             disabled={!client || isBusy || Boolean(modelBusyProviderId)}
             onClick={() => {
               void refreshOverview();
             }}
           >
-            <RefreshCcwIcon className="size-3.5" />
+            <RefreshCcwIcon className="size-3" />
             Refresh
           </Button>
         </div>
 
         {storedConnections.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-border/60 bg-card px-5 py-8 text-center text-[13px] text-muted-foreground">
             No saved connections yet.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div className="overflow-hidden rounded-lg border border-border/60 bg-card">
             <Table>
               <TableHeader>
-                <TableRow className="border-border hover:bg-transparent">
-                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                <TableRow className="border-border/60 hover:bg-transparent">
+                  <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
                     Provider
                   </TableHead>
-                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                  <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
                     Connection
                   </TableHead>
-                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                  <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
                     Model
                   </TableHead>
-                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                  <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
                     Updated
                   </TableHead>
-                  <TableHead className="text-right text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                  <TableHead className="text-right text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -249,15 +249,15 @@ function ConnectionRow({
     (connection.activeModelId ? `${connection.providerId}/${connection.activeModelId}` : "");
 
   return (
-    <TableRow className="border-border transition-colors hover:bg-muted/30">
-      <TableCell className="text-[13px] font-medium">{connection.providerName}</TableCell>
+    <TableRow className="border-border/60 transition-colors hover:bg-muted/20">
+      <TableCell className="text-[12px] font-medium">{connection.providerName}</TableCell>
       <TableCell>
-        <div className="flex items-center gap-2">
-          <span className="text-[13px]">{connection.label}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[12px]">{connection.label}</span>
           {connection.isDefault ? (
             <Badge
               variant="secondary"
-              className="rounded-full bg-primary/15 text-[10px] font-semibold text-primary"
+              className="rounded-md bg-primary/10 px-1.5 text-[9px] font-medium text-primary"
             >
               Default
             </Badge>
@@ -265,9 +265,9 @@ function ConnectionRow({
         </div>
       </TableCell>
       <TableCell>
-        <div className="flex min-w-[16rem] items-center gap-2">
+        <div className="flex min-w-[14rem] items-center gap-1.5">
           <select
-            className="h-9 w-full rounded-xl border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary"
+            className="h-8 w-full rounded-md border border-border bg-background px-2.5 text-[12px] text-foreground outline-none transition-colors focus:border-primary"
             disabled={isUpdatingModel || !modelCatalog || modelCatalog.models.length === 0}
             value={selectedModelRef}
             onChange={(event) => {
@@ -280,39 +280,38 @@ function ConnectionRow({
               </option>
             ))}
           </select>
-          {isUpdatingModel ? <LoaderCircleIcon className="size-4 animate-spin text-muted-foreground" /> : null}
+          {isUpdatingModel ? <LoaderCircleIcon className="size-3.5 animate-spin text-muted-foreground" /> : null}
         </div>
       </TableCell>
-      <TableCell className="text-[13px] text-muted-foreground">
+      <TableCell className="text-[12px] text-muted-foreground/60">
         {formatDate(connection.updatedAt)}
       </TableCell>
       <TableCell className="text-right">
-        <div className="flex justify-end gap-1.5">
+        <div className="flex justify-end gap-1">
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 rounded-full px-3 text-xs"
+            className="h-7 rounded-md px-2 text-[11px]"
             disabled={isBusy || isUpdatingModel || connection.isDefault}
             onClick={() => {
               void onSelectDefault(connection.profileId);
             }}
           >
-            <CheckIcon className="size-3.5" />
-            Make default
+            <CheckIcon className="size-3" />
+            Default
           </Button>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 rounded-full px-3 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="h-7 rounded-md px-2 text-[11px] text-destructive hover:bg-destructive/8 hover:text-destructive"
             disabled={isBusy || isUpdatingModel}
             onClick={() => {
               void onDelete(connection.profileId);
             }}
           >
-            <Trash2Icon className="size-3.5" />
-            Delete
+            <Trash2Icon className="size-3" />
           </Button>
         </div>
       </TableCell>
@@ -330,10 +329,10 @@ function MessageBanner({
   return (
     <div
       className={cn(
-        "rounded-2xl border px-4 py-3 text-sm",
+        "rounded-lg border px-3.5 py-2.5 text-[13px]",
         tone === "error"
-          ? "border-warning/30 bg-warning/10 text-warning-foreground"
-          : "border-success/30 bg-success/10 text-success",
+          ? "border-warning/20 bg-warning/8 text-warning-foreground"
+          : "border-success/20 bg-success/8 text-success",
       )}
     >
       {children}

@@ -103,7 +103,7 @@ export function App() {
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar activeView={currentView} authOverview={authOverview} />
-      <SidebarInset className="ambient-glow bg-transparent">
+      <SidebarInset className="bg-background">
         <AppHeader
           currentView={currentView}
           onAddConnection={() => {
@@ -113,7 +113,7 @@ export function App() {
             setCreateAgentToken((current) => current + 1);
           }}
         />
-        <div className="relative z-[1] flex flex-1 flex-col gap-5 p-4 lg:p-6">
+        <div className="flex flex-1 flex-col gap-4 p-4 lg:p-5">
           {currentView === "chat" ? (
             <ChatWorkspace authOverview={authOverview} client={client} />
           ) : currentView === "connections" ? (

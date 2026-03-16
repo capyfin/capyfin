@@ -13,10 +13,9 @@ void test("maps lifecycle events to activity chunks", () => {
 
   assert.deepEqual(chunk, {
     data: {
-      detail: "Planning the next response.",
       id: "run:run-1:status",
       kind: "status",
-      label: "Thinking through your request",
+      label: "Thinking",
       sequence: 1,
       status: "active",
       timestamp: "2026-03-16T00:00:00.000Z",

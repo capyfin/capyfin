@@ -91,6 +91,11 @@ type ProviderWizardModule = {
 };
 
 export type WizardPrompterLike = {
+  authLink?(params: {
+    instructions?: string;
+    label?: string;
+    url: string;
+  }): Promise<void>;
   confirm(params: {
     initialValue?: boolean;
     message: string;
@@ -129,9 +134,31 @@ export type RuntimeEnvLike = {
 
 let authChoiceModulePromise: Promise<AuthChoiceModule> | null = null;
 let authChoiceOptionsModulePromise: Promise<AuthChoiceOptionsModule> | null = null;
+let authProfileRuntimeModulePromise: Promise<AuthProfileRuntimeModule> | null = null;
 let modelCatalogModulePromise: Promise<ModelCatalogModule> | null = null;
 let modelSelectionModulePromise: Promise<ModelSelectionModule> | null = null;
 let providerWizardModulePromise: Promise<ProviderWizardModule> | null = null;
+
+type AuthProfileRuntimeModule = {
+  applyAuthProfileConfig(params: Record<string, unknown>, options: {
+    email?: string;
+    mode: "api_key" | "oauth" | "token";
+    preferProfileFirst?: boolean;
+    profileId: string;
+    provider: string;
+  }): Record<string, unknown>;
+  upsertAuthProfile(params: {
+    agentDir?: string;
+    credential: {
+      email?: string;
+      key?: string;
+      provider: string;
+      token?: string;
+      type: "api_key" | "oauth" | "token";
+    };
+    profileId: string;
+  }): void;
+};
 
 async function listDistModules(prefix: string): Promise<string[]> {
   const distDir = join(resolveGatewayPackageRoot(), "dist");
@@ -149,6 +176,10 @@ async function listModulesAt(pathWithinPackage: string): Promise<string[]> {
     .sort();
 
   return entries.map((entry) => pathToFileURL(join(directory, entry)).href);
+}
+
+async function listRootDistModules(): Promise<string[]> {
+  return await listModulesAt("dist");
 }
 
 async function loadNamedFunction<T extends (...args: never[]) => unknown>(params: {
@@ -255,6 +286,28 @@ export async function loadModelCatalogModule(): Promise<ModelCatalogModule> {
   })();
 
   return await modelCatalogModulePromise;
+}
+
+export async function loadAuthProfileRuntimeModule(): Promise<AuthProfileRuntimeModule> {
+  authProfileRuntimeModulePromise ??= (async () => {
+    const moduleUrls = await listRootDistModules();
+    return {
+      applyAuthProfileConfig: await loadNamedFunction<AuthProfileRuntimeModule["applyAuthProfileConfig"]>({
+        errorMessage:
+          "Embedded runtime auth profile module is missing applyAuthProfileConfig.",
+        functionName: "applyAuthProfileConfig",
+        moduleUrls,
+      }),
+      upsertAuthProfile: await loadNamedFunction<AuthProfileRuntimeModule["upsertAuthProfile"]>({
+        errorMessage:
+          "Embedded runtime auth profile module is missing upsertAuthProfile.",
+        functionName: "upsertAuthProfile",
+        moduleUrls,
+      }),
+    };
+  })();
+
+  return await authProfileRuntimeModulePromise;
 }
 
 export async function loadModelSelectionModule(): Promise<ModelSelectionModule> {

@@ -1,5 +1,5 @@
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
+import type { UIMessage } from "ai";
 import {
   ArrowUpIcon,
   BotIcon,
@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AuthOverview, ChatBootstrap } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { createChatTransport } from "@/features/chat/transport";
 import { cn } from "@/lib/utils";
 import { SidecarClient } from "@/lib/sidecar/client";
 
@@ -140,20 +141,10 @@ function ChatSessionView({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [transport] = useState(
     () =>
-      new DefaultChatTransport({
-        api: client?.createApiUrl("/chat") ?? "/chat",
-        ...(client ? { headers: client.createAuthHeaders() } : {}),
-        prepareSendMessagesRequest({ messages }) {
-          const latestMessage = messages[messages.length - 1];
-
-          return {
-            body: {
-              agentId: bootstrap.agent.id,
-              ...(latestMessage ? { message: latestMessage } : {}),
-              sessionId: bootstrap.session.id,
-            },
-          };
-        },
+      createChatTransport({
+        agentId: bootstrap.agent.id,
+        client,
+        sessionId: bootstrap.session.id,
       }),
   );
   const {

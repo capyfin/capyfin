@@ -18,7 +18,6 @@ pub fn run() {
     let (init_tx, init_rx) = watch::channel(InitStep::SidecarWaiting);
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
         .manage(AppState::new(init_rx))
         .setup(move |app| {
@@ -33,7 +32,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::bootstrap::await_initialization,
-            commands::bootstrap::kill_sidecar
+            commands::bootstrap::kill_sidecar,
+            commands::chat::stream_chat
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

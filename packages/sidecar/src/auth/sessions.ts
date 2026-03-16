@@ -139,15 +139,19 @@ export class RuntimeAuthSessionManager {
         prompter: this.#createPrompter(record),
       });
 
+      if (!result.connection) {
+        throw new Error(
+          `${record.snapshot.methodLabel} did not create a saved connection.`,
+        );
+      }
+
       record.snapshot = {
         ...record.snapshot,
-        ...(result.connection ? { connection: result.connection } : {}),
+        connection: result.connection,
         progress: [...record.snapshot.progress, "Connection completed"].slice(-16),
         state: "completed",
         step: {
-          message: result.connection
-            ? `Connected ${result.connection.providerName}.`
-            : "Connection completed.",
+          message: `Connected ${result.connection.providerName}.`,
           type: "completed",
         },
       };
@@ -171,6 +175,16 @@ export class RuntimeAuthSessionManager {
 
   #createPrompter(record: AuthSessionRecord): WizardPrompterLike {
     return {
+      authLink: (params) => {
+        const step: Extract<AuthSessionStep, { type: "auth_link" }> = {
+          ...(params.instructions ? { instructions: params.instructions } : {}),
+          ...(params.label ? { label: params.label } : {}),
+          type: "auth_link",
+          url: params.url,
+        };
+        this.#setStep(record, step);
+        return Promise.resolve();
+      },
       confirm: async (params) => {
         const step: Extract<AuthSessionStep, { type: "confirm_prompt" }> = {
           ...(params.initialValue === false

@@ -17,6 +17,7 @@ import { resolveGatewayAgentDir } from "../internal-gateway/paths.ts";
 import {
   loadAuthChoiceModule,
   loadAuthChoiceOptionsModule,
+  loadAuthProfileRuntimeModule,
   loadModelCatalogModule,
   loadModelSelectionModule,
   loadProviderWizardModule,
@@ -62,6 +63,31 @@ type ApplyAuthChoiceOutcome = {
 };
 
 const CONNECTION_METADATA_VERSION = 1 as const;
+const GITHUB_DEVICE_CLIENT_ID = "Iv1.b507a08c87ecfe98";
+const GITHUB_DEVICE_CODE_URL = "https://github.com/login/device/code";
+const GITHUB_DEVICE_TOKEN_URL = "https://github.com/login/oauth/access_token";
+const GITHUB_COPILOT_PROFILE_ID = "github-copilot:github";
+const GITHUB_COPILOT_DEFAULT_MODEL_REF = "github-copilot/gpt-4o";
+
+type GitHubDeviceCodeResponse = {
+  device_code: string;
+  expires_in: number;
+  interval: number;
+  user_code: string;
+  verification_uri: string;
+};
+
+type GitHubDeviceTokenResponse =
+  | {
+      access_token: string;
+      scope?: string;
+      token_type: string;
+    }
+  | {
+      error: string;
+      error_description?: string;
+      error_uri?: string;
+    };
 
 function createEmptyAuthStore(): RuntimeAuthStore {
   return {
@@ -75,6 +101,102 @@ function createEmptyMetadataStore(): ConnectionMetadataStore {
     updatedAtByProfileId: {},
     version: CONNECTION_METADATA_VERSION,
   };
+}
+
+function parseGitHubJson(value: unknown, errorMessage: string): Record<string, unknown> {
+  if (!value || typeof value !== "object") {
+    throw new Error(errorMessage);
+  }
+  return value as Record<string, unknown>;
+}
+
+async function requestGitHubCopilotDeviceCode(): Promise<GitHubDeviceCodeResponse> {
+  const response = await fetch(GITHUB_DEVICE_CODE_URL, {
+    body: new URLSearchParams({
+      client_id: GITHUB_DEVICE_CLIENT_ID,
+      scope: "read:user",
+    }),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub device code failed: HTTP ${String(response.status)}`);
+  }
+
+  const payload = parseGitHubJson(
+    await response.json(),
+    "Unexpected response from GitHub",
+  ) as GitHubDeviceCodeResponse;
+  if (
+    !payload.device_code ||
+    !payload.user_code ||
+    !payload.verification_uri ||
+    !Number.isFinite(payload.expires_in) ||
+    !Number.isFinite(payload.interval)
+  ) {
+    throw new Error("GitHub device code response missing fields");
+  }
+
+  return payload;
+}
+
+async function pollForGitHubCopilotAccessToken(params: {
+  deviceCode: string;
+  expiresAt: number;
+  intervalMs: number;
+}): Promise<string> {
+  const body = new URLSearchParams({
+    client_id: GITHUB_DEVICE_CLIENT_ID,
+    device_code: params.deviceCode,
+    grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+  });
+
+  while (Date.now() < params.expiresAt) {
+    const response = await fetch(GITHUB_DEVICE_TOKEN_URL, {
+      body,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub device token failed: HTTP ${String(response.status)}`);
+    }
+
+    const payload = parseGitHubJson(
+      await response.json(),
+      "Unexpected response from GitHub",
+    ) as GitHubDeviceTokenResponse;
+    if ("access_token" in payload && typeof payload.access_token === "string") {
+      return payload.access_token;
+    }
+
+    const errorCode = "error" in payload ? payload.error : "unknown";
+    if (errorCode === "authorization_pending") {
+      await new Promise((resolve) => setTimeout(resolve, params.intervalMs));
+      continue;
+    }
+    if (errorCode === "slow_down") {
+      await new Promise((resolve) => setTimeout(resolve, params.intervalMs + 2_000));
+      continue;
+    }
+    if (errorCode === "expired_token") {
+      throw new Error("GitHub device code expired; start the sign-in flow again.");
+    }
+    if (errorCode === "access_denied") {
+      throw new Error("GitHub sign-in was cancelled.");
+    }
+
+    throw new Error(`GitHub device flow error: ${errorCode}`);
+  }
+
+  throw new Error("GitHub device code expired; start the sign-in flow again.");
 }
 
 function normalizeAuthStore(raw: unknown): RuntimeAuthStore {
@@ -493,6 +615,7 @@ function createPassivePrompter(): WizardPrompterLike {
   };
 
   return {
+    authLink: () => Promise.resolve(),
     confirm: ({ message }) => unsupported(message),
     intro: () => Promise.resolve(),
     multiselect: ({ message }) => unsupported(message),
@@ -833,6 +956,10 @@ export class RuntimeProviderAuthService {
     authChoice: string;
     prompter: WizardPrompterLike;
   }): Promise<ApplyAuthChoiceOutcome> {
+    if (params.authChoice === "github-copilot") {
+      return await this.#applyGitHubCopilotDeviceFlow(params);
+    }
+
     const [{ applyAuthChoice }, method, previousConfig, previousStore, metadata] =
       await Promise.all([
         loadAuthChoiceModule(),
@@ -868,6 +995,104 @@ export class RuntimeProviderAuthService {
     if (touchedProfileIds.length > 0) {
       await this.#saveMetadata(metadata);
     }
+
+    const overview = await this.getOverview();
+    const connection = resolvePreferredConnection({
+      authChoice: params.authChoice,
+      connections: overview.connections,
+      method,
+      touchedProfileIds,
+    });
+
+    return {
+      ...(connection ? { connection } : {}),
+      overview,
+    };
+  }
+
+  async #applyGitHubCopilotDeviceFlow(params: {
+    authChoice: string;
+    prompter: WizardPrompterLike;
+  }): Promise<ApplyAuthChoiceOutcome> {
+    const [
+      { applyAuthProfileConfig, upsertAuthProfile },
+      { applyDefaultModelPrimaryUpdate },
+      method,
+      previousConfig,
+      previousStore,
+      metadata,
+    ] = await Promise.all([
+      loadAuthProfileRuntimeModule(),
+      loadModelSelectionModule(),
+      this.getMethod(params.authChoice),
+      this.#loadConfig(),
+      this.#loadStore(),
+      this.#loadMetadata(),
+    ]);
+
+    const hadSelection = hasExistingSelection(previousConfig, previousStore);
+    await params.prompter.note(
+      [
+        "This will open a GitHub device login to authorize Copilot.",
+        "Requires an active GitHub Copilot subscription.",
+      ].join("\n"),
+      "GitHub Copilot",
+    );
+
+    const deviceCode = await requestGitHubCopilotDeviceCode();
+    await params.prompter.authLink?.({
+      instructions: `Enter code ${deviceCode.user_code} in the GitHub page, then wait here for the connection to finish.`,
+      label: "Open GitHub",
+      url: deviceCode.verification_uri,
+    });
+
+    const accessToken = await pollForGitHubCopilotAccessToken({
+      deviceCode: deviceCode.device_code,
+      expiresAt: Date.now() + deviceCode.expires_in * 1000,
+      intervalMs: Math.max(1_000, deviceCode.interval * 1_000),
+    });
+
+    const agentDir = resolveGatewayAgentDir(this.#paths, DEFAULT_AGENT_ID);
+    upsertAuthProfile({
+      agentDir,
+      credential: {
+        provider: "github-copilot",
+        token: accessToken,
+        type: "token",
+      },
+      profileId: GITHUB_COPILOT_PROFILE_ID,
+    });
+
+    let nextConfig = applyAuthProfileConfig(previousConfig, {
+      mode: "token",
+      profileId: GITHUB_COPILOT_PROFILE_ID,
+      provider: "github-copilot",
+    }) as GatewayConfig;
+    if (!hadSelection) {
+      nextConfig = applyDefaultModelPrimaryUpdate({
+        cfg: nextConfig,
+        field: "model",
+        modelRaw: GITHUB_COPILOT_DEFAULT_MODEL_REF,
+      });
+    }
+
+    await writeJsonFile(this.getConfigPath(), nextConfig);
+
+    const nextStore = await this.#loadStore();
+    const touchedProfileIds = resolveTouchedProfiles({
+      nextStore,
+      previousStore,
+      providerId: method.providerId,
+    });
+    const timestamp = new Date().toISOString();
+    for (const profileId of touchedProfileIds) {
+      metadata.updatedAtByProfileId[profileId] = timestamp;
+    }
+    if (!touchedProfileIds.includes(GITHUB_COPILOT_PROFILE_ID)) {
+      touchedProfileIds.push(GITHUB_COPILOT_PROFILE_ID);
+      metadata.updatedAtByProfileId[GITHUB_COPILOT_PROFILE_ID] = timestamp;
+    }
+    await this.#saveMetadata(metadata);
 
     const overview = await this.getOverview();
     const connection = resolvePreferredConnection({
@@ -1063,16 +1288,16 @@ function resolvePreferredConnection(params: {
   if (touched) {
     return touched;
   }
-
-  return params.connections.find(
-    (connection) => connection.providerId === params.method.providerId,
-  );
+  return undefined;
 }
 
 function createSingleSecretPrompter(secret: string): WizardPrompterLike {
   let consumedSecret = false;
 
   return {
+    authLink() {
+      return Promise.resolve();
+    },
     confirm() {
       return Promise.resolve(true);
     },

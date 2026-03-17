@@ -1,9 +1,9 @@
-import { type AuthOverview } from "@capyfin/contracts";
-import { useEffect, useState } from "react";
+import { type AgentSession, type AuthOverview } from "@capyfin/contracts";
+import { useCallback, useEffect, useState } from "react";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
 import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
-import { ChatWorkspace } from "@/features/chat/components/ChatWorkspace";
+import { ChatWorkspace, evictChatSession } from "@/features/chat/components/ChatWorkspace";
 import { ConnectionsWorkspace } from "@/features/connections/components/ConnectionsWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -19,6 +19,8 @@ export function App() {
   const [hashView, setHashView] = useState<AppView>(readViewFromHash());
   const [retryToken, setRetryToken] = useState(0);
   const [createAgentToken, setCreateAgentToken] = useState(0);
+  const [sessions, setSessions] = useState<AgentSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     let isMounted = true;
@@ -32,11 +34,15 @@ export function App() {
       try {
         const connection = await initializeSidecarConnection();
         const client = SidecarClient.fromConnection(connection);
-        const overview = await client.authOverview();
+        const [overview, sessionList] = await Promise.all([
+          client.authOverview(),
+          client.listSessions("main").catch(() => ({ sessions: [] })),
+        ]);
 
         if (isMounted) {
           setAuthOverview(overview);
           setClient(client);
+          setSessions(sessionList.sessions);
           setRuntimeError(null);
         }
       } catch (error) {
@@ -71,6 +77,80 @@ export function App() {
     };
   }, []);
 
+  const refreshSessions = useCallback(async () => {
+    if (!client) {
+      return;
+    }
+    try {
+      const sessionList = await client.listSessions("main");
+      setSessions(sessionList.sessions);
+    } catch {
+      // Silently ignore — sessions will refresh on next hydration
+    }
+  }, [client]);
+
+  const handleNewChat = useCallback(async () => {
+    if (!client) {
+      return;
+    }
+    try {
+      const session = await client.createSession({ agentId: "main" });
+      setSessions((prev) => [session, ...prev]);
+      setActiveSessionId(session.id);
+      window.location.hash = "#chat";
+    } catch (error) {
+      console.error("Failed to create new chat session", error);
+    }
+  }, [client]);
+
+  const handleSessionSelect = useCallback((sessionId: string) => {
+    setActiveSessionId(sessionId);
+    window.location.hash = "#chat";
+  }, []);
+
+  const handleBootstrap = useCallback((sessionId: string) => {
+    setActiveSessionId(sessionId);
+  }, []);
+
+  const handleSessionLabelUpdate = useCallback(
+    (sessionId: string, label: string) => {
+      setSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, label } : s)),
+      );
+    },
+    [],
+  );
+
+  const handleSessionRename = useCallback(
+    async (sessionId: string, label: string) => {
+      if (!client) return;
+      try {
+        await client.updateSessionLabel(sessionId, label);
+        handleSessionLabelUpdate(sessionId, label);
+      } catch (error) {
+        console.error("Failed to rename session", error);
+      }
+    },
+    [client, handleSessionLabelUpdate],
+  );
+
+  const handleSessionDelete = useCallback(
+    async (sessionId: string) => {
+      if (!client) return;
+      try {
+        await client.deleteSession(sessionId);
+        evictChatSession(sessionId);
+        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+        if (activeSessionId === sessionId) {
+          setActiveSessionId(undefined);
+        }
+      } catch (error) {
+        console.error("Failed to delete session", error);
+      }
+    },
+    [activeSessionId, client],
+  );
+
   if (!authOverview?.selectedProviderId || hashView === "connections-add") {
     const isReusableConnectionFlow = Boolean(authOverview?.selectedProviderId);
 
@@ -101,9 +181,24 @@ export function App() {
   const currentView: Exclude<AppView, "connections-add"> = hashView;
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <AppSidebar activeView={currentView} authOverview={authOverview} />
-      <SidebarInset className="bg-background">
+    <SidebarProvider defaultOpen={true} className="!min-h-0 h-svh overflow-hidden">
+      <AppSidebar
+        activeSessionId={activeSessionId}
+        activeView={currentView}
+        authOverview={authOverview}
+        onNewChat={() => {
+          void handleNewChat();
+        }}
+        onSessionDelete={(id) => {
+          void handleSessionDelete(id);
+        }}
+        onSessionRename={(id, label) => {
+          void handleSessionRename(id, label);
+        }}
+        onSessionSelect={handleSessionSelect}
+        sessions={sessions}
+      />
+      <SidebarInset className="min-h-0 bg-background">
         <AppHeader
           currentView={currentView}
           onAddConnection={() => {
@@ -113,9 +208,15 @@ export function App() {
             setCreateAgentToken((current) => current + 1);
           }}
         />
-        <div className="flex flex-1 flex-col gap-4 p-4 lg:p-5">
+        <div className={`flex min-h-0 flex-1 flex-col ${currentView === "chat" ? "" : "gap-4 p-4 lg:p-5"}`}>
           {currentView === "chat" ? (
-            <ChatWorkspace authOverview={authOverview} client={client} />
+            <ChatWorkspace
+              authOverview={authOverview}
+              client={client}
+              onBootstrap={handleBootstrap}
+              onSessionLabelUpdate={handleSessionLabelUpdate}
+              sessionId={activeSessionId}
+            />
           ) : currentView === "connections" ? (
             <ConnectionsWorkspace
               authOverview={authOverview}

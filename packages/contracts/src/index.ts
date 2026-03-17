@@ -189,6 +189,14 @@ export const createAgentSessionRequestSchema = z.object({
   initialPrompt: z.string().min(1).optional(),
 });
 
+export const updateAgentSessionRequestSchema = z.object({
+  label: z.string().min(1),
+});
+
+export const deleteAgentSessionResponseSchema = z.object({
+  sessionId: z.string().min(1),
+});
+
 export const chatTranscriptMessageSchema = z.object({
   id: z.string().min(1),
   role: z.enum(["assistant", "system", "user"]),
@@ -316,6 +324,9 @@ export type AgentSession = z.infer<typeof agentSessionSchema>;
 export type AgentSessionList = z.infer<typeof agentSessionListSchema>;
 export type CreateAgentSessionRequest = z.infer<
   typeof createAgentSessionRequestSchema
+>;
+export type DeleteAgentSessionResponse = z.infer<
+  typeof deleteAgentSessionResponseSchema
 >;
 export type ChatTranscriptMessage = z.infer<typeof chatTranscriptMessageSchema>;
 export type ChatBootstrap = z.infer<typeof chatBootstrapSchema>;

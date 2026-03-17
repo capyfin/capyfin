@@ -1,17 +1,36 @@
-import { Wallet2Icon, ZapIcon } from "lucide-react";
+import type { AgentSession } from "@capyfin/contracts";
+import {
+  MessageSquareIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+  Wallet2Icon,
+  ZapIcon,
+} from "lucide-react";
+import { useRef, useState } from "react";
 import {
   primaryNavigation,
   secondaryNavigation,
 } from "@/app/config/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -19,12 +38,32 @@ import {
 import type { AuthOverview } from "@/app/types";
 
 interface AppSidebarProps {
+  activeSessionId?: string;
   activeView: "connections" | "chat" | "agents";
   authOverview: AuthOverview | null;
+  onNewChat?: () => void;
+  onSessionDelete?: (sessionId: string) => void;
+  onSessionRename?: (sessionId: string, label: string) => void;
+  onSessionSelect?: (sessionId: string) => void;
+  sessions?: AgentSession[];
 }
 
-export function AppSidebar({ activeView, authOverview }: AppSidebarProps) {
+function formatSessionLabel(session: AgentSession): string {
+  return session.label ?? "Untitled chat";
+}
+
+export function AppSidebar({
+  activeSessionId,
+  activeView,
+  authOverview,
+  onNewChat,
+  onSessionDelete,
+  onSessionRename,
+  onSessionSelect,
+  sessions,
+}: AppSidebarProps) {
   const connectedProviderCount = authOverview?.connections.length ?? 0;
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -78,6 +117,35 @@ export function AppSidebar({ activeView, authOverview }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {activeView === "chat" && sessions && sessions.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Chats</SidebarGroupLabel>
+            {onNewChat ? (
+              <SidebarGroupAction title="New chat" onClick={onNewChat}>
+                <PlusIcon />
+                <span className="sr-only">New chat</span>
+              </SidebarGroupAction>
+            ) : null}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {sessions.map((session) => (
+                  <SessionItem
+                    key={session.id}
+                    isActive={session.id === activeSessionId}
+                    isEditing={editingSessionId === session.id}
+                    session={session}
+                    onDelete={onSessionDelete}
+                    onRename={onSessionRename}
+                    onSelect={onSessionSelect}
+                    onStartEditing={() => setEditingSessionId(session.id)}
+                    onStopEditing={() => setEditingSessionId(null)}
+                  />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
+
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
@@ -122,5 +190,102 @@ export function AppSidebar({ activeView, authOverview }: AppSidebarProps) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+function SessionItem({
+  isActive,
+  isEditing,
+  session,
+  onDelete,
+  onRename,
+  onSelect,
+  onStartEditing,
+  onStopEditing,
+}: {
+  isActive: boolean;
+  isEditing: boolean;
+  session: AgentSession;
+  onDelete?: (sessionId: string) => void;
+  onRename?: (sessionId: string, label: string) => void;
+  onSelect?: (sessionId: string) => void;
+  onStartEditing: () => void;
+  onStopEditing: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const label = formatSessionLabel(session);
+
+  function commitRename(): void {
+    const value = inputRef.current?.value.trim();
+    if (value && value !== label) {
+      onRename?.(session.id, value);
+    }
+    onStopEditing();
+  }
+
+  if (isEditing) {
+    return (
+      <SidebarMenuItem>
+        <div className="flex h-8 items-center gap-2 px-2">
+          <MessageSquareIcon className="size-4 shrink-0 text-sidebar-foreground/70" />
+          <input
+            ref={inputRef}
+            autoFocus
+            defaultValue={label}
+            className="h-6 min-w-0 flex-1 rounded border border-sidebar-ring bg-sidebar px-1.5 text-sm text-sidebar-foreground outline-none focus:ring-1 focus:ring-sidebar-ring"
+            onBlur={commitRename}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                commitRename();
+              } else if (event.key === "Escape") {
+                onStopEditing();
+              }
+            }}
+          />
+        </div>
+      </SidebarMenuItem>
+    );
+  }
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        tooltip={label}
+        isActive={isActive}
+        onClick={() => {
+          onSelect?.(session.id);
+        }}
+      >
+        <MessageSquareIcon />
+        <span className="truncate">{label}</span>
+      </SidebarMenuButton>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuAction showOnHover>
+            <MoreHorizontalIcon />
+            <span className="sr-only">More</span>
+          </SidebarMenuAction>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start">
+          <DropdownMenuItem
+            onClick={() => {
+              onStartEditing();
+            }}
+          >
+            <PencilIcon className="mr-2 size-4" />
+            Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={() => {
+              onDelete?.(session.id);
+            }}
+          >
+            <TrashIcon className="mr-2 size-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </SidebarMenuItem>
   );
 }

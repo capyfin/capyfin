@@ -1,24 +1,43 @@
-import { useChat } from "@ai-sdk/react";
+import { Chat, useChat } from "@ai-sdk/react";
 import {
   BotIcon,
-  ClipboardIcon,
+  CopyIcon,
+  FileTextIcon,
   LoaderCircleIcon,
   SparklesIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AuthOverview, ChatBootstrap } from "@/app/types";
 import {
+  Attachment,
+  AttachmentPreview,
+  AttachmentRemove,
+  Attachments,
+} from "@/components/ai-elements/attachments";
+import {
   Message,
-  MessageAction,
   MessageActions,
   MessageContent,
   MessageResponse,
   MessageToolbar,
 } from "@/components/ai-elements/message";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   PromptInput,
+  PromptInputActionAddAttachments,
+  PromptInputActionMenu,
+  PromptInputActionMenuContent,
+  PromptInputActionMenuTrigger,
+  PromptInputFooter,
+  PromptInputHeader,
   PromptInputSubmit,
   PromptInputTextarea,
+  usePromptInputAttachments,
 } from "@/components/ai-elements/prompt-input";
 import {
   Reasoning,
@@ -36,9 +55,23 @@ import {
 import { createChatTransport } from "@/features/chat/transport";
 import { SidecarClient } from "@/lib/sidecar/client";
 
+/**
+ * Cache of Chat instances keyed by session ID.
+ * Keeps streaming state alive when the user switches between sessions.
+ */
+const chatCache = new Map<string, Chat<ChatUIMessage>>();
+
+/** Remove a session from the chat cache (e.g. on delete). */
+export function evictChatSession(sessionId: string): void {
+  chatCache.delete(sessionId);
+}
+
 interface ChatWorkspaceProps {
   authOverview: AuthOverview | null;
   client: SidecarClient | null;
+  onBootstrap?: (sessionId: string) => void;
+  onSessionLabelUpdate?: (sessionId: string, label: string) => void;
+  sessionId?: string;
 }
 
 const STARTER_PROMPTS = [
@@ -50,6 +83,9 @@ const STARTER_PROMPTS = [
 export function ChatWorkspace({
   authOverview,
   client,
+  onBootstrap,
+  onSessionLabelUpdate,
+  sessionId,
 }: ChatWorkspaceProps) {
   const [bootstrap, setBootstrap] = useState<ChatBootstrap | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -70,14 +106,14 @@ export function ChatWorkspace({
       }
 
       if (!cancelled) {
-        setIsLoading(true);
         setErrorMessage(null);
       }
 
       try {
-        const nextBootstrap = await client.chatBootstrap("main");
+        const nextBootstrap = await client.chatBootstrap("main", sessionId);
         if (!cancelled) {
           setBootstrap(nextBootstrap);
+          onBootstrap?.(nextBootstrap.session.id);
         }
       } catch (error) {
         console.error("Failed to bootstrap chat", error);
@@ -99,7 +135,8 @@ export function ChatWorkspace({
     return () => {
       cancelled = true;
     };
-  }, [client, refreshToken]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client, refreshToken, sessionId]);
 
   if (isLoading) {
     return (
@@ -142,40 +179,63 @@ export function ChatWorkspace({
       authOverview={authOverview}
       bootstrap={bootstrap}
       client={client}
+      onSessionLabelUpdate={onSessionLabelUpdate}
     />
   );
+}
+
+function deriveSessionLabel(text: string): string {
+  const trimmed = text.trim().replace(/\s+/g, " ");
+  if (trimmed.length <= 50) {
+    return trimmed;
+  }
+  return `${trimmed.slice(0, 47)}...`;
 }
 
 function ChatSessionView({
   authOverview,
   bootstrap,
   client,
+  onSessionLabelUpdate,
 }: {
   authOverview: AuthOverview | null;
   bootstrap: ChatBootstrap;
   client: SidecarClient | null;
+  onSessionLabelUpdate?: (sessionId: string, label: string) => void;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);
-  const [transport] = useState(
-    () =>
-      createChatTransport({
-        agentId: bootstrap.agent.id,
-        client,
-        sessionId: bootstrap.session.id,
-      }),
-  );
+  const hasCustomLabelRef = useRef(bootstrap.messages.length > 0);
+  const didMountRef = useRef(false);
+
+  // Re-use existing Chat instance if one exists (preserves streaming state)
+  const chat = useMemo(() => {
+    const existing = chatCache.get(bootstrap.session.id);
+    if (existing) {
+      return existing;
+    }
+    const transport = createChatTransport({
+      agentId: bootstrap.agent.id,
+      client,
+      sessionId: bootstrap.session.id,
+    });
+    const instance = new Chat<ChatUIMessage>({
+      dataPartSchemas: chatDataPartSchemas,
+      id: bootstrap.session.id,
+      messages: bootstrap.messages.map(toUiMessage),
+      transport,
+    });
+    chatCache.set(bootstrap.session.id, instance);
+    return instance;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bootstrap.session.id]);
+
   const {
     error,
     messages,
     sendMessage,
     status,
     stop,
-  } = useChat<ChatUIMessage>({
-    dataPartSchemas: chatDataPartSchemas,
-    id: bootstrap.session.id,
-    messages: bootstrap.messages.map(toUiMessage),
-    transport,
-  });
+  } = useChat<ChatUIMessage>({ chat });
 
   useEffect(() => {
     const list = listRef.current;
@@ -184,9 +244,10 @@ function ChatSessionView({
     }
 
     list.scrollTo({
-      behavior: "smooth",
+      behavior: didMountRef.current ? "smooth" : "instant",
       top: list.scrollHeight,
     });
+    didMountRef.current = true;
   }, [messages, status]);
 
   const isStreaming = status === "streaming" || status === "submitted";
@@ -198,14 +259,28 @@ function ChatSessionView({
     )?.name ?? bootstrap.resolvedProviderId;
 
   const handleSubmit = useCallback(
-    async (prompt: { text: string }) => {
+    (prompt: { text: string; files?: import("ai").FileUIPart[] }) => {
       const text = prompt.text.trim();
-      if (!text || isStreaming) {
+      if (!text) {
         return;
       }
-      await sendMessage({ text });
+      // Fire-and-forget so PromptInput clears attachments immediately
+      void sendMessage({
+        text,
+        ...(prompt.files?.length ? { files: prompt.files } : {}),
+      });
+
+      if (!hasCustomLabelRef.current && client) {
+        hasCustomLabelRef.current = true;
+        const label = deriveSessionLabel(text);
+        void client.updateSessionLabel(bootstrap.session.id, label).then(() => {
+          onSessionLabelUpdate?.(bootstrap.session.id, label);
+        }).catch(() => {
+          // Silently ignore — label is cosmetic
+        });
+      }
     },
-    [isStreaming, sendMessage],
+    [bootstrap.session.id, client, onSessionLabelUpdate, sendMessage],
   );
 
   return (
@@ -290,22 +365,61 @@ function ChatSessionView({
       {/* Chat input */}
       <div className="border-t border-border/60 px-4 py-3 lg:px-6">
         <PromptInput
+          accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.jsx,.ts,.tsx,.py,.rb,.go,.rs,.java,.c,.cpp,.h,.hpp,.cs,.swift,.kt,.sh,.bash,.zsh,.yaml,.yml,.toml,.xml,.html,.css,.scss,.sql,.r,.lua,.php,.pl,.ex,.exs,.hs,.ml,.scala,.clj,.dart,.vue,.svelte,.astro,.log,.env,.ini,.cfg,.conf,.diff,.patch"
+          globalDrop
+          multiple
           onSubmit={handleSubmit}
           className="mx-auto max-w-3xl"
         >
+          <PromptInputHeader>
+            <AttachmentPreviews />
+          </PromptInputHeader>
           <PromptInputTextarea
             placeholder={`Message ${bootstrap.agent.name}...`}
-            disabled={isStreaming}
           />
-          <PromptInputSubmit
-            status={status}
-            onStop={() => {
-              void stop();
-            }}
-          />
+          <PromptInputFooter>
+            <PromptInputActionMenu>
+              <PromptInputActionMenuTrigger />
+              <PromptInputActionMenuContent className="!w-auto">
+                <PromptInputActionAddAttachments label="Add files or images" />
+              </PromptInputActionMenuContent>
+            </PromptInputActionMenu>
+            <PromptInputSubmit
+              status={status}
+              onStop={() => {
+                void stop();
+              }}
+            />
+          </PromptInputFooter>
         </PromptInput>
       </div>
     </div>
+  );
+}
+
+function AttachmentPreviews() {
+  const { files, remove } = usePromptInputAttachments();
+
+  if (files.length === 0) {
+    return null;
+  }
+
+  return (
+    <Attachments variant="grid">
+      {files.map((file) => (
+        <Attachment data={file} key={file.id} onRemove={() => { remove(file.id); }}>
+          <AttachmentPreview />
+          <AttachmentRemove />
+        </Attachment>
+      ))}
+    </Attachments>
+  );
+}
+
+function getFileParts(message: ChatUIMessage) {
+  return message.parts.filter(
+    (part): part is import("ai").FileUIPart & { type: "file" } =>
+      part.type === "file",
   );
 }
 
@@ -319,6 +433,7 @@ function ChatMessage({
   const activityParts = getActivityParts(message);
   const reasoningText = getReasoningText(message);
   const textParts = getTextParts(message);
+  const fileParts = getFileParts(message);
   const fullText = textParts.join("\n\n");
   const isThinking =
     message.role === "assistant" &&
@@ -326,8 +441,36 @@ function ChatMessage({
     activityParts.some((activity) => activity.status === "active");
 
   if (message.role === "user") {
+    const imageParts = fileParts.filter((f) => f.mediaType.startsWith("image/"));
+    const docParts = fileParts.filter((f) => !f.mediaType.startsWith("image/"));
+
     return (
       <Message from="user">
+        {imageParts.length > 0 ? (
+          <div className="flex flex-wrap justify-end gap-2">
+            {imageParts.map((file, index) => (
+              <img
+                key={`${message.id}-img-${String(index)}`}
+                alt={file.filename ?? "Attached image"}
+                className="max-h-48 max-w-xs rounded-lg object-cover"
+                src={file.url}
+              />
+            ))}
+          </div>
+        ) : null}
+        {docParts.length > 0 ? (
+          <div className="flex flex-wrap justify-end gap-2">
+            {docParts.map((file, index) => (
+              <div
+                key={`${message.id}-doc-${String(index)}`}
+                className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
+              >
+                <FileTextIcon className="size-4 shrink-0" />
+                <span className="truncate">{file.filename ?? "File"}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
         <MessageContent>
           {textParts.map((part, index) => (
             <p key={`${message.id}-${String(index)}`} className="whitespace-pre-wrap">
@@ -335,6 +478,11 @@ function ChatMessage({
             </p>
           ))}
         </MessageContent>
+        {fullText ? (
+          <div className="flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
+            <CopyAction text={fullText} />
+          </div>
+        ) : null}
       </Message>
     );
   }
@@ -372,18 +520,29 @@ function CopyAction({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
   return (
-    <MessageAction
-      tooltip={copied ? "Copied!" : "Copy"}
-      onClick={() => {
-        void navigator.clipboard.writeText(text);
-        setCopied(true);
-        window.setTimeout(() => {
-          setCopied(false);
-        }, 1500);
-      }}
-    >
-      <ClipboardIcon className="size-3.5" />
-    </MessageAction>
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:text-muted-foreground"
+            onClick={() => {
+              void navigator.clipboard.writeText(text);
+              setCopied(true);
+              window.setTimeout(() => {
+                setCopied(false);
+              }, 1500);
+            }}
+          >
+            <CopyIcon className="size-3.5" />
+            <span className="sr-only">Copy</span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="px-2 py-1 text-xs">
+          {copied ? "Copied!" : "Copy"}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

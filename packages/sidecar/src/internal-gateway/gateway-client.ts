@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { readFile, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import {
   createUIMessageStream,
   createUIMessageStreamResponse,
@@ -17,6 +19,7 @@ import {
   type ChatTranscriptMessage,
   type CreateAgentSessionRequest,
   type DeleteAgentResponse,
+  type DeleteAgentSessionResponse,
   type ProviderModelCatalog,
 } from "@capyfin/contracts";
 import { DEFAULT_AGENT_ID, normalizeAgentId } from "@capyfin/core/agents";
@@ -47,19 +50,27 @@ interface GatewayAgentListResult {
   defaultId: string;
 }
 
-interface GatewayChatHistoryResult {
-  messages: {
-    id?: string;
-    message?: {
-      content?: {
-        text?: string;
-        type?: string;
-      }[];
-      role?: "assistant" | "system" | "user";
-      timestamp?: number;
-    };
-    ts?: number;
+interface GatewayChatHistoryMessage {
+  content?: {
+    text?: string;
+    type?: string;
   }[];
+  id?: string;
+  message?: {
+    content?: {
+      text?: string;
+      type?: string;
+    }[];
+    role?: "assistant" | "system" | "user";
+    timestamp?: number;
+  };
+  role?: "assistant" | "system" | "user";
+  timestamp?: number;
+  ts?: number;
+}
+
+interface GatewayChatHistoryResult {
+  messages: GatewayChatHistoryMessage[];
   sessionId?: string;
   sessionKey: string;
 }
@@ -425,18 +436,22 @@ function extractMessageText(
 }
 
 function toChatTranscriptMessage(
-  value: GatewayChatHistoryResult["messages"][number],
+  value: GatewayChatHistoryMessage,
 ): ChatTranscriptMessage | null {
-  const role = value.message?.role;
+  // Support both flat shape (role/content at top level) and nested shape (under .message)
+  const role = value.role ?? value.message?.role;
   if (role !== "assistant" && role !== "system" && role !== "user") {
     return null;
   }
 
+  const content = value.content ?? value.message?.content;
+  const timestamp = value.timestamp ?? value.message?.timestamp ?? value.ts;
+
   return {
-    createdAt: new Date(value.message?.timestamp ?? value.ts ?? Date.now()).toISOString(),
+    createdAt: new Date(timestamp ?? Date.now()).toISOString(),
     id: value.id ?? randomUUID(),
     role,
-    text: extractMessageText(value.message?.content),
+    text: extractMessageText(content),
   };
 }
 
@@ -453,7 +468,7 @@ function toAgentSession(params: {
   agent: Agent;
   paths: EmbeddedGatewayPaths;
   row: GatewaySessionRow;
-}): AgentSession {
+}): AgentSession & { model?: string } {
   const updatedAt = params.row.updatedAt
     ? new Date(params.row.updatedAt).toISOString()
     : new Date().toISOString();
@@ -465,6 +480,7 @@ function toAgentSession(params: {
     createdAt: updatedAt,
     id: sessionId,
     label: resolveSessionLabel(params.row, params.agent.name),
+    model: params.row.model,
     sessionFile: resolveGatewaySessionFile(params.paths, params.agent.id, sessionId),
     sessionKey: params.row.key,
     updatedAt,
@@ -741,7 +757,56 @@ export class EmbeddedGatewayClient {
     };
   }
 
-  async bootstrapConversation(agentId = DEFAULT_AGENT_ID): Promise<ChatBootstrap> {
+  async updateSessionLabel(sessionId: string, label: string): Promise<AgentSession> {
+    const sessions = await this.listSessions();
+    const session = sessions.sessions.find((s) => s.id === sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    const patch = await this.request<GatewaySessionsPatchResult>("sessions.patch", {
+      key: session.sessionKey,
+      label,
+    });
+
+    return {
+      ...session,
+      label,
+      updatedAt: new Date(patch.entry.updatedAt ?? Date.now()).toISOString(),
+    };
+  }
+
+  async deleteSession(sessionId: string): Promise<DeleteAgentSessionResponse> {
+    const sessions = await this.listSessions();
+    const session = sessions.sessions.find((s) => s.id === sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    // Remove the session .jsonl file
+    await rm(session.sessionFile, { force: true });
+
+    // Remove from OpenClaw's sessions.json registry
+    const sessionsJsonPath = join(
+      resolveGatewaySessionsDir(this.#paths, session.agentId),
+      "sessions.json",
+    );
+    try {
+      const raw = await readFile(sessionsJsonPath, "utf8");
+      const registry = JSON.parse(raw) as Record<string, unknown>;
+      delete registry[session.sessionKey];
+      await writeFile(sessionsJsonPath, JSON.stringify(registry, null, 2));
+    } catch {
+      // sessions.json may not exist or be unreadable — ignore
+    }
+
+    return { sessionId };
+  }
+
+  async bootstrapConversation(
+    agentId = DEFAULT_AGENT_ID,
+    sessionId?: string,
+  ): Promise<ChatBootstrap> {
     const agent = await this.getAgent(agentId);
     await this.ensureAgentExists(agent);
     const authOverview = await this.#authState.getOverview();
@@ -752,6 +817,7 @@ export class EmbeddedGatewayClient {
     const session = await this.ensureConversationSession({
       agent,
       ...(fallbackModelRef ? { fallbackModelRef } : {}),
+      ...(sessionId ? { requestedSessionId: sessionId } : {}),
     });
     const history = await this.request<GatewayChatHistoryResult>("chat.history", {
       limit: 200,
@@ -795,13 +861,57 @@ export class EmbeddedGatewayClient {
       splitGatewayModelRef(fallbackModelRef).providerId ??
       agent.providerId ??
       authOverview.selectedProviderId;
-    const userText = params.message.parts
+    // Extract file parts from the message
+    const allFileParts = params.message.parts.filter(
+      (part): part is { type: "file"; mediaType: string; url: string; filename?: string } =>
+        part.type === "file" &&
+        "mediaType" in part &&
+        typeof (part as Record<string, unknown>).mediaType === "string",
+    );
+
+    // Image attachments → pass through as OpenClaw multimodal attachments
+    const attachments = allFileParts
+      .filter((part) => part.mediaType.startsWith("image/"))
+      .map((part) => ({
+        content: part.url,
+        mimeType: part.mediaType,
+        ...(part.filename ? { fileName: part.filename } : {}),
+      }));
+
+    // Non-image files (text, PDF, code, etc.) → decode content and prepend to user text
+    const textFileContents: string[] = [];
+    for (const filePart of allFileParts) {
+      if (filePart.mediaType.startsWith("image/")) {
+        continue;
+      }
+      try {
+        const dataUrlMatch = filePart.url.match(
+          /^data:[^;]*;base64,(.+)$/,
+        );
+        if (dataUrlMatch?.[1]) {
+          const decoded = Buffer.from(dataUrlMatch[1], "base64").toString(
+            "utf-8",
+          );
+          const name = filePart.filename ?? "file";
+          textFileContents.push(
+            `<file name="${name}">\n${decoded}\n</file>`,
+          );
+        }
+      } catch {
+        // Skip files that can't be decoded as text
+      }
+    }
+
+    const rawUserText = params.message.parts
       .flatMap((part) => (part.type === "text" ? [part.text] : []))
       .join("\n")
       .trim();
-    if (!userText) {
+    if (!rawUserText && textFileContents.length === 0 && attachments.length === 0) {
       throw new Error("Chat message cannot be empty.");
     }
+    const userText = textFileContents.length > 0
+      ? `${textFileContents.join("\n\n")}\n\n${rawUserText}`
+      : rawUserText;
 
     const bootstrap = await this.bootstrapConversation(agent.id);
     const originalMessages: UIMessage<unknown, { activity: ChatActivity }>[] = [
@@ -925,6 +1035,7 @@ export class EmbeddedGatewayClient {
           const ack = await streamClient.request<GatewayChatRunAck>(
             "chat.send",
             {
+              ...(attachments.length > 0 ? { attachments } : {}),
               idempotencyKey: params.message.id,
               message: userText,
               sessionKey: session.sessionKey,
@@ -1033,10 +1144,12 @@ export class EmbeddedGatewayClient {
   }
 
   private async syncConversationSession(
-    session: AgentSession,
+    session: AgentSession & { model?: string },
     fallbackModelRef?: string,
   ): Promise<AgentSession> {
-    if (!fallbackModelRef) {
+    // Skip the patch if no model change is needed — avoids bumping updatedAt
+    // which would re-sort the session to the top of the list on open.
+    if (!fallbackModelRef || session.model === fallbackModelRef) {
       return session;
     }
 

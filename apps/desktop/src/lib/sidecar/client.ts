@@ -1,12 +1,16 @@
 import {
   agentCatalogSchema,
   agentSchema,
+  agentSessionListSchema,
+  agentSessionSchema,
   authSessionSchema,
   authOverviewSchema,
   chatBootstrapSchema,
   connectProviderSecretRequestSchema,
   createAgentRequestSchema,
+  createAgentSessionRequestSchema,
   updateAgentRequestSchema,
+  updateAgentSessionRequestSchema,
   providerModelCatalogSchema,
   createBasicAuthHeader,
   respondAuthSessionRequestSchema,
@@ -17,6 +21,8 @@ import {
   sidecarConnectionSchema,
   sidecarHealthSchema,
   startAuthSessionRequestSchema,
+  type AgentSession,
+  type AgentSessionList,
   type AuthOverview,
   type Agent,
   type AgentCatalog,
@@ -64,9 +70,50 @@ export class SidecarClient {
     return authOverviewSchema.parse(await this.request("/auth/overview"));
   }
 
-  async chatBootstrap(agentId?: string): Promise<ChatBootstrap> {
+  async chatBootstrap(agentId?: string, sessionId?: string): Promise<ChatBootstrap> {
+    const params = new URLSearchParams();
+    if (agentId) {
+      params.set("agentId", agentId);
+    }
+    if (sessionId) {
+      params.set("sessionId", sessionId);
+    }
+    const query = params.toString();
+    return chatBootstrapSchema.parse(
+      await this.request(`/chat/bootstrap${query ? `?${query}` : ""}`),
+    );
+  }
+
+  async listSessions(agentId?: string): Promise<AgentSessionList> {
     const query = agentId ? `?agentId=${encodeURIComponent(agentId)}` : "";
-    return chatBootstrapSchema.parse(await this.request(`/chat/bootstrap${query}`));
+    return agentSessionListSchema.parse(await this.request(`/agents/sessions${query}`));
+  }
+
+  async createSession(payload: {
+    agentId: string;
+    label?: string;
+  }): Promise<AgentSession> {
+    return agentSessionSchema.parse(
+      await this.request("/agents/sessions", {
+        body: JSON.stringify(createAgentSessionRequestSchema.parse(payload)),
+        method: "POST",
+      }),
+    );
+  }
+
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.request(`/agents/sessions/${encodeURIComponent(sessionId)}`, {
+      method: "DELETE",
+    });
+  }
+
+  async updateSessionLabel(sessionId: string, label: string): Promise<AgentSession> {
+    return agentSessionSchema.parse(
+      await this.request(`/agents/sessions/${encodeURIComponent(sessionId)}`, {
+        body: JSON.stringify(updateAgentSessionRequestSchema.parse({ label })),
+        method: "PATCH",
+      }),
+    );
   }
 
   async agents(): Promise<AgentCatalog> {

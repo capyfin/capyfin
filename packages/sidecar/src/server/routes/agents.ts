@@ -6,7 +6,9 @@ import {
   createAgentRequestSchema,
   createAgentSessionRequestSchema,
   deleteAgentResponseSchema,
+  deleteAgentSessionResponseSchema,
   updateAgentRequestSchema,
+  updateAgentSessionRequestSchema,
 } from "@capyfin/contracts";
 import { Hono } from "hono";
 import type {
@@ -57,6 +59,22 @@ export function createAgentRoutes(runtime: SidecarRuntime): Hono {
     const payload = createAgentSessionRequestSchema.parse(await context.req.json());
     const session = await runtime.embeddedGateway.createSession(payload);
     return context.json(agentSessionSchema.parse(session), 201);
+  });
+
+  app.delete("/sessions/:sessionId", async (context) => {
+    const result = await runtime.embeddedGateway.deleteSession(
+      context.req.param("sessionId"),
+    );
+    return context.json(deleteAgentSessionResponseSchema.parse(result));
+  });
+
+  app.patch("/sessions/:sessionId", async (context) => {
+    const payload = updateAgentSessionRequestSchema.parse(await context.req.json());
+    const session = await runtime.embeddedGateway.updateSessionLabel(
+      context.req.param("sessionId"),
+      payload.label,
+    );
+    return context.json(agentSessionSchema.parse(session));
   });
 
   return app;

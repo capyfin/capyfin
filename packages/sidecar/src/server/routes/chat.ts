@@ -5,18 +5,25 @@ import { Hono } from "hono";
 import { z } from "zod";
 import type { SidecarRuntime } from "../context.ts";
 
+const textPartSchema = z.object({
+  text: z.string(),
+  type: z.literal("text"),
+});
+
+const filePartSchema = z.object({
+  mediaType: z.string(),
+  type: z.literal("file"),
+  url: z.string(),
+  filename: z.string().optional(),
+});
+
 const chatRequestSchema = z.object({
   agentId: z.string().min(1).optional(),
   message: z.union([
     z.string().min(1),
     z.object({
       id: z.string().min(1),
-      parts: z.array(
-        z.object({
-          text: z.string(),
-          type: z.literal("text"),
-        }),
-      ).min(1),
+      parts: z.array(z.union([textPartSchema, filePartSchema])).min(1),
       role: z.literal("user"),
     }),
   ]),
@@ -40,7 +47,11 @@ export function createChatRoutes(
 
   app.get("/bootstrap", async (context) => {
     const agentId = context.req.query("agentId")?.trim();
-    const bootstrap = await createChatService().bootstrapConversation(agentId);
+    const sessionId = context.req.query("sessionId")?.trim();
+    const bootstrap = await createChatService().bootstrapConversation(
+      agentId,
+      sessionId || undefined,
+    );
     return context.json(chatBootstrapSchema.parse(bootstrap));
   });
 

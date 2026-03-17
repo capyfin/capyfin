@@ -350,7 +350,7 @@ export const MessageToolbar = ({
 }: MessageToolbarProps) => (
   <div
     className={cn(
-      "mt-4 flex w-full items-center justify-between gap-4",
+      "mt-1 flex w-full items-center justify-between gap-4",
       className
     )}
     {...props}

@@ -45,6 +45,7 @@ import {
   CornerDownLeftIcon,
   ImageIcon,
   Monitor,
+  PaperclipIcon,
   PlusIcon,
   SquareIcon,
   XIcon,
@@ -430,7 +431,7 @@ export const PromptInputActionAddAttachments = ({
 
   return (
     <DropdownMenuItem {...props} onSelect={handleSelect}>
-      <ImageIcon className="mr-2 size-4" /> {label}
+      <PaperclipIcon className="mr-2 size-4" /> {label}
     </DropdownMenuItem>
   );
 };
@@ -564,6 +565,10 @@ export const PromptInput = ({
         .filter(Boolean);
 
       return patterns.some((pattern) => {
+        if (pattern.startsWith(".")) {
+          // Extension-based pattern (e.g. ".json", ".py")
+          return f.name.toLowerCase().endsWith(pattern.toLowerCase());
+        }
         if (pattern.endsWith("/*")) {
           // e.g: image/* -> image/
           const prefix = pattern.slice(0, -1);

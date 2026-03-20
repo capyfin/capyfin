@@ -154,7 +154,10 @@ export function isValidAgentId(value: string | undefined | null): boolean {
   return Boolean(trimmed) && VALID_AGENT_ID_RE.test(trimmed);
 }
 
-export function buildAgentSessionKey(agentId: string, sessionId: string): string {
+export function buildAgentSessionKey(
+  agentId: string,
+  sessionId: string,
+): string {
   return `agent:${normalizeAgentId(agentId)}:session:${sessionId}`;
 }
 

@@ -35,7 +35,10 @@ export async function startSidecarServer(
   const metadataStore = new AgentMetadataStoreService(gatewaySupervisor.paths);
   const defaultAgent = await metadataStore.ensureDefaultAgent();
   await migrateLegacyDefaultWorkspacePersona(defaultAgent.workspaceDir);
-  const authService = new RuntimeProviderAuthService(gatewaySupervisor.paths, process.env);
+  const authService = new RuntimeProviderAuthService(
+    gatewaySupervisor.paths,
+    process.env,
+  );
   const embeddedGateway = new EmbeddedGatewayClient({
     authService,
     metadataStore,

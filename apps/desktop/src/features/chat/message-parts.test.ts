@@ -37,10 +37,10 @@ void test("extracts and sorts activity parts from assistant messages", () => {
     role: "assistant",
   };
 
-  assert.deepEqual(getActivityParts(message).map((part) => part.id), [
-    "status",
-    "tool",
-  ]);
+  assert.deepEqual(
+    getActivityParts(message).map((part) => part.id),
+    ["status", "tool"],
+  );
 });
 
 void test("extracts reasoning and text parts", () => {

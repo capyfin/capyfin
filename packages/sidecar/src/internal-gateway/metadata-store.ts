@@ -7,10 +7,7 @@ import type {
   CreateAgentRequest,
   UpdateAgentRequest,
 } from "../server/types.ts";
-import {
-  resolveGatewayAgentDir,
-  type EmbeddedGatewayPaths,
-} from "./paths.ts";
+import { resolveGatewayAgentDir, type EmbeddedGatewayPaths } from "./paths.ts";
 
 interface StoredAgentMetadata {
   createdAt: string;
@@ -60,7 +57,10 @@ async function loadStore(storePath: string): Promise<AgentMetadataStore> {
   }
 }
 
-async function saveStore(storePath: string, store: AgentMetadataStore): Promise<void> {
+async function saveStore(
+  storePath: string,
+  store: AgentMetadataStore,
+): Promise<void> {
   const directory = dirname(storePath);
   const temporaryPath = join(
     directory,
@@ -92,16 +92,17 @@ function normalizeStore(raw: unknown): AgentMetadataStore {
       ? (record.agents as Record<string, unknown>)
       : {};
   const agents = Object.fromEntries(
-    Object.entries(rawAgents)
-      .flatMap(([agentId, value]) => {
-        const normalized = normalizeAgent(value, agentId);
-        return normalized ? [[normalized.id, normalized] as const] : [];
-      }),
+    Object.entries(rawAgents).flatMap(([agentId, value]) => {
+      const normalized = normalizeAgent(value, agentId);
+      return normalized ? [[normalized.id, normalized] as const] : [];
+    }),
   );
 
   const order = Array.isArray(record.order)
     ? record.order
-        .map((value) => (typeof value === "string" ? normalizeAgentId(value) : ""))
+        .map((value) =>
+          typeof value === "string" ? normalizeAgentId(value) : "",
+        )
         .filter((value) => value && agents[value])
     : [];
 
@@ -246,7 +247,10 @@ export class AgentMetadataStoreService {
 
     store.agents[DEFAULT_AGENT_ID] = metadata;
     store.defaultAgentId = DEFAULT_AGENT_ID;
-    store.order = dedupeOrder([DEFAULT_AGENT_ID, ...store.order], Object.keys(store.agents));
+    store.order = dedupeOrder(
+      [DEFAULT_AGENT_ID, ...store.order],
+      Object.keys(store.agents),
+    );
     await saveStore(this.#paths.metadataPath, store);
     return toAgentRecord(this.#paths, store, metadata);
   }
@@ -285,20 +289,25 @@ export class AgentMetadataStoreService {
     const timestamp = new Date().toISOString();
     const metadata: StoredAgentMetadata = {
       createdAt: timestamp,
-      ...(payload.description ? { description: payload.description.trim() } : {}),
+      ...(payload.description
+        ? { description: payload.description.trim() }
+        : {}),
       id: normalizedId,
-      instructions:
-        payload.instructions?.trim() ?? "",
+      instructions: payload.instructions?.trim() ?? "",
       ...(payload.modelId ? { modelId: payload.modelId.trim() } : {}),
       name: payload.name.trim(),
       ...(payload.providerId ? { providerId: payload.providerId.trim() } : {}),
       updatedAt: timestamp,
       workspaceDir:
-        payload.workspaceDir?.trim() ?? join(this.#paths.workspacesDir, normalizedId),
+        payload.workspaceDir?.trim() ??
+        join(this.#paths.workspacesDir, normalizedId),
     };
 
     store.agents[normalizedId] = metadata;
-    store.order = dedupeOrder([...store.order, normalizedId], Object.keys(store.agents));
+    store.order = dedupeOrder(
+      [...store.order, normalizedId],
+      Object.keys(store.agents),
+    );
     if (payload.setAsDefault) {
       store.defaultAgentId = normalizedId;
     }
@@ -307,7 +316,10 @@ export class AgentMetadataStoreService {
     return toAgentRecord(this.#paths, store, metadata);
   }
 
-  async updateAgent(agentId: string, payload: UpdateAgentRequest): Promise<Agent> {
+  async updateAgent(
+    agentId: string,
+    payload: UpdateAgentRequest,
+  ): Promise<Agent> {
     const normalizedId = normalizeAgentId(agentId);
     const store = await loadStore(this.#paths.metadataPath);
     const existing = store.agents[normalizedId];
@@ -379,7 +391,9 @@ export class AgentMetadataStoreService {
 
     const removedAgent = toAgentRecord(this.#paths, store, existing);
     store.agents = Object.fromEntries(
-      Object.entries(store.agents).filter(([candidate]) => candidate !== normalizedId),
+      Object.entries(store.agents).filter(
+        ([candidate]) => candidate !== normalizedId,
+      ),
     );
     store.order = store.order.filter((candidate) => candidate !== normalizedId);
     if (store.defaultAgentId === normalizedId) {

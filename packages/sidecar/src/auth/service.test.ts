@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildAllowlistWithProviderModel, buildProviderModelCatalog } from "./service.ts";
+import {
+  buildAllowlistWithProviderModel,
+  buildProviderModelCatalog,
+} from "./service.ts";
 
 void test("buildProviderModelCatalog drops stale invalid selected models", () => {
   const catalog = buildProviderModelCatalog({

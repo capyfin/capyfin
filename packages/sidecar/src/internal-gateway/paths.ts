@@ -49,11 +49,17 @@ export async function ensureEmbeddedGatewayDirectories(
   ]);
 }
 
-export function resolveGatewayAgentDir(paths: EmbeddedGatewayPaths, agentId: string): string {
+export function resolveGatewayAgentDir(
+  paths: EmbeddedGatewayPaths,
+  agentId: string,
+): string {
   return join(paths.stateDir, "agents", agentId, "agent");
 }
 
-export function resolveGatewaySessionsDir(paths: EmbeddedGatewayPaths, agentId: string): string {
+export function resolveGatewaySessionsDir(
+  paths: EmbeddedGatewayPaths,
+  agentId: string,
+): string {
   return join(paths.stateDir, "agents", agentId, "sessions");
 }
 

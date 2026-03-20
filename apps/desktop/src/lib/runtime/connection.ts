@@ -1,4 +1,7 @@
-import { sidecarConnectionSchema, type SidecarConnection } from "@capyfin/contracts";
+import {
+  sidecarConnectionSchema,
+  type SidecarConnection,
+} from "@capyfin/contracts";
 
 const DEV_DEFAULT_USERNAME = "capyfin";
 const DEV_DEFAULT_PASSWORD = "capyfin-dev-password";
@@ -34,7 +37,9 @@ export function resolveBrowserDevConnection(
     url:
       url && url.length > 0
         ? url
-        : typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:1510",
+        : typeof window !== "undefined"
+          ? window.location.origin
+          : "http://127.0.0.1:1510",
     username: username && username.length > 0 ? username : DEV_DEFAULT_USERNAME,
   };
 
@@ -46,7 +51,9 @@ function readBrowserDevConnection(): SidecarConnection | null {
 }
 
 async function awaitTauriConnection(): Promise<SidecarConnection> {
-  const [{ Channel, invoke }] = await Promise.all([import("@tauri-apps/api/core")]);
+  const [{ Channel, invoke }] = await Promise.all([
+    import("@tauri-apps/api/core"),
+  ]);
 
   return sidecarConnectionSchema.parse(
     await invoke<SidecarConnection>("await_initialization", {

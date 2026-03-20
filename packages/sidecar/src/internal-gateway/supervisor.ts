@@ -18,7 +18,10 @@ interface EmbeddedGatewayProcessState {
 
 const HOST_READY_TIMEOUT_MS = 20_000;
 
-function resolveHostCommand(port: number, token: string): {
+function resolveHostCommand(
+  port: number,
+  token: string,
+): {
   args: string[];
   command: string;
 } {
@@ -62,7 +65,9 @@ async function waitForReady(port: number): Promise<void> {
     await delay(150);
   }
 
-  throw new Error("Timed out waiting for the embedded gateway to become ready.");
+  throw new Error(
+    "Timed out waiting for the embedded gateway to become ready.",
+  );
 }
 
 function pipeLogs(child: ChildProcess, prefix: string): void {

@@ -70,10 +70,12 @@ export function evictChatSession(sessionId: string): void {
 interface ChatWorkspaceProps {
   authOverview: AuthOverview | null;
   client: SidecarClient | null;
-  hasPortfolio?: boolean;
-  onBootstrap?: (sessionId: string) => void;
-  onSessionLabelUpdate?: (sessionId: string, label: string) => void;
-  sessionId?: string;
+  hasPortfolio?: boolean | undefined;
+  onBootstrap?: ((sessionId: string) => void) | undefined;
+  onSessionLabelUpdate?:
+    | ((sessionId: string, label: string) => void)
+    | undefined;
+  sessionId?: string | undefined;
 }
 
 const PORTFOLIO_STARTER_PROMPTS = [
@@ -129,7 +131,9 @@ export function ChatWorkspace({
         if (!cancelled) {
           setBootstrap(null);
           setErrorMessage(
-            error instanceof Error ? error.message : "Chat is unavailable right now.",
+            error instanceof Error
+              ? error.message
+              : "Chat is unavailable right now.",
           );
         }
       } finally {
@@ -144,7 +148,7 @@ export function ChatWorkspace({
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client, refreshToken, sessionId]);
 
   if (isLoading) {
@@ -212,8 +216,10 @@ function ChatSessionView({
   authOverview: AuthOverview | null;
   bootstrap: ChatBootstrap;
   client: SidecarClient | null;
-  hasPortfolio: boolean;
-  onSessionLabelUpdate?: (sessionId: string, label: string) => void;
+  hasPortfolio?: boolean | undefined;
+  onSessionLabelUpdate?:
+    | ((sessionId: string, label: string) => void)
+    | undefined;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);
   const hasCustomLabelRef = useRef(bootstrap.messages.length > 0);
@@ -238,16 +244,12 @@ function ChatSessionView({
     });
     chatCache.set(bootstrap.session.id, instance);
     return instance;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bootstrap.session.id]);
 
-  const {
-    error,
-    messages,
-    sendMessage,
-    status,
-    stop,
-  } = useChat<ChatUIMessage>({ chat });
+  const { error, messages, sendMessage, status, stop } = useChat<ChatUIMessage>(
+    { chat },
+  );
 
   useEffect(() => {
     const list = listRef.current;
@@ -264,11 +266,14 @@ function ChatSessionView({
 
   const isStreaming = status === "streaming" || status === "submitted";
   const latestMessage = messages[messages.length - 1];
-  const starterPrompts = hasPortfolio ? PORTFOLIO_STARTER_PROMPTS : MARKET_STARTER_PROMPTS;
+  const starterPrompts = hasPortfolio
+    ? PORTFOLIO_STARTER_PROMPTS
+    : MARKET_STARTER_PROMPTS;
   const providerName =
-    authOverview?.providers.find(
-      (provider) =>
-        provider.methods.some((method) => method.providerId === bootstrap.resolvedProviderId),
+    authOverview?.providers.find((provider) =>
+      provider.methods.some(
+        (method) => method.providerId === bootstrap.resolvedProviderId,
+      ),
     )?.name ?? bootstrap.resolvedProviderId;
 
   const handleSubmit = useCallback(
@@ -286,11 +291,14 @@ function ChatSessionView({
       if (!hasCustomLabelRef.current && client) {
         hasCustomLabelRef.current = true;
         const label = deriveSessionLabel(text);
-        void client.updateSessionLabel(bootstrap.session.id, label).then(() => {
-          onSessionLabelUpdate?.(bootstrap.session.id, label);
-        }).catch(() => {
-          // Silently ignore — label is cosmetic
-        });
+        void client
+          .updateSessionLabel(bootstrap.session.id, label)
+          .then(() => {
+            onSessionLabelUpdate?.(bootstrap.session.id, label);
+          })
+          .catch(() => {
+            // Silently ignore — label is cosmetic
+          });
       }
     },
     [bootstrap.session.id, client, onSessionLabelUpdate, sendMessage],
@@ -308,7 +316,9 @@ function ChatSessionView({
           {providerName ? (
             <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
               {providerName}
-              {bootstrap.resolvedModelId ? ` / ${bootstrap.resolvedModelId}` : ""}
+              {bootstrap.resolvedModelId
+                ? ` / ${bootstrap.resolvedModelId}`
+                : ""}
             </span>
           ) : null}
           {hasPortfolio ? (
@@ -336,7 +346,8 @@ function ChatSessionView({
                   Start a conversation
                 </h1>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Ask {bootstrap.agent.name} about planning, analysis, and finance decisions.
+                  Ask {bootstrap.agent.name} about planning, analysis, and
+                  finance decisions.
                 </p>
               </div>
             </div>
@@ -417,7 +428,9 @@ function ChatSessionView({
       {messages.length > 0 ? (
         <div className="px-4 py-1.5 lg:px-6">
           <p className="mx-auto max-w-3xl text-center text-[11px] leading-tight text-muted-foreground/60">
-            Not financial advice. AI-generated analysis may contain errors. Always verify data and consult a qualified advisor before making investment decisions.
+            Not financial advice. AI-generated analysis may contain errors.
+            Always verify data and consult a qualified advisor before making
+            investment decisions.
           </p>
         </div>
       ) : null}
@@ -435,7 +448,13 @@ function AttachmentPreviews() {
   return (
     <Attachments variant="grid">
       {files.map((file) => (
-        <Attachment data={file} key={file.id} onRemove={() => { remove(file.id); }}>
+        <Attachment
+          data={file}
+          key={file.id}
+          onRemove={() => {
+            remove(file.id);
+          }}
+        >
           <AttachmentPreview />
           <AttachmentRemove />
         </Attachment>
@@ -469,7 +488,9 @@ function ChatMessage({
     activityParts.some((activity) => activity.status === "active");
 
   if (message.role === "user") {
-    const imageParts = fileParts.filter((f) => f.mediaType.startsWith("image/"));
+    const imageParts = fileParts.filter((f) =>
+      f.mediaType.startsWith("image/"),
+    );
     const docParts = fileParts.filter((f) => !f.mediaType.startsWith("image/"));
 
     return (
@@ -501,7 +522,10 @@ function ChatMessage({
         ) : null}
         <MessageContent>
           {textParts.map((part, index) => (
-            <p key={`${message.id}-${String(index)}`} className="whitespace-pre-wrap">
+            <p
+              key={`${message.id}-${String(index)}`}
+              className="whitespace-pre-wrap"
+            >
               {part}
             </p>
           ))}
@@ -574,7 +598,9 @@ function CopyAction({ text }: { text: string }) {
   );
 }
 
-function toUiMessage(message: ChatBootstrap["messages"][number]): ChatUIMessage {
+function toUiMessage(
+  message: ChatBootstrap["messages"][number],
+): ChatUIMessage {
   return {
     id: message.id,
     metadata: {

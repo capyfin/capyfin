@@ -95,7 +95,9 @@ function toSentenceCase(value: string): string {
     .join(" ");
 }
 
-function createChunk(activity: ChatActivity): UIMessageChunk<unknown, { activity: ChatActivity }> {
+function createChunk(
+  activity: ChatActivity,
+): UIMessageChunk<unknown, { activity: ChatActivity }> {
   return {
     data: activity,
     id: activity.id,
@@ -105,12 +107,17 @@ function createChunk(activity: ChatActivity): UIMessageChunk<unknown, { activity
 
 function createActivityBase(
   event: GatewayAgentEventPayload,
-  overrides: Omit<ChatActivity, "id" | "sequence" | "timestamp"> & { id: string },
+  overrides: Omit<ChatActivity, "id" | "sequence" | "timestamp"> & {
+    id: string;
+  },
 ): ChatActivity {
   return {
     ...overrides,
     sequence: event.seq,
-    timestamp: typeof event.ts === "number" ? new Date(event.ts).toISOString() : undefined,
+    timestamp:
+      typeof event.ts === "number"
+        ? new Date(event.ts).toISOString()
+        : undefined,
   };
 }
 
@@ -148,7 +155,8 @@ function mapLifecycleEvent(
     return createChunk(
       createActivityBase(event, {
         detail:
-          normalizeText(event.data?.error) ?? "The assistant ran into a problem.",
+          normalizeText(event.data?.error) ??
+          "The assistant ran into a problem.",
         id: `run:${event.runId}:status`,
         kind: "status",
         label: "Ran into a problem",
@@ -204,7 +212,7 @@ function mapToolEvent(
     return createChunk(
       createActivityBase(event, {
         detail: isError
-          ? normalizeText(event.data?.error) ?? "The step returned an error."
+          ? (normalizeText(event.data?.error) ?? "The step returned an error.")
           : "Finished and incorporated the result.",
         id,
         kind: "tool",

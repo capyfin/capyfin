@@ -33,7 +33,9 @@ export async function listBundledSkills(): Promise<string[]> {
  * Copy all bundled financial skills into an agent workspace's skills/ directory.
  * Existing skill folders are overwritten so the user always gets the latest version.
  */
-export async function installBundledSkills(workspaceDir: string): Promise<string[]> {
+export async function installBundledSkills(
+  workspaceDir: string,
+): Promise<string[]> {
   const skillNames = await listBundledSkills();
   if (skillNames.length === 0) {
     return [];

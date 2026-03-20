@@ -16,7 +16,9 @@ export function getTextParts(message: ChatUIMessage): string[] {
 export function getReasoningText(message: ChatUIMessage): string {
   return message.parts
     .flatMap((part) =>
-      part.type === "reasoning" && part.text.trim().length > 0 ? [part.text] : [],
+      part.type === "reasoning" && part.text.trim().length > 0
+        ? [part.text]
+        : [],
     )
     .join("\n")
     .trim();

@@ -50,7 +50,7 @@ export function createChatRoutes(
     const sessionId = context.req.query("sessionId")?.trim();
     const bootstrap = await createChatService().bootstrapConversation(
       agentId,
-      sessionId || undefined,
+      sessionId ?? undefined,
     );
     return context.json(chatBootstrapSchema.parse(bootstrap));
   });

@@ -2,13 +2,25 @@
 
 CapyFin is a sidecar-first Tauri desktop application scaffolded for long-term team ownership. The repository is split into a React desktop shell, a Rust native bootstrap layer, a Node sidecar API, an embedded local agent runtime managed by that sidecar, and a Node CLI so additional finance workflows can be added without exposing internal runtime setup to end users.
 
+## Financial research agent
+
+CapyFin ships a curated financial research agent with five bundled skills:
+
+- **Stock analysis** — price, fundamentals, news, analyst ratings
+- **Portfolio analyzer** — allocation, performance, risk (requires portfolio upload)
+- **Earnings summary** — results, guidance, market reaction
+- **Market screener** — filter stocks by financial criteria
+- **Market overview** — indices, sectors, movers, news
+
+Users upload a portfolio CSV during onboarding (or later) and the agent references their actual holdings for personalized analysis.
+
 ## Workspace layout
 
 - `apps/desktop`: React desktop shell and the Tauri runtime.
 - `packages/contracts`: shared TypeScript transport schemas and the application manifest.
 - `packages/core`: shared manifest/bootstrap utilities and runtime-agnostic helpers.
 - `packages/cli`: operational Node CLI built on the embedded runtime adapter.
-- `packages/sidecar`: Node sidecar API for localhost HTTP, health checks, streaming, and embedded runtime supervision.
+- `packages/sidecar`: Node sidecar API for localhost HTTP, health checks, streaming, embedded runtime supervision, and bundled financial skills.
 - `config/app-manifest.json`: cross-language manifest consumed by both Rust and TypeScript.
 - `docs`: lightweight engineering documentation for architecture and conventions.
 

@@ -1,4 +1,4 @@
-import { cp, mkdir, readdir, stat } from "node:fs/promises";
+import { cp, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -53,4 +53,61 @@ export async function installBundledSkills(
   }
 
   return installed;
+}
+
+/**
+ * Install a remote skill into a workspace by writing its SKILL.md content.
+ * Returns the path to the installed skill directory.
+ */
+export async function installRemoteSkill(
+  workspaceDir: string,
+  skillId: string,
+  content: string,
+): Promise<string> {
+  const targetSkillsDir = join(workspaceDir, "skills");
+  await mkdir(targetSkillsDir, { recursive: true });
+
+  const skillDir = join(targetSkillsDir, skillId);
+  await mkdir(skillDir, { recursive: true });
+
+  const skillMdPath = join(skillDir, "SKILL.md");
+  await writeFile(skillMdPath, content, "utf8");
+
+  return skillDir;
+}
+
+/**
+ * List all installed skill directory names in a workspace's skills/ folder.
+ */
+export async function listInstalledSkills(
+  workspaceDir: string,
+): Promise<string[]> {
+  const skillsDir = join(workspaceDir, "skills");
+
+  if (!(await dirExists(skillsDir))) {
+    return [];
+  }
+
+  const entries = await readdir(skillsDir, { withFileTypes: true });
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+}
+
+/**
+ * Remove an installed skill from a workspace.
+ * Returns true if the skill was found and removed, false otherwise.
+ */
+export async function removeSkill(
+  workspaceDir: string,
+  skillId: string,
+): Promise<boolean> {
+  const skillDir = join(workspaceDir, "skills", skillId);
+
+  if (!(await dirExists(skillDir))) {
+    return false;
+  }
+
+  await rm(skillDir, { recursive: true, force: true });
+  return true;
 }

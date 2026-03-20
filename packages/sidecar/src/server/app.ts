@@ -7,6 +7,7 @@ import { createAuthRoutes } from "./routes/auth.ts";
 import { createChatRoutes } from "./routes/chat.ts";
 import { createGlobalRoutes } from "./routes/global.ts";
 import { createPortfolioRoutes } from "./routes/portfolio.ts";
+import { createSkillRoutes } from "./routes/skills.ts";
 import type { SidecarRuntime } from "./context.ts";
 
 const TAURI_ORIGINS = new Set([
@@ -72,6 +73,7 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
   app.route("/chat", createChatRoutes(runtime));
   app.route("/global", createGlobalRoutes(runtime));
   app.route("/auth", createAuthRoutes(runtime));
+  app.route("/skills", createSkillRoutes(runtime));
 
   app.notFound((context) => context.json({ error: "Not Found" }, 404));
   app.onError((error, context) => {

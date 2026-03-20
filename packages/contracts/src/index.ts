@@ -340,6 +340,26 @@ export type ChatTranscriptMessage = z.infer<typeof chatTranscriptMessageSchema>;
 export type ChatBootstrap = z.infer<typeof chatBootstrapSchema>;
 export type ChatActivityStatus = z.infer<typeof chatActivityStatusSchema>;
 export type ChatActivity = z.infer<typeof chatActivitySchema>;
+export type SkillManifest = z.infer<typeof skillManifestSchema>;
+export type SkillCatalog = z.infer<typeof skillCatalogSchema>;
+export type InstallSkillRequest = z.infer<typeof installSkillRequestSchema>;
+
+export const skillManifestSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1).optional(),
+  version: z.string().min(1).optional(),
+  source: z.enum(["bundled", "clawhub", "local"]),
+  installed: z.boolean(),
+});
+
+export const skillCatalogSchema = z.object({
+  skills: z.array(skillManifestSchema),
+});
+
+export const installSkillRequestSchema = z.object({
+  skillId: z.string().min(1),
+});
 
 export const appManifest = appManifestSchema.parse(appManifestJson);
 

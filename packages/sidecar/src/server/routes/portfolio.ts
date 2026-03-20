@@ -26,7 +26,7 @@ export function createPortfolioRoutes(runtime: SidecarRuntime): Hono {
 
     if (payload.csv.length > MAX_PORTFOLIO_SIZE) {
       return context.json(
-        { error: `Portfolio CSV exceeds the ${MAX_PORTFOLIO_SIZE / 1024}KB size limit.` },
+        { error: `Portfolio CSV exceeds the ${String(MAX_PORTFOLIO_SIZE / 1024)}KB size limit.` },
         413,
       );
     }

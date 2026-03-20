@@ -835,6 +835,7 @@ export class EmbeddedGatewayClient {
     try {
       const raw = await readFile(sessionsJsonPath, "utf8");
       const registry = JSON.parse(raw) as Record<string, unknown>;
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete registry[session.sessionKey];
       await writeFile(sessionsJsonPath, JSON.stringify(registry, null, 2));
     } catch {
@@ -926,8 +927,8 @@ export class EmbeddedGatewayClient {
         continue;
       }
       try {
-        const dataUrlMatch = filePart.url.match(
-          /^data:[^;]*;base64,(.+)$/,
+        const dataUrlMatch = /^data:[^;]*;base64,(.+)$/.exec(
+          filePart.url,
         );
         if (dataUrlMatch?.[1]) {
           const decoded = Buffer.from(dataUrlMatch[1], "base64").toString(

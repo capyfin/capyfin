@@ -9,7 +9,7 @@ import { createPortfolioRoutes } from "./portfolio.ts";
 function createMockRuntime(workspaceDir: string) {
   return {
     embeddedGateway: {
-      getAgent: async (agentId: string) => ({
+      getAgent: (agentId: string) => ({
         id: agentId,
         name: "Main",
         workspaceDir,

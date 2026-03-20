@@ -6,6 +6,7 @@ import { createAgentRoutes } from "./routes/agents.ts";
 import { createAuthRoutes } from "./routes/auth.ts";
 import { createChatRoutes } from "./routes/chat.ts";
 import { createGlobalRoutes } from "./routes/global.ts";
+import { createPortfolioRoutes } from "./routes/portfolio.ts";
 import type { SidecarRuntime } from "./context.ts";
 
 const TAURI_ORIGINS = new Set([
@@ -67,6 +68,7 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
   });
 
   app.route("/agents", createAgentRoutes(runtime));
+  app.route("/agents", createPortfolioRoutes(runtime));
   app.route("/chat", createChatRoutes(runtime));
   app.route("/global", createGlobalRoutes(runtime));
   app.route("/auth", createAuthRoutes(runtime));

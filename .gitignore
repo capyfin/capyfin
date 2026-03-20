@@ -10,3 +10,7 @@ packages/sidecar/.bundle
 
 apps/desktop/dist
 apps/desktop/src-tauri/target
+
+agent-orchestrator.yaml
+.claude/settings.json
+.claude/metadata-updater.sh

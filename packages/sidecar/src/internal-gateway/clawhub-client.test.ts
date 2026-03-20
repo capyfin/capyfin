@@ -34,11 +34,11 @@ You are a crypto tracking assistant.
 `;
 
 void test("listSkills returns skills from registry", async () => {
-  const fetchMock = mock.fn(async () =>
-    new Response(JSON.stringify({ skills: MOCK_SKILLS }), {
+  const fetchMock = mock.fn(() =>
+    Promise.resolve(new Response(JSON.stringify({ skills: MOCK_SKILLS }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
-    }),
+    })),
   );
 
   const originalFetch = globalThis.fetch;
@@ -51,8 +51,8 @@ void test("listSkills returns skills from registry", async () => {
     const skills = await client.listSkills();
 
     assert.equal(skills.length, 2);
-    assert.equal(skills[0]!.id, "crypto-tracker");
-    assert.equal(skills[1]!.id, "forex-monitor");
+    assert.equal(skills[0]?.id, "crypto-tracker");
+    assert.equal(skills[1]?.id, "forex-monitor");
     assert.equal(fetchMock.mock.callCount(), 1);
   } finally {
     globalThis.fetch = originalFetch;
@@ -60,8 +60,8 @@ void test("listSkills returns skills from registry", async () => {
 });
 
 void test("listSkills throws on non-OK response", async () => {
-  const fetchMock = mock.fn(async () =>
-    new Response("Internal Server Error", { status: 500 }),
+  const fetchMock = mock.fn(() =>
+    Promise.resolve(new Response("Internal Server Error", { status: 500 })),
   );
 
   const originalFetch = globalThis.fetch;
@@ -87,11 +87,11 @@ void test("listSkills throws on non-OK response", async () => {
 void test("downloadSkill writes SKILL.md to target directory", async () => {
   const targetDir = await mkdtemp(join(tmpdir(), "clawhub-test-"));
 
-  const fetchMock = mock.fn(async () =>
-    new Response(MOCK_SKILL_CONTENT, {
+  const fetchMock = mock.fn(() =>
+    Promise.resolve(new Response(MOCK_SKILL_CONTENT, {
       status: 200,
       headers: { "Content-Type": "text/plain" },
-    }),
+    })),
   );
 
   const originalFetch = globalThis.fetch;
@@ -101,7 +101,9 @@ void test("downloadSkill writes SKILL.md to target directory", async () => {
     const client = new ClawHubClient({
       registryUrl: "https://registry.clawhub.dev/v1",
     });
-    const skillDir = await client.downloadSkill(MOCK_SKILLS[0]!, targetDir);
+    const skill = MOCK_SKILLS[0];
+    assert.ok(skill);
+    const skillDir = await client.downloadSkill(skill, targetDir);
 
     assert.ok(skillDir.includes("crypto-tracker"));
 
@@ -116,8 +118,8 @@ void test("downloadSkill writes SKILL.md to target directory", async () => {
 void test("downloadSkill throws on non-OK response", async () => {
   const targetDir = await mkdtemp(join(tmpdir(), "clawhub-test-"));
 
-  const fetchMock = mock.fn(async () =>
-    new Response("Not Found", { status: 404 }),
+  const fetchMock = mock.fn(() =>
+    Promise.resolve(new Response("Not Found", { status: 404 })),
   );
 
   const originalFetch = globalThis.fetch;
@@ -127,9 +129,11 @@ void test("downloadSkill throws on non-OK response", async () => {
     const client = new ClawHubClient({
       registryUrl: "https://registry.clawhub.dev/v1",
     });
+    const skill = MOCK_SKILLS[0];
+    assert.ok(skill);
 
     await assert.rejects(
-      () => client.downloadSkill(MOCK_SKILLS[0]!, targetDir),
+      () => client.downloadSkill(skill, targetDir),
       (error: Error) => {
         assert.ok(error.message.includes("404"));
         return true;
@@ -145,20 +149,20 @@ void test("downloadSkillById finds and downloads the correct skill", async () =>
   const targetDir = await mkdtemp(join(tmpdir(), "clawhub-test-"));
   let callIndex = 0;
 
-  const fetchMock = mock.fn(async () => {
+  const fetchMock = mock.fn(() => {
     callIndex++;
     if (callIndex === 1) {
       // listSkills call
-      return new Response(JSON.stringify({ skills: MOCK_SKILLS }), {
+      return Promise.resolve(new Response(JSON.stringify({ skills: MOCK_SKILLS }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      });
+      }));
     }
     // downloadSkill call
-    return new Response(MOCK_SKILL_CONTENT, {
+    return Promise.resolve(new Response(MOCK_SKILL_CONTENT, {
       status: 200,
       headers: { "Content-Type": "text/plain" },
-    });
+    }));
   });
 
   const originalFetch = globalThis.fetch;
@@ -181,11 +185,11 @@ void test("downloadSkillById finds and downloads the correct skill", async () =>
 void test("downloadSkillById throws when skill not found", async () => {
   const targetDir = await mkdtemp(join(tmpdir(), "clawhub-test-"));
 
-  const fetchMock = mock.fn(async () =>
-    new Response(JSON.stringify({ skills: MOCK_SKILLS }), {
+  const fetchMock = mock.fn(() =>
+    Promise.resolve(new Response(JSON.stringify({ skills: MOCK_SKILLS }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
-    }),
+    })),
   );
 
   const originalFetch = globalThis.fetch;

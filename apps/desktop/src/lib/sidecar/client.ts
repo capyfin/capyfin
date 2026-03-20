@@ -231,6 +231,25 @@ export class SidecarClient {
     );
   }
 
+  async uploadPortfolio(agentId: string, csv: string): Promise<{ message: string; rows: number }> {
+    return (await this.request(`/agents/${encodeURIComponent(agentId)}/portfolio`, {
+      body: JSON.stringify({ csv }),
+      method: "POST",
+    })) as { message: string; rows: number };
+  }
+
+  async getPortfolioStatus(agentId: string): Promise<{ hasPortfolio: boolean; rows?: number }> {
+    return (await this.request(
+      `/agents/${encodeURIComponent(agentId)}/portfolio`,
+    )) as { hasPortfolio: boolean; rows?: number };
+  }
+
+  async deletePortfolio(agentId: string): Promise<{ deleted: boolean }> {
+    return (await this.request(`/agents/${encodeURIComponent(agentId)}/portfolio`, {
+      method: "DELETE",
+    })) as { deleted: boolean };
+  }
+
   createApiUrl(path: string): string {
     return new URL(path, this.connection.url).toString();
   }

@@ -118,7 +118,6 @@ export function PortfolioChart() {
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            {/* @ts-expect-error recharts XAxis is not yet compatible with React 19 JSX types */}
             <XAxis
               axisLine={false}
               dataKey="date"
@@ -127,14 +126,12 @@ export function PortfolioChart() {
               tickMargin={12}
               tickFormatter={(value: string) => formatXAxisLabel(value, range)}
             />
-            {/* @ts-expect-error recharts YAxis is not yet compatible with React 19 JSX types */}
             <YAxis
               axisLine={false}
               tickLine={false}
               tickFormatter={(value: number) => formatCurrency(value)}
               width={76}
             />
-            {/* @ts-expect-error recharts Tooltip is not yet compatible with React 19 JSX types */}
             <ChartTooltip
               content={
                 <ChartTooltipContent
@@ -159,7 +156,6 @@ export function PortfolioChart() {
               }
               cursor={false}
             />
-            {/* @ts-expect-error recharts Area is not yet compatible with React 19 JSX types */}
             <Area
               dataKey="invested"
               fill="url(#fillInvested)"
@@ -168,7 +164,6 @@ export function PortfolioChart() {
               strokeWidth={2}
               type="monotone"
             />
-            {/* @ts-expect-error recharts Area is not yet compatible with React 19 JSX types */}
             <Area
               dataKey="portfolio"
               fill="url(#fillPortfolio)"

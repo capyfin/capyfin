@@ -45,6 +45,43 @@ function humanizeToolName(toolName: string): string {
     return "browse";
   }
 
+  // Financial tool humanization
+  if (normalized.includes("stock") && normalized.includes("analy")) {
+    return "stock analysis";
+  }
+
+  if (normalized.includes("portfolio") && normalized.includes("analy")) {
+    return "portfolio analysis";
+  }
+
+  if (normalized.includes("earning")) {
+    return "earnings review";
+  }
+
+  if (normalized.includes("screen")) {
+    return "stock screener";
+  }
+
+  if (normalized.includes("market") && normalized.includes("overview")) {
+    return "market overview";
+  }
+
+  if (normalized.includes("quote") || normalized.includes("price")) {
+    return "quote lookup";
+  }
+
+  if (normalized.includes("financ") || normalized.includes("fundament")) {
+    return "financials";
+  }
+
+  if (normalized.includes("dividend")) {
+    return "dividend check";
+  }
+
+  if (normalized.includes("technical") || normalized.includes("indicator")) {
+    return "technical analysis";
+  }
+
   return normalized.replace(/[-_]+/g, " ");
 }
 

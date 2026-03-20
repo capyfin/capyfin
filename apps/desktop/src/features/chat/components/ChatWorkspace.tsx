@@ -1,6 +1,7 @@
 import { Chat, useChat } from "@ai-sdk/react";
 import {
   BotIcon,
+  BriefcaseIcon,
   CopyIcon,
   FileTextIcon,
   LoaderCircleIcon,
@@ -69,20 +70,28 @@ export function evictChatSession(sessionId: string): void {
 interface ChatWorkspaceProps {
   authOverview: AuthOverview | null;
   client: SidecarClient | null;
+  hasPortfolio?: boolean;
   onBootstrap?: (sessionId: string) => void;
   onSessionLabelUpdate?: (sessionId: string, label: string) => void;
   sessionId?: string;
 }
 
-const STARTER_PROMPTS = [
+const PORTFOLIO_STARTER_PROMPTS = [
   "Review my current portfolio risk and call out the biggest concerns.",
-  "Build me a weekly cash flow and investing routine.",
+  "Analyze my portfolio allocation and flag any concentration risks.",
+  "How is my portfolio performing? Show me the winners and losers.",
+];
+
+const MARKET_STARTER_PROMPTS = [
+  "Give me a market overview for today.",
+  "Screen for high-dividend stocks with low P/E ratios.",
   "What should I prepare before harvesting tax losses?",
 ];
 
 export function ChatWorkspace({
   authOverview,
   client,
+  hasPortfolio = false,
   onBootstrap,
   onSessionLabelUpdate,
   sessionId,
@@ -179,6 +188,7 @@ export function ChatWorkspace({
       authOverview={authOverview}
       bootstrap={bootstrap}
       client={client}
+      hasPortfolio={hasPortfolio}
       onSessionLabelUpdate={onSessionLabelUpdate}
     />
   );
@@ -196,11 +206,13 @@ function ChatSessionView({
   authOverview,
   bootstrap,
   client,
+  hasPortfolio,
   onSessionLabelUpdate,
 }: {
   authOverview: AuthOverview | null;
   bootstrap: ChatBootstrap;
   client: SidecarClient | null;
+  hasPortfolio: boolean;
   onSessionLabelUpdate?: (sessionId: string, label: string) => void;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -252,6 +264,7 @@ function ChatSessionView({
 
   const isStreaming = status === "streaming" || status === "submitted";
   const latestMessage = messages[messages.length - 1];
+  const starterPrompts = hasPortfolio ? PORTFOLIO_STARTER_PROMPTS : MARKET_STARTER_PROMPTS;
   const providerName =
     authOverview?.providers.find(
       (provider) =>
@@ -298,6 +311,12 @@ function ChatSessionView({
               {bootstrap.resolvedModelId ? ` / ${bootstrap.resolvedModelId}` : ""}
             </span>
           ) : null}
+          {hasPortfolio ? (
+            <span className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-0.5 text-xs font-medium text-success">
+              <BriefcaseIcon className="size-3" />
+              Portfolio
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -323,7 +342,7 @@ function ChatSessionView({
             </div>
 
             <div className="grid w-full gap-2 sm:grid-cols-3">
-              {STARTER_PROMPTS.map((prompt) => (
+              {starterPrompts.map((prompt) => (
                 <button
                   key={prompt}
                   type="button"
@@ -393,6 +412,15 @@ function ChatSessionView({
           </PromptInputFooter>
         </PromptInput>
       </div>
+
+      {/* Financial disclaimer */}
+      {messages.length > 0 ? (
+        <div className="px-4 py-1.5 lg:px-6">
+          <p className="mx-auto max-w-3xl text-center text-[11px] leading-tight text-muted-foreground/60">
+            Not financial advice. AI-generated analysis may contain errors. Always verify data and consult a qualified advisor before making investment decisions.
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }

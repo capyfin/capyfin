@@ -133,20 +133,25 @@ export type RuntimeEnvLike = {
 };
 
 let authChoiceModulePromise: Promise<AuthChoiceModule> | null = null;
-let authChoiceOptionsModulePromise: Promise<AuthChoiceOptionsModule> | null = null;
-let authProfileRuntimeModulePromise: Promise<AuthProfileRuntimeModule> | null = null;
+let authChoiceOptionsModulePromise: Promise<AuthChoiceOptionsModule> | null =
+  null;
+let authProfileRuntimeModulePromise: Promise<AuthProfileRuntimeModule> | null =
+  null;
 let modelCatalogModulePromise: Promise<ModelCatalogModule> | null = null;
 let modelSelectionModulePromise: Promise<ModelSelectionModule> | null = null;
 let providerWizardModulePromise: Promise<ProviderWizardModule> | null = null;
 
 type AuthProfileRuntimeModule = {
-  applyAuthProfileConfig(params: Record<string, unknown>, options: {
-    email?: string;
-    mode: "api_key" | "oauth" | "token";
-    preferProfileFirst?: boolean;
-    profileId: string;
-    provider: string;
-  }): Record<string, unknown>;
+  applyAuthProfileConfig(
+    params: Record<string, unknown>,
+    options: {
+      email?: string;
+      mode: "api_key" | "oauth" | "token";
+      preferProfileFirst?: boolean;
+      profileId: string;
+      provider: string;
+    },
+  ): Record<string, unknown>;
   upsertAuthProfile(params: {
     agentDir?: string;
     credential: {
@@ -182,7 +187,9 @@ async function listRootDistModules(): Promise<string[]> {
   return await listModulesAt("dist");
 }
 
-async function loadNamedFunction<T extends (...args: never[]) => unknown>(params: {
+async function loadNamedFunction<
+  T extends (...args: never[]) => unknown,
+>(params: {
   functionName: string;
   moduleUrls: string[];
   errorMessage: string;
@@ -191,8 +198,7 @@ async function loadNamedFunction<T extends (...args: never[]) => unknown>(params
     const module = (await import(moduleUrl)) as Record<string, unknown>;
     const implementation = Object.values(module).find(
       (value): value is T =>
-        typeof value === "function" &&
-        value.name === params.functionName,
+        typeof value === "function" && value.name === params.functionName,
     );
 
     if (implementation) {
@@ -238,7 +244,9 @@ export async function loadAuthChoiceModule(): Promise<AuthChoiceModule> {
           typeof value === "function" && value.name === "applyAuthChoice",
       );
       const exportsObject = Object.values(module).find(
-        (value): value is {
+        (
+          value,
+        ): value is {
           applyAuthChoice?: AuthChoiceModule["applyAuthChoice"];
           resolvePreferredProviderForAuthChoice?: AuthChoiceModule["resolvePreferredProviderForAuthChoice"];
         } =>
@@ -249,7 +257,9 @@ export async function loadAuthChoiceModule(): Promise<AuthChoiceModule> {
       const resolvePreferredProviderForAuthChoice =
         exportsObject?.resolvePreferredProviderForAuthChoice ??
         Object.values(module).find(
-          (value): value is AuthChoiceModule["resolvePreferredProviderForAuthChoice"] =>
+          (
+            value,
+          ): value is AuthChoiceModule["resolvePreferredProviderForAuthChoice"] =>
             typeof value === "function" &&
             value.name === "resolvePreferredProviderForAuthChoice",
         );
@@ -276,7 +286,9 @@ export async function loadModelCatalogModule(): Promise<ModelCatalogModule> {
   modelCatalogModulePromise ??= (async () => {
     const moduleUrls = await listModulesAt("dist/plugin-sdk");
     return {
-      loadModelCatalog: await loadNamedFunction<ModelCatalogModule["loadModelCatalog"]>({
+      loadModelCatalog: await loadNamedFunction<
+        ModelCatalogModule["loadModelCatalog"]
+      >({
         errorMessage:
           "Embedded runtime model catalog module is missing loadModelCatalog.",
         functionName: "loadModelCatalog",
@@ -292,13 +304,17 @@ export async function loadAuthProfileRuntimeModule(): Promise<AuthProfileRuntime
   authProfileRuntimeModulePromise ??= (async () => {
     const moduleUrls = await listRootDistModules();
     return {
-      applyAuthProfileConfig: await loadNamedFunction<AuthProfileRuntimeModule["applyAuthProfileConfig"]>({
+      applyAuthProfileConfig: await loadNamedFunction<
+        AuthProfileRuntimeModule["applyAuthProfileConfig"]
+      >({
         errorMessage:
           "Embedded runtime auth profile module is missing applyAuthProfileConfig.",
         functionName: "applyAuthProfileConfig",
         moduleUrls,
       }),
-      upsertAuthProfile: await loadNamedFunction<AuthProfileRuntimeModule["upsertAuthProfile"]>({
+      upsertAuthProfile: await loadNamedFunction<
+        AuthProfileRuntimeModule["upsertAuthProfile"]
+      >({
         errorMessage:
           "Embedded runtime auth profile module is missing upsertAuthProfile.",
         functionName: "upsertAuthProfile",
@@ -315,20 +331,22 @@ export async function loadModelSelectionModule(): Promise<ModelSelectionModule> 
     const helperModuleUrls = await listDistModules("provider-auth-helpers-");
     const moduleUrls = await listDistModules("model-picker-");
     return {
-      applyDefaultModelPrimaryUpdate:
-        await loadNamedFunction<ModelSelectionModule["applyDefaultModelPrimaryUpdate"]>({
-          errorMessage:
-            "Embedded runtime model selection module is missing applyDefaultModelPrimaryUpdate.",
-          functionName: "applyDefaultModelPrimaryUpdate",
-          moduleUrls: [...helperModuleUrls, ...moduleUrls],
-        }),
-      applyModelAllowlist:
-        await loadNamedFunction<ModelSelectionModule["applyModelAllowlist"]>({
-          errorMessage:
-            "Embedded runtime model selection module is missing applyModelAllowlist.",
-          functionName: "applyModelAllowlist",
-          moduleUrls,
-        }),
+      applyDefaultModelPrimaryUpdate: await loadNamedFunction<
+        ModelSelectionModule["applyDefaultModelPrimaryUpdate"]
+      >({
+        errorMessage:
+          "Embedded runtime model selection module is missing applyDefaultModelPrimaryUpdate.",
+        functionName: "applyDefaultModelPrimaryUpdate",
+        moduleUrls: [...helperModuleUrls, ...moduleUrls],
+      }),
+      applyModelAllowlist: await loadNamedFunction<
+        ModelSelectionModule["applyModelAllowlist"]
+      >({
+        errorMessage:
+          "Embedded runtime model selection module is missing applyModelAllowlist.",
+        functionName: "applyModelAllowlist",
+        moduleUrls,
+      }),
     };
   })();
 
@@ -339,13 +357,14 @@ export async function loadProviderWizardModule(): Promise<ProviderWizardModule> 
   providerWizardModulePromise ??= (async () => {
     const moduleUrls = await listDistModules("provider-wizard-");
     return {
-      runProviderModelSelectedHook:
-        await loadNamedFunction<ProviderWizardModule["runProviderModelSelectedHook"]>({
-          errorMessage:
-            "Embedded runtime provider wizard module is missing runProviderModelSelectedHook.",
-          functionName: "runProviderModelSelectedHook",
-          moduleUrls,
-        }),
+      runProviderModelSelectedHook: await loadNamedFunction<
+        ProviderWizardModule["runProviderModelSelectedHook"]
+      >({
+        errorMessage:
+          "Embedded runtime provider wizard module is missing runProviderModelSelectedHook.",
+        functionName: "runProviderModelSelectedHook",
+        moduleUrls,
+      }),
     };
   })();
 

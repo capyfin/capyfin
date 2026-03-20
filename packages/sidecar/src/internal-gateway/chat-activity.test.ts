@@ -65,7 +65,9 @@ void test("ignores unsupported streams", () => {
   assert.equal(chunk, null);
 });
 
-function getLabel(chunk: ReturnType<typeof toChatActivityChunk>): string | undefined {
+function getLabel(
+  chunk: ReturnType<typeof toChatActivityChunk>,
+): string | undefined {
   if (!chunk || !("data" in chunk)) {
     return undefined;
   }
@@ -84,7 +86,11 @@ void test("humanizes financial tool names for stock analysis", () => {
 
 void test("humanizes financial tool names for portfolio analyzer", () => {
   const chunk = toChatActivityChunk({
-    data: { name: "portfolio_analyzer", phase: "start", toolCallId: "tool-fin-2" },
+    data: {
+      name: "portfolio_analyzer",
+      phase: "start",
+      toolCallId: "tool-fin-2",
+    },
     runId: "run-2",
     seq: 2,
     stream: "tool",
@@ -94,7 +100,11 @@ void test("humanizes financial tool names for portfolio analyzer", () => {
 
 void test("humanizes financial tool names for earnings", () => {
   const chunk = toChatActivityChunk({
-    data: { name: "earnings_summary", phase: "start", toolCallId: "tool-fin-3" },
+    data: {
+      name: "earnings_summary",
+      phase: "start",
+      toolCallId: "tool-fin-3",
+    },
     runId: "run-2",
     seq: 3,
     stream: "tool",

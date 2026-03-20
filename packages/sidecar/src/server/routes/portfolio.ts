@@ -26,16 +26,24 @@ export function createPortfolioRoutes(runtime: SidecarRuntime): Hono {
 
     if (payload.csv.length > MAX_PORTFOLIO_SIZE) {
       return context.json(
-        { error: `Portfolio CSV exceeds the ${String(MAX_PORTFOLIO_SIZE / 1024)}KB size limit.` },
+        {
+          error: `Portfolio CSV exceeds the ${String(MAX_PORTFOLIO_SIZE / 1024)}KB size limit.`,
+        },
         413,
       );
     }
 
     // Validate basic CSV structure — must have at least a header row and one data row
-    const lines = payload.csv.trim().split("\n").filter((line) => line.trim().length > 0);
+    const lines = payload.csv
+      .trim()
+      .split("\n")
+      .filter((line) => line.trim().length > 0);
     if (lines.length < 2) {
       return context.json(
-        { error: "Portfolio CSV must contain at least a header row and one data row." },
+        {
+          error:
+            "Portfolio CSV must contain at least a header row and one data row.",
+        },
         422,
       );
     }
@@ -64,13 +72,20 @@ export function createPortfolioRoutes(runtime: SidecarRuntime): Hono {
         "",
       ].join("\n");
 
-      await writeFile(userPath, userContent.trimEnd() + "\n" + portfolioSection, "utf8");
+      await writeFile(
+        userPath,
+        userContent.trimEnd() + "\n" + portfolioSection,
+        "utf8",
+      );
     }
 
-    return context.json({
-      message: "Portfolio uploaded successfully.",
-      rows: lines.length - 1,
-    }, 201);
+    return context.json(
+      {
+        message: "Portfolio uploaded successfully.",
+        rows: lines.length - 1,
+      },
+      201,
+    );
   });
 
   // Check if an agent has a portfolio uploaded
@@ -85,7 +100,10 @@ export function createPortfolioRoutes(runtime: SidecarRuntime): Hono {
     const portfolioPath = join(agent.workspaceDir, "portfolio.csv");
     try {
       const content = await readFile(portfolioPath, "utf8");
-      const lines = content.trim().split("\n").filter((line) => line.trim().length > 0);
+      const lines = content
+        .trim()
+        .split("\n")
+        .filter((line) => line.trim().length > 0);
       return context.json({
         hasPortfolio: true,
         rows: Math.max(0, lines.length - 1),

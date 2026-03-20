@@ -105,7 +105,9 @@ void test("agent routes manage agents and create sessions", async (context) => {
       listSessions(agentId?: string) {
         return Promise.resolve({
           ...(agentId ? { agentId } : {}),
-          sessions: agentId ? (sessions.get(agentId) ?? []) : [...sessions.values()].flat(),
+          sessions: agentId
+            ? (sessions.get(agentId) ?? [])
+            : [...sessions.values()].flat(),
         });
       },
       updateAgent(

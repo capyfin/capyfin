@@ -4,11 +4,7 @@ import {
   useState,
   type PropsWithChildren,
 } from "react";
-import {
-  ThemeContext,
-  type ResolvedTheme,
-  type Theme,
-} from "./theme-context";
+import { ThemeContext, type ResolvedTheme, type Theme } from "./theme-context";
 
 const STORAGE_KEY = "capyfin-theme";
 

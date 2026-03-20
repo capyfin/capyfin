@@ -45,8 +45,9 @@ async function printAgents(
     strict: true,
   });
   const output = values.output as OutputFormat;
-  const catalog = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
-    await embeddedGateway.getCatalog(),
+  const catalog = await withEmbeddedGatewayContext(
+    options,
+    async ({ embeddedGateway }) => await embeddedGateway.getCatalog(),
   );
 
   if (output === "json") {
@@ -102,17 +103,19 @@ async function createAgent(
     strict: true,
   });
   const output = values.output as OutputFormat;
-  const agent = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
-    await embeddedGateway.createAgent({
-      ...(values.id ? { id: values.id } : {}),
-      ...(values.description ? { description: values.description } : {}),
-      ...(values.instructions ? { instructions: values.instructions } : {}),
-      ...(values.model ? { modelId: values.model } : {}),
-      name: requireValue(values.name, "Agent name is required."),
-      ...(values.provider ? { providerId: values.provider } : {}),
-      ...(values.workspace ? { workspaceDir: values.workspace } : {}),
-      ...(values.default ? { setAsDefault: true } : {}),
-    }),
+  const agent = await withEmbeddedGatewayContext(
+    options,
+    async ({ embeddedGateway }) =>
+      await embeddedGateway.createAgent({
+        ...(values.id ? { id: values.id } : {}),
+        ...(values.description ? { description: values.description } : {}),
+        ...(values.instructions ? { instructions: values.instructions } : {}),
+        ...(values.model ? { modelId: values.model } : {}),
+        name: requireValue(values.name, "Agent name is required."),
+        ...(values.provider ? { providerId: values.provider } : {}),
+        ...(values.workspace ? { workspaceDir: values.workspace } : {}),
+        ...(values.default ? { setAsDefault: true } : {}),
+      }),
   );
 
   if (output === "json") {
@@ -166,16 +169,18 @@ async function updateAgent(
     throw new Error("Agent id is required.");
   }
 
-  const agent = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
-    await embeddedGateway.updateAgent(agentId, {
-      ...(values.name ? { name: values.name } : {}),
-      ...(values.description ? { description: values.description } : {}),
-      ...(values.instructions ? { instructions: values.instructions } : {}),
-      ...(values.provider ? { providerId: values.provider } : {}),
-      ...(values.model ? { modelId: values.model } : {}),
-      ...(values.workspace ? { workspaceDir: values.workspace } : {}),
-      ...(values.default ? { setAsDefault: true } : {}),
-    }),
+  const agent = await withEmbeddedGatewayContext(
+    options,
+    async ({ embeddedGateway }) =>
+      await embeddedGateway.updateAgent(agentId, {
+        ...(values.name ? { name: values.name } : {}),
+        ...(values.description ? { description: values.description } : {}),
+        ...(values.instructions ? { instructions: values.instructions } : {}),
+        ...(values.provider ? { providerId: values.provider } : {}),
+        ...(values.model ? { modelId: values.model } : {}),
+        ...(values.workspace ? { workspaceDir: values.workspace } : {}),
+        ...(values.default ? { setAsDefault: true } : {}),
+      }),
   );
 
   if (output === "json") {
@@ -207,8 +212,9 @@ async function deleteAgent(
     throw new Error("Agent id is required.");
   }
 
-  const summary = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
-    await embeddedGateway.deleteAgent(agentId),
+  const summary = await withEmbeddedGatewayContext(
+    options,
+    async ({ embeddedGateway }) => await embeddedGateway.deleteAgent(agentId),
   );
   if (output === "json") {
     options.io.stdout(`${JSON.stringify(summary, null, 2)}\n`);

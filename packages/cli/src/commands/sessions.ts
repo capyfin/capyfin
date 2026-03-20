@@ -42,8 +42,10 @@ async function printSessions(
     strict: true,
   });
   const output = values.output as OutputFormat;
-  const sessions = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
-    await embeddedGateway.listSessions(values.agent),
+  const sessions = await withEmbeddedGatewayContext(
+    options,
+    async ({ embeddedGateway }) =>
+      await embeddedGateway.listSessions(values.agent),
   );
 
   if (output === "json") {
@@ -87,12 +89,14 @@ async function createSession(
     throw new Error("Agent id is required.");
   }
 
-  const session = await withEmbeddedGatewayContext(options, async ({ embeddedGateway }) =>
-    await embeddedGateway.createSession({
-      agentId,
-      ...(values.label ? { label: values.label } : {}),
-      ...(values.prompt ? { initialPrompt: values.prompt } : {}),
-    }),
+  const session = await withEmbeddedGatewayContext(
+    options,
+    async ({ embeddedGateway }) =>
+      await embeddedGateway.createSession({
+        agentId,
+        ...(values.label ? { label: values.label } : {}),
+        ...(values.prompt ? { initialPrompt: values.prompt } : {}),
+      }),
   );
 
   if (output === "json") {

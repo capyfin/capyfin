@@ -11,10 +11,7 @@ import {
   updateAgentSessionRequestSchema,
 } from "@capyfin/contracts";
 import { Hono } from "hono";
-import type {
-  CreateAgentRequest,
-  UpdateAgentRequest,
-} from "../types.ts";
+import type { CreateAgentRequest, UpdateAgentRequest } from "../types.ts";
 import type { SidecarRuntime } from "../context.ts";
 
 export function createAgentRoutes(runtime: SidecarRuntime): Hono {
@@ -56,7 +53,9 @@ export function createAgentRoutes(runtime: SidecarRuntime): Hono {
   });
 
   app.post("/sessions", async (context) => {
-    const payload = createAgentSessionRequestSchema.parse(await context.req.json());
+    const payload = createAgentSessionRequestSchema.parse(
+      await context.req.json(),
+    );
     const session = await runtime.embeddedGateway.createSession(payload);
     return context.json(agentSessionSchema.parse(session), 201);
   });
@@ -69,7 +68,9 @@ export function createAgentRoutes(runtime: SidecarRuntime): Hono {
   });
 
   app.patch("/sessions/:sessionId", async (context) => {
-    const payload = updateAgentSessionRequestSchema.parse(await context.req.json());
+    const payload = updateAgentSessionRequestSchema.parse(
+      await context.req.json(),
+    );
     const session = await runtime.embeddedGateway.updateSessionLabel(
       context.req.param("sessionId"),
       payload.label,

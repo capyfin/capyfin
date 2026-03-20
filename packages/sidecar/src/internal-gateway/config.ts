@@ -56,10 +56,8 @@ interface GatewayConfig {
   [key: string]: unknown;
 }
 
-function safeSection<T>(value: unknown): T {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as T)
-    : ({} as T);
+function isObject(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object" && !Array.isArray(value);
 }
 
 function createEmptyConfig(): GatewayConfig {
@@ -71,8 +69,8 @@ async function loadExistingConfig(
 ): Promise<GatewayConfig> {
   try {
     const source = await readFile(configPath, "utf8");
-    const parsed = JSON.parse(source) as unknown;
-    return safeSection<GatewayConfig>(parsed);
+    const parsed: unknown = JSON.parse(source);
+    return isObject(parsed) ? (parsed as GatewayConfig) : createEmptyConfig();
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code;
     if (code === "ENOENT") {
@@ -89,20 +87,24 @@ function upsertMainAgentEntry(params: {
   existingConfig: GatewayConfig;
   paths: EmbeddedGatewayPaths;
 }): GatewayConfig {
-  const agents = safeSection<GatewayAgentsConfig>(
-    params.existingConfig.agents,
-  );
-  const rawList = Array.isArray(agents.list) ? agents.list : [];
+  const agents: GatewayAgentsConfig = isObject(params.existingConfig.agents)
+    ? params.existingConfig.agents
+    : {};
+  const rawList: GatewayAgentEntry[] = Array.isArray(agents.list)
+    ? agents.list
+    : [];
   const mainWorkspace = join(params.paths.workspacesDir, "main");
   const mainAgentDir = resolveGatewayAgentDir(params.paths, "main");
 
-  const nextList = [...rawList];
+  const nextList: GatewayAgentEntry[] = [...rawList];
   const mainIndex = nextList.findIndex(
     (entry) =>
       typeof entry.id === "string" && entry.id.trim().toLowerCase() === "main",
   );
+  const existing: GatewayAgentEntry =
+    mainIndex >= 0 ? (nextList[mainIndex] ?? {}) : {};
   const mainEntry: GatewayAgentEntry = {
-    ...(mainIndex >= 0 ? nextList[mainIndex] : {}),
+    ...existing,
     agentDir: mainAgentDir,
     default: true,
     id: "main",
@@ -136,9 +138,15 @@ export async function writeEmbeddedGatewayConfig(params: {
     paths: params.paths,
   });
 
-  const discovery = safeSection<GatewayDiscoveryConfig>(payload.discovery);
-  const gateway = safeSection<GatewayServerConfig>(payload.gateway);
-  const logging = safeSection<GatewayLoggingConfig>(payload.logging);
+  const discovery: GatewayDiscoveryConfig = isObject(payload.discovery)
+    ? payload.discovery
+    : {};
+  const gateway: GatewayServerConfig = isObject(payload.gateway)
+    ? payload.gateway
+    : {};
+  const logging: GatewayLoggingConfig = isObject(payload.logging)
+    ? payload.logging
+    : {};
 
   await writeFile(
     params.paths.configPath,
@@ -148,26 +156,24 @@ export async function writeEmbeddedGatewayConfig(params: {
         discovery: {
           ...discovery,
           mdns: {
-            ...safeSection<GatewayDiscoveryConfig["mdns"]>(discovery.mdns),
+            ...(isObject(discovery.mdns) ? discovery.mdns : {}),
             mode: "off",
           },
           wideArea: {
-            ...safeSection<GatewayDiscoveryConfig["wideArea"]>(
-              discovery.wideArea,
-            ),
+            ...(isObject(discovery.wideArea) ? discovery.wideArea : {}),
             enabled: false,
           },
         },
         gateway: {
           ...gateway,
           auth: {
-            ...safeSection<GatewayAuthConfig>(gateway.auth),
+            ...(isObject(gateway.auth) ? gateway.auth : {}),
             mode: "token",
             token: params.token,
           },
           bind: "loopback",
           controlUi: {
-            ...safeSection<GatewayControlUiConfig>(gateway.controlUi),
+            ...(isObject(gateway.controlUi) ? gateway.controlUi : {}),
             enabled: false,
           },
           port: params.port,

@@ -77,12 +77,7 @@ export function createSkillRoutes(runtime: SidecarRuntime): Hono {
       let version: string | undefined;
 
       try {
-        const skillMdPath = join(
-          workspaceDir ?? "",
-          "skills",
-          id,
-          "SKILL.md",
-        );
+        const skillMdPath = join(workspaceDir, "skills", id, "SKILL.md");
         const content = await readFile(skillMdPath, "utf8");
         const parsed = parseSkillMdFrontMatter(content);
         name = parsed.name ?? id;

@@ -15,7 +15,7 @@ export interface ClawHubRegistryResponse {
 }
 
 const DEFAULT_REGISTRY_URL =
-  process.env["CAPYFIN_CLAWHUB_REGISTRY_URL"] ??
+  process.env.CAPYFIN_CLAWHUB_REGISTRY_URL ??
   "https://registry.clawhub.dev/v1";
 
 const DEFAULT_TIMEOUT_MS = 10_000;

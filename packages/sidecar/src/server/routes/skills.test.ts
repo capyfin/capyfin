@@ -44,12 +44,12 @@ void test("GET /skills returns bundled skills with installed status", async () =
     assert.equal(response.status, 200);
 
     const body = (await response.json()) as {
-      skills: Array<{
+      skills: {
         id: string;
         name: string;
         source: string;
         installed: boolean;
-      }>;
+      }[];
     };
 
     assert.ok(body.skills.length >= 5, `Expected at least 5 skills, got ${String(body.skills.length)}`);
@@ -75,7 +75,7 @@ void test("GET /skills returns empty list when no workspace dir", async () => {
     assert.equal(response.status, 200);
 
     const body = (await response.json()) as {
-      skills: Array<{ id: string; installed: boolean }>;
+      skills: { id: string; installed: boolean }[];
     };
 
     // Bundled skills should still appear even if not installed

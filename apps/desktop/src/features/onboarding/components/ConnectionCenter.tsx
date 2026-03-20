@@ -636,10 +636,14 @@ export function ConnectionCenter({
 
                 {modelCatalog && modelCatalog.models.length > 0 ? (
                   <div className="max-w-md space-y-1.5">
-                    <label className="block text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground/60">
+                    <label
+                      htmlFor="connection-center-model-select"
+                      className="block text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground/60"
+                    >
                       Model
                     </label>
                     <select
+                      id="connection-center-model-select"
                       className="h-10 w-full rounded-md border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary"
                       value={selectedModelRef}
                       onChange={(event) => {
@@ -888,6 +892,8 @@ function PortfolioUploadStep({
           </div>
         ) : (
           <div
+            role="button"
+            tabIndex={0}
             className={cn(
               "flex w-full cursor-pointer flex-col items-center gap-4 rounded-xl border-2 border-dashed p-8 transition-colors",
               isDragOver
@@ -904,6 +910,12 @@ function PortfolioUploadStep({
             onDrop={handleDrop}
             onClick={() => {
               fileInputRef.current?.click();
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                fileInputRef.current?.click();
+              }
             }}
           >
             <div className="flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">

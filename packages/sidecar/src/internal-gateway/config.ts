@@ -3,19 +3,76 @@ import { join } from "node:path";
 import type { EmbeddedGatewayPaths } from "./paths.ts";
 import { resolveGatewayAgentDir } from "./paths.ts";
 
-type GatewayConfig = Record<string, unknown>;
+interface GatewayDiscoveryConfig {
+  mdns?: { mode?: string; [key: string]: unknown };
+  wideArea?: { enabled?: boolean; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+interface GatewayAuthConfig {
+  mode?: string;
+  token?: string;
+  [key: string]: unknown;
+}
+
+interface GatewayControlUiConfig {
+  enabled?: boolean;
+  [key: string]: unknown;
+}
+
+interface GatewayServerConfig {
+  auth?: GatewayAuthConfig;
+  bind?: string;
+  controlUi?: GatewayControlUiConfig;
+  port?: number;
+  [key: string]: unknown;
+}
+
+interface GatewayLoggingConfig {
+  file?: string;
+  level?: string;
+  [key: string]: unknown;
+}
+
+interface GatewayAgentEntry {
+  agentDir?: string;
+  default?: boolean;
+  id?: string;
+  name?: string;
+  workspace?: string;
+  [key: string]: unknown;
+}
+
+interface GatewayAgentsConfig {
+  list?: GatewayAgentEntry[];
+  [key: string]: unknown;
+}
+
+interface GatewayConfig {
+  agents?: GatewayAgentsConfig;
+  discovery?: GatewayDiscoveryConfig;
+  gateway?: GatewayServerConfig;
+  logging?: GatewayLoggingConfig;
+  [key: string]: unknown;
+}
+
+function safeSection<T>(value: unknown): T {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as T)
+    : ({} as T);
+}
 
 function createEmptyConfig(): GatewayConfig {
   return {};
 }
 
-async function loadExistingConfig(configPath: string): Promise<GatewayConfig> {
+async function loadExistingConfig(
+  configPath: string,
+): Promise<GatewayConfig> {
   try {
     const source = await readFile(configPath, "utf8");
     const parsed = JSON.parse(source) as unknown;
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as GatewayConfig)
-      : createEmptyConfig();
+    return safeSection<GatewayConfig>(parsed);
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code;
     if (code === "ENOENT") {
@@ -32,15 +89,10 @@ function upsertMainAgentEntry(params: {
   existingConfig: GatewayConfig;
   paths: EmbeddedGatewayPaths;
 }): GatewayConfig {
-  const rawAgents =
-    params.existingConfig.agents &&
-    typeof params.existingConfig.agents === "object" &&
-    !Array.isArray(params.existingConfig.agents)
-      ? (params.existingConfig.agents as Record<string, unknown>)
-      : {};
-  const rawList = Array.isArray(rawAgents.list)
-    ? (rawAgents.list as Record<string, unknown>[])
-    : [];
+  const agents = safeSection<GatewayAgentsConfig>(
+    params.existingConfig.agents,
+  );
+  const rawList = Array.isArray(agents.list) ? agents.list : [];
   const mainWorkspace = join(params.paths.workspacesDir, "main");
   const mainAgentDir = resolveGatewayAgentDir(params.paths, "main");
 
@@ -49,7 +101,7 @@ function upsertMainAgentEntry(params: {
     (entry) =>
       typeof entry.id === "string" && entry.id.trim().toLowerCase() === "main",
   );
-  const mainEntry = {
+  const mainEntry: GatewayAgentEntry = {
     ...(mainIndex >= 0 ? nextList[mainIndex] : {}),
     agentDir: mainAgentDir,
     default: true,
@@ -67,7 +119,7 @@ function upsertMainAgentEntry(params: {
   return {
     ...params.existingConfig,
     agents: {
-      ...rawAgents,
+      ...agents,
       list: nextList,
     },
   };
@@ -84,78 +136,44 @@ export async function writeEmbeddedGatewayConfig(params: {
     paths: params.paths,
   });
 
+  const discovery = safeSection<GatewayDiscoveryConfig>(payload.discovery);
+  const gateway = safeSection<GatewayServerConfig>(payload.gateway);
+  const logging = safeSection<GatewayLoggingConfig>(payload.logging);
+
   await writeFile(
     params.paths.configPath,
     `${JSON.stringify(
       {
         ...payload,
         discovery: {
-          ...((payload.discovery &&
-          typeof payload.discovery === "object" &&
-          !Array.isArray(payload.discovery)
-            ? payload.discovery
-            : {}) as Record<string, unknown>),
+          ...discovery,
           mdns: {
-            ...(((payload.discovery as Record<string, unknown> | undefined)
-              ?.mdns &&
-            typeof (payload.discovery as Record<string, unknown>).mdns ===
-              "object" &&
-            !Array.isArray((payload.discovery as Record<string, unknown>).mdns)
-              ? (payload.discovery as Record<string, unknown>).mdns
-              : {}) as Record<string, unknown>),
+            ...safeSection<GatewayDiscoveryConfig["mdns"]>(discovery.mdns),
             mode: "off",
           },
           wideArea: {
-            ...(((payload.discovery as Record<string, unknown> | undefined)
-              ?.wideArea &&
-            typeof (payload.discovery as Record<string, unknown>).wideArea ===
-              "object" &&
-            !Array.isArray(
-              (payload.discovery as Record<string, unknown>).wideArea,
-            )
-              ? (payload.discovery as Record<string, unknown>).wideArea
-              : {}) as Record<string, unknown>),
+            ...safeSection<GatewayDiscoveryConfig["wideArea"]>(
+              discovery.wideArea,
+            ),
             enabled: false,
           },
         },
         gateway: {
-          ...((payload.gateway &&
-          typeof payload.gateway === "object" &&
-          !Array.isArray(payload.gateway)
-            ? payload.gateway
-            : {}) as Record<string, unknown>),
+          ...gateway,
           auth: {
-            ...(((payload.gateway as Record<string, unknown> | undefined)
-              ?.auth &&
-            typeof (payload.gateway as Record<string, unknown>).auth ===
-              "object" &&
-            !Array.isArray((payload.gateway as Record<string, unknown>).auth)
-              ? (payload.gateway as Record<string, unknown>).auth
-              : {}) as Record<string, unknown>),
+            ...safeSection<GatewayAuthConfig>(gateway.auth),
             mode: "token",
             token: params.token,
           },
           bind: "loopback",
           controlUi: {
-            ...(((payload.gateway as Record<string, unknown> | undefined)
-              ?.controlUi &&
-            typeof (payload.gateway as Record<string, unknown>).controlUi ===
-              "object" &&
-            !Array.isArray(
-              (payload.gateway as Record<string, unknown>).controlUi,
-            )
-              ? (payload.gateway as Record<string, unknown>).controlUi
-              : {}) as Record<string, unknown>),
+            ...safeSection<GatewayControlUiConfig>(gateway.controlUi),
             enabled: false,
           },
           port: params.port,
         },
         logging: {
-          ...((payload.logging &&
-          typeof payload.logging === "object" &&
-          !Array.isArray(payload.logging)
-            ? payload.logging
-            : {}) as Record<string, unknown>),
+          ...logging,
           file: join(params.paths.logsDir, "gateway.log"),
           level: "info",
         },

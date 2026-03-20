@@ -1,5 +1,4 @@
-import { type AgentSession, type AuthOverview } from "@capyfin/contracts";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
 import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
@@ -12,65 +11,55 @@ import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCen
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { initializeSidecarConnection } from "@/lib/runtime/connection";
 import { SidecarClient } from "@/lib/sidecar/client";
+import { appReducer, createInitialState } from "@/app/state/app-state";
 type AppView = "connections" | "connections-add" | "chat" | "agents";
 
 export function App() {
-  const [authOverview, setAuthOverview] = useState<AuthOverview | null>(null);
-  const [client, setClient] = useState<SidecarClient | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [runtimeError, setRuntimeError] = useState<string | null>(null);
-  const [hashView, setHashView] = useState<AppView>(readViewFromHash());
-  const [retryToken, setRetryToken] = useState(0);
-  const [createAgentToken, setCreateAgentToken] = useState(0);
-  const [sessions, setSessions] = useState<AgentSession[]>([]);
-  const [activeSessionId, setActiveSessionId] = useState<string | undefined>(
-    undefined,
+  const [state, dispatch] = useReducer(
+    appReducer,
+    readViewFromHash,
+    createInitialState,
   );
-  const [hasPortfolio, setHasPortfolio] = useState(false);
-  const [onboardingActive, setOnboardingActive] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
     async function hydrateFromSidecar(): Promise<void> {
       if (isMounted) {
-        setIsLoading(true);
-        setRuntimeError(null);
+        dispatch({ type: "HYDRATE_START" });
       }
 
       try {
         const connection = await initializeSidecarConnection();
-        const client = SidecarClient.fromConnection(connection);
+        const sidecarClient = SidecarClient.fromConnection(connection);
         const [overview, sessionList, portfolioStatus] = await Promise.all([
-          client.authOverview(),
-          client.listSessions("main").catch(() => ({ sessions: [] })),
-          client
+          sidecarClient.authOverview(),
+          sidecarClient.listSessions("main").catch(() => ({ sessions: [] })),
+          sidecarClient
             .getPortfolioStatus("main")
             .catch(() => ({ hasPortfolio: false })),
         ]);
 
         if (isMounted) {
-          setAuthOverview(overview);
-          setClient(client);
-          setSessions(sessionList.sessions);
-          setHasPortfolio(portfolioStatus.hasPortfolio);
-          setRuntimeError(null);
-          if (!overview.selectedProviderId) {
-            setOnboardingActive(true);
-          }
+          dispatch({
+            type: "HYDRATE_SUCCESS",
+            authOverview: overview,
+            client: sidecarClient,
+            sessions: sessionList.sessions,
+            hasPortfolio: portfolioStatus.hasPortfolio,
+          });
         }
       } catch (error) {
         console.error("Failed to initialize desktop runtime", error);
         if (isMounted) {
-          setAuthOverview(null);
-          setClient(null);
-          setRuntimeError(
-            error instanceof Error ? error.message : "Load failed",
-          );
+          dispatch({
+            type: "HYDRATE_FAILURE",
+            error: error instanceof Error ? error.message : "Load failed",
+          });
         }
       } finally {
         if (isMounted) {
-          setIsLoading(false);
+          dispatch({ type: "HYDRATE_COMPLETE" });
         }
       }
     }
@@ -80,11 +69,11 @@ export function App() {
     return () => {
       isMounted = false;
     };
-  }, [retryToken]);
+  }, [state.retryToken]);
 
   useEffect(() => {
     const onHashChange = (): void => {
-      setHashView(readViewFromHash());
+      dispatch({ type: "SET_HASH_VIEW", view: readViewFromHash() });
     };
 
     window.addEventListener("hashchange", onHashChange);
@@ -94,90 +83,91 @@ export function App() {
   }, []);
 
   const handleNewChat = useCallback(async () => {
-    if (!client) {
+    if (!state.client) {
       return;
     }
     try {
-      const session = await client.createSession({ agentId: "main" });
-      setSessions((prev) => [session, ...prev]);
-      setActiveSessionId(session.id);
+      const session = await state.client.createSession({ agentId: "main" });
+      dispatch({ type: "ADD_SESSION", session });
+      dispatch({ type: "SET_ACTIVE_SESSION", sessionId: session.id });
       window.location.hash = "#chat";
     } catch (error) {
       console.error("Failed to create new chat session", error);
     }
-  }, [client]);
+  }, [state.client]);
 
   const handleSessionSelect = useCallback((sessionId: string) => {
-    setActiveSessionId(sessionId);
+    dispatch({ type: "SET_ACTIVE_SESSION", sessionId });
     window.location.hash = "#chat";
   }, []);
 
   const handleBootstrap = useCallback((sessionId: string) => {
-    setActiveSessionId(sessionId);
+    dispatch({ type: "SET_ACTIVE_SESSION", sessionId });
   }, []);
 
   const handleSessionLabelUpdate = useCallback(
     (sessionId: string, label: string) => {
-      setSessions((prev) =>
-        prev.map((s) => (s.id === sessionId ? { ...s, label } : s)),
-      );
+      dispatch({ type: "UPDATE_SESSION_LABEL", sessionId, label });
     },
     [],
   );
 
   const handleSessionRename = useCallback(
     async (sessionId: string, label: string) => {
-      if (!client) return;
+      if (!state.client) return;
       try {
-        await client.updateSessionLabel(sessionId, label);
+        await state.client.updateSessionLabel(sessionId, label);
         handleSessionLabelUpdate(sessionId, label);
       } catch (error) {
         console.error("Failed to rename session", error);
       }
     },
-    [client, handleSessionLabelUpdate],
+    [state.client, handleSessionLabelUpdate],
   );
 
   const handleSessionDelete = useCallback(
     async (sessionId: string) => {
-      if (!client) return;
+      if (!state.client) return;
       try {
-        await client.deleteSession(sessionId);
+        await state.client.deleteSession(sessionId);
         evictChatSession(sessionId);
-        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-        if (activeSessionId === sessionId) {
-          setActiveSessionId(undefined);
-        }
+        dispatch({ type: "REMOVE_SESSION", sessionId });
       } catch (error) {
         console.error("Failed to delete session", error);
       }
     },
-    [activeSessionId, client],
+    [state.client],
   );
 
   if (
-    !authOverview?.selectedProviderId ||
-    onboardingActive ||
-    hashView === "connections-add"
+    !state.authOverview?.selectedProviderId ||
+    state.onboardingActive ||
+    state.hashView === "connections-add"
   ) {
     const isReusableConnectionFlow =
-      Boolean(authOverview?.selectedProviderId) && !onboardingActive;
+      Boolean(state.authOverview?.selectedProviderId) &&
+      !state.onboardingActive;
 
     return (
       <ConnectionCenter
-        authOverview={authOverview}
-        client={client}
-        isLoading={isLoading}
-        runtimeError={runtimeError}
-        onAuthOverviewChange={setAuthOverview}
+        authOverview={state.authOverview}
+        client={state.client}
+        isLoading={state.isLoading}
+        runtimeError={state.runtimeError}
+        onAuthOverviewChange={(overview) => {
+          dispatch({ type: "SET_AUTH_OVERVIEW", authOverview: overview });
+        }}
         onContinue={() => {
-          setOnboardingActive(false);
+          dispatch({ type: "FINISH_ONBOARDING" });
           window.location.hash = "#chat";
-          if (client) {
-            void client
+          if (state.client) {
+            void state.client
               .getPortfolioStatus("main")
               .then((status) => {
-                setHasPortfolio(status.hasPortfolio);
+                dispatch({
+                  type: "SET_HAS_PORTFOLIO",
+                  hasPortfolio: status.hasPortfolio,
+                });
               })
               .catch(() => {
                 /* ignore — refreshed on next hydration */
@@ -185,7 +175,7 @@ export function App() {
           }
         }}
         onRetry={() => {
-          setRetryToken((current) => current + 1);
+          dispatch({ type: "REQUEST_RETRY" });
         }}
         {...(isReusableConnectionFlow
           ? {
@@ -198,7 +188,7 @@ export function App() {
     );
   }
 
-  const currentView: Exclude<AppView, "connections-add"> = hashView;
+  const currentView: Exclude<AppView, "connections-add"> = state.hashView;
 
   return (
     <SidebarProvider
@@ -206,9 +196,9 @@ export function App() {
       className="!min-h-0 h-svh overflow-hidden"
     >
       <AppSidebar
-        activeSessionId={activeSessionId}
+        activeSessionId={state.activeSessionId}
         activeView={currentView}
-        authOverview={authOverview}
+        authOverview={state.authOverview}
         onNewChat={() => {
           void handleNewChat();
         }}
@@ -219,7 +209,7 @@ export function App() {
           void handleSessionRename(id, label);
         }}
         onSessionSelect={handleSessionSelect}
-        sessions={sessions}
+        sessions={state.sessions}
       />
       <SidebarInset className="min-h-0 bg-background">
         <AppHeader
@@ -228,7 +218,7 @@ export function App() {
             window.location.hash = "#connections/add";
           }}
           onCreateAgent={() => {
-            setCreateAgentToken((current) => current + 1);
+            dispatch({ type: "REQUEST_CREATE_AGENT" });
           }}
         />
         <div
@@ -236,24 +226,26 @@ export function App() {
         >
           {currentView === "chat" ? (
             <ChatWorkspace
-              authOverview={authOverview}
-              client={client}
-              hasPortfolio={hasPortfolio}
+              authOverview={state.authOverview}
+              client={state.client}
+              hasPortfolio={state.hasPortfolio}
               onBootstrap={handleBootstrap}
               onSessionLabelUpdate={handleSessionLabelUpdate}
-              sessionId={activeSessionId}
+              sessionId={state.activeSessionId}
             />
           ) : currentView === "connections" ? (
             <ConnectionsWorkspace
-              authOverview={authOverview}
-              client={client}
-              onAuthOverviewChange={setAuthOverview}
+              authOverview={state.authOverview}
+              client={state.client}
+              onAuthOverviewChange={(overview) => {
+                dispatch({ type: "SET_AUTH_OVERVIEW", authOverview: overview });
+              }}
             />
           ) : (
             <AgentsWorkspace
-              authOverview={authOverview}
-              client={client}
-              createRequestToken={createAgentToken}
+              authOverview={state.authOverview}
+              client={state.client}
+              createRequestToken={state.createAgentToken}
             />
           )}
         </div>

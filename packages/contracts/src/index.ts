@@ -253,13 +253,15 @@ export const authSessionStepSchema = z.discriminatedUnion("type", [
     type: z.literal("select_prompt"),
     allowMultiple: z.boolean(),
     message: z.string().min(1),
-    options: z.array(
-      z.object({
-        hint: z.string().min(1).optional(),
-        label: z.string().min(1),
-        value: z.string().min(1),
-      }),
-    ).min(1),
+    options: z
+      .array(
+        z.object({
+          hint: z.string().min(1).optional(),
+          label: z.string().min(1),
+          value: z.string().min(1),
+        }),
+      )
+      .min(1),
   }),
   z.object({
     type: z.literal("confirm_prompt"),
@@ -295,7 +297,9 @@ export type AppManifest = z.infer<typeof appManifestSchema>;
 export type SidecarConnection = z.infer<typeof sidecarConnectionSchema>;
 export type SidecarHealth = z.infer<typeof sidecarHealthSchema>;
 export type SidecarBootstrap = z.infer<typeof sidecarBootstrapSchema>;
-export type ProviderConnectionInput = z.infer<typeof providerConnectionInputSchema>;
+export type ProviderConnectionInput = z.infer<
+  typeof providerConnectionInputSchema
+>;
 export type ProviderMethod = z.infer<typeof providerMethodSchema>;
 export type ProviderDefinition = z.infer<typeof providerDefinitionSchema>;
 export type SavedConnection = z.infer<typeof savedConnectionSchema>;
@@ -305,14 +309,18 @@ export type ProviderModelCatalog = z.infer<typeof providerModelCatalogSchema>;
 export type ConnectProviderSecretRequest = z.infer<
   typeof connectProviderSecretRequestSchema
 >;
-export type SelectConnectionRequest = z.infer<typeof selectConnectionRequestSchema>;
+export type SelectConnectionRequest = z.infer<
+  typeof selectConnectionRequestSchema
+>;
 export type StartAuthSessionRequest = z.infer<
   typeof startAuthSessionRequestSchema
 >;
 export type RespondAuthSessionRequest = z.infer<
   typeof respondAuthSessionRequestSchema
 >;
-export type SetProviderModelRequest = z.infer<typeof setProviderModelRequestSchema>;
+export type SetProviderModelRequest = z.infer<
+  typeof setProviderModelRequestSchema
+>;
 export type AuthSessionStep = z.infer<typeof authSessionStepSchema>;
 export type AuthSession = z.infer<typeof authSessionSchema>;
 export type Agent = z.infer<typeof agentSchema>;

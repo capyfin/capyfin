@@ -3,7 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
 import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
-import { ChatWorkspace, evictChatSession } from "@/features/chat/components/ChatWorkspace";
+import {
+  ChatWorkspace,
+  evictChatSession,
+} from "@/features/chat/components/ChatWorkspace";
 import { ConnectionsWorkspace } from "@/features/connections/components/ConnectionsWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -20,7 +23,9 @@ export function App() {
   const [retryToken, setRetryToken] = useState(0);
   const [createAgentToken, setCreateAgentToken] = useState(0);
   const [sessions, setSessions] = useState<AgentSession[]>([]);
-  const [activeSessionId, setActiveSessionId] = useState<string | undefined>(undefined);
+  const [activeSessionId, setActiveSessionId] = useState<string | undefined>(
+    undefined,
+  );
   const [hasPortfolio, setHasPortfolio] = useState(false);
   const [onboardingActive, setOnboardingActive] = useState(false);
 
@@ -39,7 +44,9 @@ export function App() {
         const [overview, sessionList, portfolioStatus] = await Promise.all([
           client.authOverview(),
           client.listSessions("main").catch(() => ({ sessions: [] })),
-          client.getPortfolioStatus("main").catch(() => ({ hasPortfolio: false })),
+          client
+            .getPortfolioStatus("main")
+            .catch(() => ({ hasPortfolio: false })),
         ]);
 
         if (isMounted) {
@@ -57,7 +64,9 @@ export function App() {
         if (isMounted) {
           setAuthOverview(null);
           setClient(null);
-          setRuntimeError(error instanceof Error ? error.message : "Load failed");
+          setRuntimeError(
+            error instanceof Error ? error.message : "Load failed",
+          );
         }
       } finally {
         if (isMounted) {
@@ -146,8 +155,13 @@ export function App() {
     [activeSessionId, client],
   );
 
-  if (!authOverview?.selectedProviderId || onboardingActive || hashView === "connections-add") {
-    const isReusableConnectionFlow = Boolean(authOverview?.selectedProviderId) && !onboardingActive;
+  if (
+    !authOverview?.selectedProviderId ||
+    onboardingActive ||
+    hashView === "connections-add"
+  ) {
+    const isReusableConnectionFlow =
+      Boolean(authOverview?.selectedProviderId) && !onboardingActive;
 
     return (
       <ConnectionCenter
@@ -160,9 +174,14 @@ export function App() {
           setOnboardingActive(false);
           window.location.hash = "#chat";
           if (client) {
-            void client.getPortfolioStatus("main").then((status) => {
-              setHasPortfolio(status.hasPortfolio);
-            }).catch(() => { /* ignore — refreshed on next hydration */ });
+            void client
+              .getPortfolioStatus("main")
+              .then((status) => {
+                setHasPortfolio(status.hasPortfolio);
+              })
+              .catch(() => {
+                /* ignore — refreshed on next hydration */
+              });
           }
         }}
         onRetry={() => {
@@ -182,7 +201,10 @@ export function App() {
   const currentView: Exclude<AppView, "connections-add"> = hashView;
 
   return (
-    <SidebarProvider defaultOpen={true} className="!min-h-0 h-svh overflow-hidden">
+    <SidebarProvider
+      defaultOpen={true}
+      className="!min-h-0 h-svh overflow-hidden"
+    >
       <AppSidebar
         activeSessionId={activeSessionId}
         activeView={currentView}
@@ -209,7 +231,9 @@ export function App() {
             setCreateAgentToken((current) => current + 1);
           }}
         />
-        <div className={`flex min-h-0 flex-1 flex-col ${currentView === "chat" ? "" : "gap-4 p-4 lg:p-5"}`}>
+        <div
+          className={`flex min-h-0 flex-1 flex-col ${currentView === "chat" ? "" : "gap-4 p-4 lg:p-5"}`}
+        >
           {currentView === "chat" ? (
             <ChatWorkspace
               authOverview={authOverview}

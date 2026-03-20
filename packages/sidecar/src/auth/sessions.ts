@@ -67,10 +67,7 @@ export class RuntimeAuthSessionManager {
     return snapshot;
   }
 
-  respond(
-    sessionId: string,
-    value: boolean | string | string[],
-  ): AuthSession {
+  respond(sessionId: string, value: boolean | string | string[]): AuthSession {
     const record = this.#sessions.get(sessionId);
     if (!record) {
       throw new Error(`Unknown auth session: ${sessionId}`);
@@ -113,7 +110,10 @@ export class RuntimeAuthSessionManager {
 
     if (
       typeof value !== "string" &&
-      !(Array.isArray(value) && value.every((entry) => typeof entry === "string"))
+      !(
+        Array.isArray(value) &&
+        value.every((entry) => typeof entry === "string")
+      )
     ) {
       throw new Error("Expected a selection response.");
     }
@@ -148,7 +148,9 @@ export class RuntimeAuthSessionManager {
       record.snapshot = {
         ...record.snapshot,
         connection: result.connection,
-        progress: [...record.snapshot.progress, "Connection completed"].slice(-16),
+        progress: [...record.snapshot.progress, "Connection completed"].slice(
+          -16,
+        ),
         state: "completed",
         step: {
           message: `Connected ${result.connection.providerName}.`,
@@ -206,7 +208,7 @@ export class RuntimeAuthSessionManager {
         this.#pushProgress(record, title);
         return Promise.resolve();
       },
-      multiselect: <T,>(params: {
+      multiselect: <T>(params: {
         initialValues?: T[];
         message: string;
         options: { hint?: string; label: string; value: T }[];
@@ -268,7 +270,7 @@ export class RuntimeAuthSessionManager {
           },
         };
       },
-      select: <T,>(params: {
+      select: <T>(params: {
         initialValue?: T;
         message: string;
         options: { hint?: string; label: string; value: T }[];
@@ -293,7 +295,9 @@ export class RuntimeAuthSessionManager {
                 (option) => String(option.value) === selectedValue,
               );
               if (!matched) {
-                reject(new Error("The selected option is no longer available."));
+                reject(
+                  new Error("The selected option is no longer available."),
+                );
                 return;
               }
               resolve(matched.value);
@@ -333,7 +337,9 @@ export class RuntimeAuthSessionManager {
   #setStep(record: AuthSessionRecord, step: AuthSessionStep): void {
     this.#pushProgress(
       record,
-      "message" in step && typeof step.message === "string" ? step.message : record.snapshot.methodLabel,
+      "message" in step && typeof step.message === "string"
+        ? step.message
+        : record.snapshot.methodLabel,
     );
     record.snapshot = {
       ...record.snapshot,
@@ -346,8 +352,13 @@ function isSecretPrompt(params: {
   message: string;
   placeholder?: string;
 }): boolean {
-  const haystack = `${params.message} ${params.placeholder ?? ""}`.toLowerCase();
-  return haystack.includes("api key") || haystack.includes("token") || haystack.includes("secret");
+  const haystack =
+    `${params.message} ${params.placeholder ?? ""}`.toLowerCase();
+  return (
+    haystack.includes("api key") ||
+    haystack.includes("token") ||
+    haystack.includes("secret")
+  );
 }
 
 function getErrorMessage(error: unknown): string {

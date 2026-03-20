@@ -11,10 +11,17 @@ export async function runServe(
     readStringValue(values.password) ?? options.env.CAPYFIN_SERVER_PASSWORD;
 
   if (!password) {
-    throw new Error("Missing sidecar password. Provide --password or CAPYFIN_SERVER_PASSWORD.");
+    throw new Error(
+      "Missing sidecar password. Provide --password or CAPYFIN_SERVER_PASSWORD.",
+    );
   }
 
-  if (port === undefined || !Number.isInteger(port) || port <= 0 || port > 65_535) {
+  if (
+    port === undefined ||
+    !Number.isInteger(port) ||
+    port <= 0 ||
+    port > 65_535
+  ) {
     throw new Error("Missing or invalid sidecar port. Provide --port.");
   }
 
@@ -33,6 +40,8 @@ export async function runServe(
   process.on("SIGTERM", shutdown);
 }
 
-function readStringValue(value: string | boolean | undefined): string | undefined {
+function readStringValue(
+  value: string | boolean | undefined,
+): string | undefined {
   return typeof value === "string" ? value : undefined;
 }

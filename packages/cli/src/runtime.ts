@@ -21,7 +21,9 @@ interface CliRuntimeGatewayContext extends CliRuntimeAuthContext {
   metadataStore: AgentMetadataStoreService;
 }
 
-export function resolveCliEnv(options: ResolvedRunCliOptions): NodeJS.ProcessEnv {
+export function resolveCliEnv(
+  options: ResolvedRunCliOptions,
+): NodeJS.ProcessEnv {
   const env = { ...options.env };
   if (options.storePath && !env.CAPYFIN_CONFIG_HOME?.trim()) {
     env.CAPYFIN_CONFIG_HOME = dirname(options.storePath);
@@ -52,9 +54,14 @@ export async function withEmbeddedGatewayContext<T>(
   await gatewaySupervisor.start();
 
   try {
-    const metadataStore = new AgentMetadataStoreService(gatewaySupervisor.paths);
+    const metadataStore = new AgentMetadataStoreService(
+      gatewaySupervisor.paths,
+    );
     await metadataStore.ensureDefaultAgent();
-    const authService = new RuntimeProviderAuthService(gatewaySupervisor.paths, env);
+    const authService = new RuntimeProviderAuthService(
+      gatewaySupervisor.paths,
+      env,
+    );
     const embeddedGateway = new EmbeddedGatewayClient({
       authService,
       metadataStore,

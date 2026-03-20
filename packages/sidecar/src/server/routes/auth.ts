@@ -37,14 +37,20 @@ export function createAuthRoutes(runtime: SidecarRuntime): Hono {
   });
 
   app.post("/select", async (context) => {
-    const payload = selectConnectionRequestSchema.parse(await context.req.json());
-    const connection = await runtime.authService.selectProfile(payload.profileId);
+    const payload = selectConnectionRequestSchema.parse(
+      await context.req.json(),
+    );
+    const connection = await runtime.authService.selectProfile(
+      payload.profileId,
+    );
 
     return context.json(savedConnectionSchema.parse(connection));
   });
 
   app.post("/providers/:providerId/model", async (context) => {
-    const payload = setProviderModelRequestSchema.parse(await context.req.json());
+    const payload = setProviderModelRequestSchema.parse(
+      await context.req.json(),
+    );
     const overview = await runtime.authService.setProviderModel({
       modelRef: payload.modelRef,
       providerId: context.req.param("providerId"),
@@ -60,7 +66,9 @@ export function createAuthRoutes(runtime: SidecarRuntime): Hono {
   });
 
   app.post("/sessions", async (context) => {
-    const payload = startAuthSessionRequestSchema.parse(await context.req.json());
+    const payload = startAuthSessionRequestSchema.parse(
+      await context.req.json(),
+    );
     const session = await runtime.authSessions.start({
       authChoice: payload.authChoice,
     });

@@ -118,31 +118,34 @@ export function PortfolioChart() {
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            {/* @ts-expect-error recharts XAxis is not yet compatible with React 19 JSX types */}
             <XAxis
               axisLine={false}
               dataKey="date"
               minTickGap={28}
               tickLine={false}
               tickMargin={12}
-              tickFormatter={(value) => formatXAxisLabel(String(value), range)}
+              tickFormatter={(value: string) => formatXAxisLabel(value, range)}
             />
+            {/* @ts-expect-error recharts YAxis is not yet compatible with React 19 JSX types */}
             <YAxis
               axisLine={false}
               tickLine={false}
-              tickFormatter={(value) => formatCurrency(Number(value))}
+              tickFormatter={(value: number) => formatCurrency(value)}
               width={76}
             />
+            {/* @ts-expect-error recharts Tooltip is not yet compatible with React 19 JSX types */}
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   indicator="line"
-                  labelFormatter={(label) =>
+                  labelFormatter={(label: string) =>
                     new Intl.DateTimeFormat("en", {
                       month: "long",
                       day: "numeric",
-                    }).format(new Date(String(label)))
+                    }).format(new Date(label))
                   }
-                  formatter={(value, name) => (
+                  formatter={(value: unknown, name: unknown) => (
                     <div className="flex min-w-[10rem] items-center justify-between gap-6">
                       <span className="text-muted-foreground">
                         {String(name)}
@@ -156,6 +159,7 @@ export function PortfolioChart() {
               }
               cursor={false}
             />
+            {/* @ts-expect-error recharts Area is not yet compatible with React 19 JSX types */}
             <Area
               dataKey="invested"
               fill="url(#fillInvested)"
@@ -164,6 +168,7 @@ export function PortfolioChart() {
               strokeWidth={2}
               type="monotone"
             />
+            {/* @ts-expect-error recharts Area is not yet compatible with React 19 JSX types */}
             <Area
               dataKey="portfolio"
               fill="url(#fillPortfolio)"

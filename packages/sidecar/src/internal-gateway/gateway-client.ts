@@ -283,7 +283,9 @@ class GatewayRpcClient {
             ? (event.payload as { nonce: string }).nonce.trim()
             : "";
         if (!nonce) {
-          this.#options.onConnectError?.(new Error("gateway connect challenge missing nonce"));
+          this.#options.onConnectError?.(
+            new Error("gateway connect challenge missing nonce"),
+          );
           this.#socket?.close(1008, "connect challenge missing nonce");
           return;
         }
@@ -323,7 +325,11 @@ class GatewayRpcClient {
     }
 
     pending.reject(
-      new Error(response.error?.message ?? response.error?.code ?? "gateway request failed"),
+      new Error(
+        response.error?.message ??
+          response.error?.code ??
+          "gateway request failed",
+      ),
     );
   }
 
@@ -337,7 +343,9 @@ class GatewayRpcClient {
         return;
       }
 
-      this.#options.onConnectError?.(new Error("gateway connect challenge timeout"));
+      this.#options.onConnectError?.(
+        new Error("gateway connect challenge timeout"),
+      );
       socket.close(1008, "connect challenge timeout");
     }, timeoutMs);
     this.#connectTimer.unref();
@@ -350,7 +358,9 @@ class GatewayRpcClient {
 
     const nonce = this.#connectNonce?.trim();
     if (!nonce) {
-      this.#options.onConnectError?.(new Error("gateway connect challenge missing nonce"));
+      this.#options.onConnectError?.(
+        new Error("gateway connect challenge missing nonce"),
+      );
       this.#socket?.close(1008, "connect challenge missing nonce");
       return;
     }
@@ -377,7 +387,9 @@ class GatewayRpcClient {
       await this.request(
         "connect",
         {
-          auth: this.#options.token ? { token: this.#options.token } : undefined,
+          auth: this.#options.token
+            ? { token: this.#options.token }
+            : undefined,
           caps: this.#options.caps ?? [],
           client: {
             displayName: this.#options.clientDisplayName,
@@ -471,7 +483,9 @@ function extractMessageText(
   }[],
 ): string {
   return (content ?? [])
-    .flatMap((part) => (part.type === "text" && typeof part.text === "string" ? [part.text] : []))
+    .flatMap((part) =>
+      part.type === "text" && typeof part.text === "string" ? [part.text] : [],
+    )
     .join("\n")
     .trim();
 }
@@ -496,7 +510,10 @@ function toChatTranscriptMessage(
   };
 }
 
-function resolveSessionLabel(row: GatewaySessionRow, agentName: string): string {
+function resolveSessionLabel(
+  row: GatewaySessionRow,
+  agentName: string,
+): string {
   return (
     row.label?.trim() ??
     row.displayName?.trim() ??
@@ -515,21 +532,31 @@ function toAgentSession(params: {
     : new Date().toISOString();
   const sessionId = params.row.sessionId ?? params.row.key;
 
-  return {
+  const session: AgentSession & { model?: string } = {
     agentId: params.agent.id,
     agentName: params.agent.name,
     createdAt: updatedAt,
     id: sessionId,
     label: resolveSessionLabel(params.row, params.agent.name),
-    model: params.row.model,
-    sessionFile: resolveGatewaySessionFile(params.paths, params.agent.id, sessionId),
+    sessionFile: resolveGatewaySessionFile(
+      params.paths,
+      params.agent.id,
+      sessionId,
+    ),
     sessionKey: params.row.key,
     updatedAt,
     workspaceDir: params.agent.workspaceDir,
   };
+  if (params.row.model) {
+    session.model = params.row.model;
+  }
+  return session;
 }
 
-function reorderIds<T extends { id: string }>(items: T[], preferredId?: string): T[] {
+function reorderIds<T extends { id: string }>(
+  items: T[],
+  preferredId?: string,
+): T[] {
   if (!preferredId) {
     return items;
   }
@@ -572,7 +599,8 @@ export function resolveCompatibleAgentModelRef(params: {
   };
 }): string | undefined {
   const effectiveProviderId =
-    params.agent.providerId?.trim() ?? params.authOverview.selectedProviderId?.trim();
+    params.agent.providerId?.trim() ??
+    params.authOverview.selectedProviderId?.trim();
   if (!effectiveProviderId) {
     return normalizeGatewayModelRef({
       modelId: params.agent.modelId,
@@ -614,12 +642,17 @@ export function resolveCompatibleAgentModelRef(params: {
   addModelCandidate(candidates, defaultModelForProvider(effectiveProviderId));
   addModelCandidate(candidates, params.providerCatalog.models[0]?.modelRef);
 
-  return candidates.find((candidate) => allowedModelRefs.has(candidate)) ?? candidates[0];
+  return (
+    candidates.find((candidate) => allowedModelRefs.has(candidate)) ??
+    candidates[0]
+  );
 }
 
 export class EmbeddedGatewayClient {
   readonly #authState: {
-    getOverview(): Promise<Pick<AuthOverview, "selectedModelId" | "selectedProviderId">>;
+    getOverview(): Promise<
+      Pick<AuthOverview, "selectedModelId" | "selectedProviderId">
+    >;
     getProviderModelCatalog(providerId: string): Promise<ProviderModelCatalog>;
   };
   readonly #metadataStore: AgentMetadataStoreService;
@@ -628,8 +661,12 @@ export class EmbeddedGatewayClient {
 
   constructor(params: {
     authService: {
-      getOverview(): Promise<Pick<AuthOverview, "selectedModelId" | "selectedProviderId">>;
-      getProviderModelCatalog(providerId: string): Promise<ProviderModelCatalog>;
+      getOverview(): Promise<
+        Pick<AuthOverview, "selectedModelId" | "selectedProviderId">
+      >;
+      getProviderModelCatalog(
+        providerId: string,
+      ): Promise<ProviderModelCatalog>;
     };
     metadataStore: AgentMetadataStoreService;
     paths: EmbeddedGatewayPaths;
@@ -644,12 +681,16 @@ export class EmbeddedGatewayClient {
   async getCatalog(): Promise<AgentCatalog> {
     const metadataCatalog = await this.#metadataStore.listCatalog();
     const defaultAgent =
-      metadataCatalog.agents.find((agent) => agent.id === metadataCatalog.defaultAgentId) ??
-      metadataCatalog.agents[0];
+      metadataCatalog.agents.find(
+        (agent) => agent.id === metadataCatalog.defaultAgentId,
+      ) ?? metadataCatalog.agents[0];
     if (defaultAgent) {
       await this.ensureAgentExists(defaultAgent);
     }
-    const gatewayCatalog = await this.request<GatewayAgentListResult>("agents.list", {});
+    const gatewayCatalog = await this.request<GatewayAgentListResult>(
+      "agents.list",
+      {},
+    );
     const availableIds = new Set(
       gatewayCatalog.agents.map((agent) => normalizeAgentId(agent.id)),
     );
@@ -671,8 +712,9 @@ export class EmbeddedGatewayClient {
   async getDefaultAgent(): Promise<Agent> {
     const catalog = await this.getCatalog();
     const agent =
-      catalog.agents.find((candidate) => candidate.id === catalog.defaultAgentId) ??
-      catalog.agents[0];
+      catalog.agents.find(
+        (candidate) => candidate.id === catalog.defaultAgentId,
+      ) ?? catalog.agents[0];
     if (!agent) {
       throw new Error("No agents are configured.");
     }
@@ -696,7 +738,10 @@ export class EmbeddedGatewayClient {
     return metadata;
   }
 
-  async updateAgent(agentId: string, payload: UpdateAgentRequest): Promise<Agent> {
+  async updateAgent(
+    agentId: string,
+    payload: UpdateAgentRequest,
+  ): Promise<Agent> {
     const metadata = await this.#metadataStore.updateAgent(agentId, payload);
     await this.ensureAgentExists(metadata);
     const model = normalizeGatewayModelRef(metadata);
@@ -704,7 +749,9 @@ export class EmbeddedGatewayClient {
       agentId: metadata.id,
       ...(payload.name?.trim() ? { name: metadata.name } : {}),
       ...(model ? { model } : {}),
-      ...(payload.workspaceDir?.trim() ? { workspace: metadata.workspaceDir } : {}),
+      ...(payload.workspaceDir?.trim()
+        ? { workspace: metadata.workspaceDir }
+        : {}),
     });
 
     await this.applyAgentWorkspace(metadata);
@@ -735,19 +782,24 @@ export class EmbeddedGatewayClient {
   async listSessions(agentId?: string): Promise<AgentSessionList> {
     const catalog = await this.getCatalog();
     const agentMap = new Map(catalog.agents.map((agent) => [agent.id, agent]));
-    const rows = await this.request<GatewaySessionsListResult>("sessions.list", {
-      agentId: agentId?.trim(),
-      includeDerivedTitles: true,
-      includeLastMessage: false,
-      limit: 100,
-    });
+    const rows = await this.request<GatewaySessionsListResult>(
+      "sessions.list",
+      {
+        agentId: agentId?.trim(),
+        includeDerivedTitles: true,
+        includeLastMessage: false,
+        limit: 100,
+      },
+    );
     const sessions = rows.sessions
       .map((row) => {
         const normalizedAgentId = row.key.startsWith("agent:")
           ? normalizeAgentId(row.key.split(":")[1] ?? DEFAULT_AGENT_ID)
           : DEFAULT_AGENT_ID;
         const agent = agentMap.get(normalizedAgentId);
-        return agent ? toAgentSession({ agent, paths: this.#paths, row }) : null;
+        return agent
+          ? toAgentSession({ agent, paths: this.#paths, row })
+          : null;
       })
       .filter((session): session is AgentSession => Boolean(session))
       .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
@@ -758,7 +810,9 @@ export class EmbeddedGatewayClient {
     };
   }
 
-  async createSession(payload: CreateAgentSessionRequest): Promise<AgentSession> {
+  async createSession(
+    payload: CreateAgentSessionRequest,
+  ): Promise<AgentSession> {
     const agent = await this.getAgent(payload.agentId);
     await this.ensureAgentExists(agent);
     const authOverview = await this.#authState.getOverview();
@@ -767,11 +821,14 @@ export class EmbeddedGatewayClient {
       authOverview,
     });
     const sessionKey = `agent:${agent.id}:session:${randomUUID()}`;
-    const patch = await this.request<GatewaySessionsPatchResult>("sessions.patch", {
-      key: sessionKey,
-      ...(payload.label?.trim() ? { label: payload.label.trim() } : {}),
-      ...(fallbackModelRef ? { model: fallbackModelRef } : {}),
-    });
+    const patch = await this.request<GatewaySessionsPatchResult>(
+      "sessions.patch",
+      {
+        key: sessionKey,
+        ...(payload.label?.trim() ? { label: payload.label.trim() } : {}),
+        ...(fallbackModelRef ? { model: fallbackModelRef } : {}),
+      },
+    );
 
     if (payload.initialPrompt?.trim()) {
       await this.request<GatewayChatRunAck>(
@@ -791,24 +848,34 @@ export class EmbeddedGatewayClient {
       createdAt: new Date(patch.entry.updatedAt ?? Date.now()).toISOString(),
       id: patch.entry.sessionId,
       ...(payload.label?.trim() ? { label: payload.label.trim() } : {}),
-      sessionFile: resolveGatewaySessionFile(this.#paths, agent.id, patch.entry.sessionId),
+      sessionFile: resolveGatewaySessionFile(
+        this.#paths,
+        agent.id,
+        patch.entry.sessionId,
+      ),
       sessionKey: patch.key,
       updatedAt: new Date(patch.entry.updatedAt ?? Date.now()).toISOString(),
       workspaceDir: agent.workspaceDir,
     };
   }
 
-  async updateSessionLabel(sessionId: string, label: string): Promise<AgentSession> {
+  async updateSessionLabel(
+    sessionId: string,
+    label: string,
+  ): Promise<AgentSession> {
     const sessions = await this.listSessions();
     const session = sessions.sessions.find((s) => s.id === sessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionId}`);
     }
 
-    const patch = await this.request<GatewaySessionsPatchResult>("sessions.patch", {
-      key: session.sessionKey,
-      label,
-    });
+    const patch = await this.request<GatewaySessionsPatchResult>(
+      "sessions.patch",
+      {
+        key: session.sessionKey,
+        label,
+      },
+    );
 
     return {
       ...session,
@@ -861,10 +928,13 @@ export class EmbeddedGatewayClient {
       ...(fallbackModelRef ? { fallbackModelRef } : {}),
       ...(sessionId ? { requestedSessionId: sessionId } : {}),
     });
-    const history = await this.request<GatewayChatHistoryResult>("chat.history", {
-      limit: 200,
-      sessionKey: session.sessionKey,
-    });
+    const history = await this.request<GatewayChatHistoryResult>(
+      "chat.history",
+      {
+        limit: 200,
+        sessionKey: session.sessionKey,
+      },
+    );
     const catalog = await this.getCatalog();
     const resolved = splitGatewayModelRef(fallbackModelRef);
 
@@ -873,9 +943,13 @@ export class EmbeddedGatewayClient {
       agents: catalog.agents,
       messages: history.messages
         .map((message) => toChatTranscriptMessage(message))
-        .filter((message): message is ChatTranscriptMessage => Boolean(message)),
+        .filter((message): message is ChatTranscriptMessage =>
+          Boolean(message),
+        ),
       ...(resolved.modelId ? { resolvedModelId: resolved.modelId } : {}),
-      ...(resolved.providerId ? { resolvedProviderId: resolved.providerId } : {}),
+      ...(resolved.providerId
+        ? { resolvedProviderId: resolved.providerId }
+        : {}),
       session,
     };
   }
@@ -905,7 +979,14 @@ export class EmbeddedGatewayClient {
       authOverview.selectedProviderId;
     // Extract file parts from the message
     const allFileParts = params.message.parts.filter(
-      (part): part is { type: "file"; mediaType: string; url: string; filename?: string } =>
+      (
+        part,
+      ): part is {
+        type: "file";
+        mediaType: string;
+        url: string;
+        filename?: string;
+      } =>
         part.type === "file" &&
         "mediaType" in part &&
         typeof (part as Record<string, unknown>).mediaType === "string",
@@ -927,17 +1008,13 @@ export class EmbeddedGatewayClient {
         continue;
       }
       try {
-        const dataUrlMatch = /^data:[^;]*;base64,(.+)$/.exec(
-          filePart.url,
-        );
+        const dataUrlMatch = /^data:[^;]*;base64,(.+)$/.exec(filePart.url);
         if (dataUrlMatch?.[1]) {
           const decoded = Buffer.from(dataUrlMatch[1], "base64").toString(
             "utf-8",
           );
           const name = filePart.filename ?? "file";
-          textFileContents.push(
-            `<file name="${name}">\n${decoded}\n</file>`,
-          );
+          textFileContents.push(`<file name="${name}">\n${decoded}\n</file>`);
         }
       } catch {
         // Skip files that can't be decoded as text
@@ -948,12 +1025,17 @@ export class EmbeddedGatewayClient {
       .flatMap((part) => (part.type === "text" ? [part.text] : []))
       .join("\n")
       .trim();
-    if (!rawUserText && textFileContents.length === 0 && attachments.length === 0) {
+    if (
+      !rawUserText &&
+      textFileContents.length === 0 &&
+      attachments.length === 0
+    ) {
       throw new Error("Chat message cannot be empty.");
     }
-    const userText = textFileContents.length > 0
-      ? `${textFileContents.join("\n\n")}\n\n${rawUserText}`
-      : rawUserText;
+    const userText =
+      textFileContents.length > 0
+        ? `${textFileContents.join("\n\n")}\n\n${rawUserText}`
+        : rawUserText;
 
     const bootstrap = await this.bootstrapConversation(agent.id);
     const originalMessages: UIMessage<unknown, { activity: ChatActivity }>[] = [
@@ -969,7 +1051,9 @@ export class EmbeddedGatewayClient {
     const assistantMessageId = randomUUID();
     const assistantTextPartId = `${assistantMessageId}:text`;
 
-    const stream = createUIMessageStream<UIMessage<unknown, { activity: ChatActivity }>>({
+    const stream = createUIMessageStream<
+      UIMessage<unknown, { activity: ChatActivity }>
+    >({
       execute: async ({ writer }) => {
         let runId = "";
         let currentAssistantText = "";
@@ -997,9 +1081,16 @@ export class EmbeddedGatewayClient {
         const streamClient = await this.connect({
           caps: ["tool-events"],
           onEvent: (event) => {
-            if (event.event === "agent" && event.payload && typeof event.payload === "object") {
+            if (
+              event.event === "agent" &&
+              event.payload &&
+              typeof event.payload === "object"
+            ) {
               const payload = event.payload as GatewayAgentEventPayload;
-              if (payload.sessionKey !== session.sessionKey || payload.runId !== runId) {
+              if (
+                payload.sessionKey !== session.sessionKey ||
+                payload.runId !== runId
+              ) {
                 return;
               }
 
@@ -1014,10 +1105,15 @@ export class EmbeddedGatewayClient {
             }
 
             const payload =
-              event.event === "chat" && event.payload && typeof event.payload === "object"
+              event.event === "chat" &&
+              event.payload &&
+              typeof event.payload === "object"
                 ? (event.payload as GatewayChatEvent)
                 : null;
-            if (payload?.sessionKey !== session.sessionKey || payload.runId !== runId) {
+            if (
+              payload?.sessionKey !== session.sessionKey ||
+              payload.runId !== runId
+            ) {
               return;
             }
 
@@ -1063,7 +1159,8 @@ export class EmbeddedGatewayClient {
 
             if (payload.state === "error") {
               const message =
-                payload.errorMessage ?? "The assistant could not complete the turn.";
+                payload.errorMessage ??
+                "The assistant could not complete the turn.";
               writer.write({
                 errorText: message,
                 type: "error",
@@ -1096,7 +1193,9 @@ export class EmbeddedGatewayClient {
     return createUIMessageStreamResponse({
       headers: {
         "x-capyfin-agent-id": agent.id,
-        ...(fallbackProviderId ? { "x-capyfin-provider-id": fallbackProviderId } : {}),
+        ...(fallbackProviderId
+          ? { "x-capyfin-provider-id": fallbackProviderId }
+          : {}),
         ...(fallbackModelRef ? { "x-capyfin-model-id": fallbackModelRef } : {}),
       },
       stream,
@@ -1153,29 +1252,42 @@ export class EmbeddedGatewayClient {
         (candidate) => candidate.id === params.requestedSessionId,
       );
       if (existing) {
-        return await this.syncConversationSession(existing, params.fallbackModelRef);
+        return await this.syncConversationSession(
+          existing,
+          params.fallbackModelRef,
+        );
       }
     }
 
-    const sessions = await this.request<GatewaySessionsListResult>("sessions.list", {
-      agentId: params.agent.id,
-      includeDerivedTitles: true,
-      limit: 25,
-    });
+    const sessions = await this.request<GatewaySessionsListResult>(
+      "sessions.list",
+      {
+        agentId: params.agent.id,
+        includeDerivedTitles: true,
+        limit: 25,
+      },
+    );
     const latest = sessions.sessions[0];
     if (latest?.sessionId) {
       return await this.syncConversationSession(
-        toAgentSession({ agent: params.agent, paths: this.#paths, row: latest }),
+        toAgentSession({
+          agent: params.agent,
+          paths: this.#paths,
+          row: latest,
+        }),
         params.fallbackModelRef,
       );
     }
 
     const key = `agent:${params.agent.id}:main`;
-    const patch = await this.request<GatewaySessionsPatchResult>("sessions.patch", {
-      key,
-      label: `${params.agent.name} chat`,
-      ...(params.fallbackModelRef ? { model: params.fallbackModelRef } : {}),
-    });
+    const patch = await this.request<GatewaySessionsPatchResult>(
+      "sessions.patch",
+      {
+        key,
+        label: `${params.agent.name} chat`,
+        ...(params.fallbackModelRef ? { model: params.fallbackModelRef } : {}),
+      },
+    );
 
     return {
       agentId: params.agent.id,
@@ -1183,7 +1295,11 @@ export class EmbeddedGatewayClient {
       createdAt: new Date(patch.entry.updatedAt ?? Date.now()).toISOString(),
       id: patch.entry.sessionId,
       label: `${params.agent.name} chat`,
-      sessionFile: resolveGatewaySessionFile(this.#paths, params.agent.id, patch.entry.sessionId),
+      sessionFile: resolveGatewaySessionFile(
+        this.#paths,
+        params.agent.id,
+        patch.entry.sessionId,
+      ),
       sessionKey: patch.key,
       updatedAt: new Date(patch.entry.updatedAt ?? Date.now()).toISOString(),
       workspaceDir: params.agent.workspaceDir,
@@ -1200,10 +1316,13 @@ export class EmbeddedGatewayClient {
       return session;
     }
 
-    const patch = await this.request<GatewaySessionsPatchResult>("sessions.patch", {
-      key: session.sessionKey,
-      model: fallbackModelRef,
-    });
+    const patch = await this.request<GatewaySessionsPatchResult>(
+      "sessions.patch",
+      {
+        key: session.sessionKey,
+        model: fallbackModelRef,
+      },
+    );
 
     return {
       ...session,
@@ -1225,7 +1344,10 @@ export class EmbeddedGatewayClient {
   }
 
   private async ensureAgentExists(agent: Agent): Promise<void> {
-    const gatewayCatalog = await this.request<GatewayAgentListResult>("agents.list", {});
+    const gatewayCatalog = await this.request<GatewayAgentListResult>(
+      "agents.list",
+      {},
+    );
     const exists = gatewayCatalog.agents.some(
       (candidate) => normalizeAgentId(candidate.id) === agent.id,
     );
@@ -1255,12 +1377,14 @@ export class EmbeddedGatewayClient {
     authOverview: Pick<AuthOverview, "selectedModelId" | "selectedProviderId">;
   }): Promise<string | undefined> {
     const effectiveProviderId =
-      params.agent.providerId?.trim() ?? params.authOverview.selectedProviderId?.trim();
+      params.agent.providerId?.trim() ??
+      params.authOverview.selectedProviderId?.trim();
     if (!effectiveProviderId) {
       return normalizeGatewayModelRef(params.agent);
     }
 
-    const providerCatalog = await this.#authState.getProviderModelCatalog(effectiveProviderId);
+    const providerCatalog =
+      await this.#authState.getProviderModelCatalog(effectiveProviderId);
     return resolveCompatibleAgentModelRef({
       agent: params.agent,
       authOverview: params.authOverview,

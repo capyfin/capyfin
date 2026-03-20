@@ -38,14 +38,14 @@ import {
 import type { AuthOverview } from "@/app/types";
 
 interface AppSidebarProps {
-  activeSessionId?: string;
+  activeSessionId?: string | undefined;
   activeView: "connections" | "chat" | "agents";
   authOverview: AuthOverview | null;
-  onNewChat?: () => void;
-  onSessionDelete?: (sessionId: string) => void;
-  onSessionRename?: (sessionId: string, label: string) => void;
-  onSessionSelect?: (sessionId: string) => void;
-  sessions?: AgentSession[];
+  onNewChat?: (() => void) | undefined;
+  onSessionDelete?: ((sessionId: string) => void) | undefined;
+  onSessionRename?: ((sessionId: string, label: string) => void) | undefined;
+  onSessionSelect?: ((sessionId: string) => void) | undefined;
+  sessions?: AgentSession[] | undefined;
 }
 
 function formatSessionLabel(session: AgentSession): string {
@@ -137,8 +137,12 @@ export function AppSidebar({
                     onDelete={onSessionDelete}
                     onRename={onSessionRename}
                     onSelect={onSessionSelect}
-                    onStartEditing={() => { setEditingSessionId(session.id); }}
-                    onStopEditing={() => { setEditingSessionId(null); }}
+                    onStartEditing={() => {
+                      setEditingSessionId(session.id);
+                    }}
+                    onStopEditing={() => {
+                      setEditingSessionId(null);
+                    }}
                   />
                 ))}
               </SidebarMenu>
@@ -206,9 +210,9 @@ function SessionItem({
   isActive: boolean;
   isEditing: boolean;
   session: AgentSession;
-  onDelete?: (sessionId: string) => void;
-  onRename?: (sessionId: string, label: string) => void;
-  onSelect?: (sessionId: string) => void;
+  onDelete?: ((sessionId: string) => void) | undefined;
+  onRename?: ((sessionId: string, label: string) => void) | undefined;
+  onSelect?: ((sessionId: string) => void) | undefined;
   onStartEditing: () => void;
   onStopEditing: () => void;
 }) {

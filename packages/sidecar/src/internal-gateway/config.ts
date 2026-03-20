@@ -47,8 +47,7 @@ function upsertMainAgentEntry(params: {
   const nextList = [...rawList];
   const mainIndex = nextList.findIndex(
     (entry) =>
-      typeof entry.id === "string" &&
-      entry.id.trim().toLowerCase() === "main",
+      typeof entry.id === "string" && entry.id.trim().toLowerCase() === "main",
   );
   const mainEntry = {
     ...(mainIndex >= 0 ? nextList[mainIndex] : {}),
@@ -92,57 +91,69 @@ export async function writeEmbeddedGatewayConfig(params: {
         ...payload,
         discovery: {
           ...((payload.discovery &&
-            typeof payload.discovery === "object" &&
-            !Array.isArray(payload.discovery)
+          typeof payload.discovery === "object" &&
+          !Array.isArray(payload.discovery)
             ? payload.discovery
             : {}) as Record<string, unknown>),
           mdns: {
-            ...((((payload.discovery as Record<string, unknown> | undefined)?.mdns &&
-              typeof (payload.discovery as Record<string, unknown>).mdns === "object" &&
-              !Array.isArray((payload.discovery as Record<string, unknown>).mdns)
+            ...(((payload.discovery as Record<string, unknown> | undefined)
+              ?.mdns &&
+            typeof (payload.discovery as Record<string, unknown>).mdns ===
+              "object" &&
+            !Array.isArray((payload.discovery as Record<string, unknown>).mdns)
               ? (payload.discovery as Record<string, unknown>).mdns
-              : {}) as Record<string, unknown>)),
+              : {}) as Record<string, unknown>),
             mode: "off",
           },
           wideArea: {
-            ...((((payload.discovery as Record<string, unknown> | undefined)?.wideArea &&
-              typeof (payload.discovery as Record<string, unknown>).wideArea === "object" &&
-              !Array.isArray((payload.discovery as Record<string, unknown>).wideArea)
+            ...(((payload.discovery as Record<string, unknown> | undefined)
+              ?.wideArea &&
+            typeof (payload.discovery as Record<string, unknown>).wideArea ===
+              "object" &&
+            !Array.isArray(
+              (payload.discovery as Record<string, unknown>).wideArea,
+            )
               ? (payload.discovery as Record<string, unknown>).wideArea
-              : {}) as Record<string, unknown>)),
+              : {}) as Record<string, unknown>),
             enabled: false,
           },
         },
         gateway: {
           ...((payload.gateway &&
-            typeof payload.gateway === "object" &&
-            !Array.isArray(payload.gateway)
+          typeof payload.gateway === "object" &&
+          !Array.isArray(payload.gateway)
             ? payload.gateway
             : {}) as Record<string, unknown>),
           auth: {
-            ...((((payload.gateway as Record<string, unknown> | undefined)?.auth &&
-              typeof (payload.gateway as Record<string, unknown>).auth === "object" &&
-              !Array.isArray((payload.gateway as Record<string, unknown>).auth)
+            ...(((payload.gateway as Record<string, unknown> | undefined)
+              ?.auth &&
+            typeof (payload.gateway as Record<string, unknown>).auth ===
+              "object" &&
+            !Array.isArray((payload.gateway as Record<string, unknown>).auth)
               ? (payload.gateway as Record<string, unknown>).auth
-              : {}) as Record<string, unknown>)),
+              : {}) as Record<string, unknown>),
             mode: "token",
             token: params.token,
           },
           bind: "loopback",
           controlUi: {
-            ...((((payload.gateway as Record<string, unknown> | undefined)?.controlUi &&
-              typeof (payload.gateway as Record<string, unknown>).controlUi === "object" &&
-              !Array.isArray((payload.gateway as Record<string, unknown>).controlUi)
+            ...(((payload.gateway as Record<string, unknown> | undefined)
+              ?.controlUi &&
+            typeof (payload.gateway as Record<string, unknown>).controlUi ===
+              "object" &&
+            !Array.isArray(
+              (payload.gateway as Record<string, unknown>).controlUi,
+            )
               ? (payload.gateway as Record<string, unknown>).controlUi
-              : {}) as Record<string, unknown>)),
+              : {}) as Record<string, unknown>),
             enabled: false,
           },
           port: params.port,
         },
         logging: {
           ...((payload.logging &&
-            typeof payload.logging === "object" &&
-            !Array.isArray(payload.logging)
+          typeof payload.logging === "object" &&
+          !Array.isArray(payload.logging)
             ? payload.logging
             : {}) as Record<string, unknown>),
           file: join(params.paths.logsDir, "gateway.log"),

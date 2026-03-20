@@ -2,7 +2,9 @@ import { randomBytes } from "node:crypto";
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
-export async function loadOrCreateGatewayToken(tokenPath: string): Promise<string> {
+export async function loadOrCreateGatewayToken(
+  tokenPath: string,
+): Promise<string> {
   try {
     const current = (await readFile(tokenPath, "utf8")).trim();
     if (current) {

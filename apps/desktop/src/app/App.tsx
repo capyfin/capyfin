@@ -21,6 +21,8 @@ export function App() {
   const [createAgentToken, setCreateAgentToken] = useState(0);
   const [sessions, setSessions] = useState<AgentSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | undefined>(undefined);
+  const [hasPortfolio, setHasPortfolio] = useState(false);
+  const [onboardingActive, setOnboardingActive] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -34,16 +36,21 @@ export function App() {
       try {
         const connection = await initializeSidecarConnection();
         const client = SidecarClient.fromConnection(connection);
-        const [overview, sessionList] = await Promise.all([
+        const [overview, sessionList, portfolioStatus] = await Promise.all([
           client.authOverview(),
           client.listSessions("main").catch(() => ({ sessions: [] })),
+          client.getPortfolioStatus("main").catch(() => ({ hasPortfolio: false })),
         ]);
 
         if (isMounted) {
           setAuthOverview(overview);
           setClient(client);
           setSessions(sessionList.sessions);
+          setHasPortfolio(portfolioStatus.hasPortfolio);
           setRuntimeError(null);
+          if (!overview.selectedProviderId) {
+            setOnboardingActive(true);
+          }
         }
       } catch (error) {
         console.error("Failed to initialize desktop runtime", error);
@@ -151,8 +158,8 @@ export function App() {
     [activeSessionId, client],
   );
 
-  if (!authOverview?.selectedProviderId || hashView === "connections-add") {
-    const isReusableConnectionFlow = Boolean(authOverview?.selectedProviderId);
+  if (!authOverview?.selectedProviderId || onboardingActive || hashView === "connections-add") {
+    const isReusableConnectionFlow = Boolean(authOverview?.selectedProviderId) && !onboardingActive;
 
     return (
       <ConnectionCenter
@@ -162,7 +169,13 @@ export function App() {
         runtimeError={runtimeError}
         onAuthOverviewChange={setAuthOverview}
         onContinue={() => {
+          setOnboardingActive(false);
           window.location.hash = "#chat";
+          if (client) {
+            void client.getPortfolioStatus("main").then((status) => {
+              setHasPortfolio(status.hasPortfolio);
+            }).catch(() => {});
+          }
         }}
         onRetry={() => {
           setRetryToken((current) => current + 1);
@@ -213,6 +226,7 @@ export function App() {
             <ChatWorkspace
               authOverview={authOverview}
               client={client}
+              hasPortfolio={hasPortfolio}
               onBootstrap={handleBootstrap}
               onSessionLabelUpdate={handleSessionLabelUpdate}
               sessionId={activeSessionId}

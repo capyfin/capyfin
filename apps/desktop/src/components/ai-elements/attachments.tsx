@@ -39,11 +39,17 @@ export type AttachmentMediaCategory =
 export type AttachmentVariant = "grid" | "inline" | "list";
 
 const mediaCategoryIcons: Record<AttachmentMediaCategory, typeof ImageIcon> = {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   audio: Music2Icon,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   document: FileTextIcon,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   image: ImageIcon,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   source: GlobeIcon,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   unknown: PaperclipIcon,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   video: VideoIcon,
 };
 
@@ -58,7 +64,7 @@ export const getMediaCategory = (
     return "source";
   }
 
-  const mediaType = data.mediaType ?? "";
+  const mediaType = data.mediaType;
 
   if (mediaType.startsWith("image/")) {
     return "image";
@@ -78,11 +84,12 @@ export const getMediaCategory = (
 
 export const getAttachmentLabel = (data: AttachmentData): string => {
   if (data.type === "source-document") {
-    return data.title || data.filename || "Source";
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback
+    return data.title ?? data.filename ?? "Source";
   }
 
   const category = getMediaCategory(data);
-  return data.filename || (category === "image" ? "Image" : "Attachment");
+  return data.filename ?? (category === "image" ? "Image" : "Attachment");
 };
 
 const renderAttachmentImage = (
@@ -92,7 +99,7 @@ const renderAttachmentImage = (
 ) =>
   isGrid ? (
     <img
-      alt={filename || "Image"}
+      alt={filename ?? "Image"}
       className="size-full object-cover"
       height={96}
       src={url}
@@ -100,7 +107,7 @@ const renderAttachmentImage = (
     />
   ) : (
     <img
-      alt={filename || "Image"}
+      alt={filename ?? "Image"}
       className="size-full rounded object-cover"
       height={20}
       src={url}
@@ -255,6 +262,7 @@ export const AttachmentPreview = ({
       return <video className="size-full object-cover" muted src={data.url} />;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const Icon = mediaCategoryIcons[mediaCategory];
     return fallbackIcon ?? renderIcon(Icon);
   };

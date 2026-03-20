@@ -76,6 +76,9 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: Create sidecar bundle stub for Tauri build script
+        run: mkdir -p packages/sidecar/.bundle
+
       - name: Check formatting
         run: cargo fmt --all --check
 

@@ -240,32 +240,34 @@ export type AttachmentPreviewProps = HTMLAttributes<HTMLDivElement> & {
   fallbackIcon?: ReactNode;
 };
 
+const AttachmentPreviewContent = ({
+  fallbackIcon,
+}: {
+  fallbackIcon?: ReactNode;
+}) => {
+  const { data, mediaCategory, variant } = useAttachmentContext();
+
+  const iconSize = variant === "inline" ? "size-3" : "size-4";
+
+  if (mediaCategory === "image" && data.type === "file" && data.url) {
+    return renderAttachmentImage(data.url, data.filename, variant === "grid");
+  }
+
+  if (mediaCategory === "video" && data.type === "file" && data.url) {
+    return <video className="size-full object-cover" muted src={data.url} />;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const Icon = mediaCategoryIcons[mediaCategory];
+  return fallbackIcon ?? <Icon className={cn(iconSize, "text-muted-foreground")} />;
+};
+
 export const AttachmentPreview = ({
   fallbackIcon,
   className,
   ...props
 }: AttachmentPreviewProps) => {
-  const { data, mediaCategory, variant } = useAttachmentContext();
-
-  const iconSize = variant === "inline" ? "size-3" : "size-4";
-
-  const renderIcon = (Icon: typeof ImageIcon) => (
-    <Icon className={cn(iconSize, "text-muted-foreground")} />
-  );
-
-  const renderContent = () => {
-    if (mediaCategory === "image" && data.type === "file" && data.url) {
-      return renderAttachmentImage(data.url, data.filename, variant === "grid");
-    }
-
-    if (mediaCategory === "video" && data.type === "file" && data.url) {
-      return <video className="size-full object-cover" muted src={data.url} />;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const Icon = mediaCategoryIcons[mediaCategory];
-    return fallbackIcon ?? renderIcon(Icon);
-  };
+  const { variant } = useAttachmentContext();
 
   return (
     <div
@@ -278,7 +280,7 @@ export const AttachmentPreview = ({
       )}
       {...props}
     >
-      {renderContent()}
+      <AttachmentPreviewContent fallbackIcon={fallbackIcon} />
     </div>
   );
 };

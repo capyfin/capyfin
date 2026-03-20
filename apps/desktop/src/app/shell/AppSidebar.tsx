@@ -8,7 +8,7 @@ import {
   Wallet2Icon,
   ZapIcon,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   primaryNavigation,
   secondaryNavigation,
@@ -219,6 +219,12 @@ function SessionItem({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const label = formatSessionLabel(session);
 
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+    }
+  }, [isEditing]);
+
   function commitRename(): void {
     const value = inputRef.current?.value.trim();
     if (value && value !== label) {
@@ -234,7 +240,6 @@ function SessionItem({
           <MessageSquareIcon className="size-4 shrink-0 text-sidebar-foreground/70" />
           <input
             ref={inputRef}
-            autoFocus
             defaultValue={label}
             className="h-6 min-w-0 flex-1 rounded border border-sidebar-ring bg-sidebar px-1.5 text-sm text-sidebar-foreground outline-none focus:ring-1 focus:ring-sidebar-ring"
             onBlur={commitRename}

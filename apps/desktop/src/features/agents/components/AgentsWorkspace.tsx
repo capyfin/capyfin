@@ -306,11 +306,12 @@ export function AgentsWorkspace({
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-            <label className="grid gap-1.5 text-sm">
+            <label htmlFor="agent-name-input" className="grid gap-1.5 text-sm">
               <span className="text-[11px] font-medium text-muted-foreground">
                 Agent name
               </span>
               <Input
+                id="agent-name-input"
                 className="h-9 rounded-md text-[13px]"
                 placeholder="Research"
                 value={draft.name}

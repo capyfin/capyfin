@@ -50,7 +50,7 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-export function PortfolioChart() {
+export default function PortfolioChart() {
   const [range, setRange] = useState<RangeKey>("3m");
 
   const data = useMemo<PortfolioHistoryPoint[]>(

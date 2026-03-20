@@ -149,7 +149,10 @@ mod tests {
         );
 
         let parsed = result.expect("expected SSE parsing to succeed");
-        assert_eq!(parsed.chunks, vec![json!({ "type": "text-start", "id": "a" })]);
+        assert_eq!(
+            parsed.chunks,
+            vec![json!({ "type": "text-start", "id": "a" })]
+        );
         assert!(parsed.done);
     }
 }

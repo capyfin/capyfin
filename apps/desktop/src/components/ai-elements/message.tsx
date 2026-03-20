@@ -93,7 +93,7 @@ export const MessageAction = ({
   const button = (
     <Button size={size} type="button" variant={variant} {...props}>
       {children}
-      <span className="sr-only">{label || tooltip}</span>
+      <span className="sr-only">{label ?? tooltip}</span>
     </Button>
   );
 
@@ -202,7 +202,7 @@ export const MessageBranchContent = ({
 }: MessageBranchContentProps) => {
   const { currentBranch, setBranches, branches } = useMessageBranch();
   const childrenArray = useMemo(
-    () => (Array.isArray(children) ? children : [children]),
+    () => (Array.isArray(children) ? children : [children]) as ReactElement[],
     [children]
   );
 
@@ -328,6 +328,7 @@ export const MessageResponse = memo(
     <Streamdown
       className={cn(
         "size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         className
       )}
       plugins={streamdownPlugins}
@@ -335,7 +336,9 @@ export const MessageResponse = memo(
     />
   ),
   (prevProps, nextProps) =>
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     prevProps.children === nextProps.children &&
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     nextProps.isAnimating === prevProps.isAnimating
 );
 

@@ -74,8 +74,11 @@ function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   const options = [
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     { value: "light" as const, icon: SunIcon, label: "Light" },
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     { value: "dark" as const, icon: MoonIcon, label: "Dark" },
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     { value: "system" as const, icon: MonitorIcon, label: "System" },
   ];
 

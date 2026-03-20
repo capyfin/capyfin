@@ -137,8 +137,8 @@ export function AppSidebar({
                     onDelete={onSessionDelete}
                     onRename={onSessionRename}
                     onSelect={onSessionSelect}
-                    onStartEditing={() => setEditingSessionId(session.id)}
-                    onStopEditing={() => setEditingSessionId(null)}
+                    onStartEditing={() => { setEditingSessionId(session.id); }}
+                    onStopEditing={() => { setEditingSessionId(null); }}
                   />
                 ))}
               </SidebarMenu>

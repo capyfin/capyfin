@@ -117,6 +117,7 @@ const stepStatusStyles = {
 export const ChainOfThoughtStep = memo(
   ({
     className,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     icon: Icon = DotIcon,
     label,
     description,

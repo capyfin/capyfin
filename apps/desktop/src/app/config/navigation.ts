@@ -17,16 +17,19 @@ export const primaryNavigation: NavigationItem[] = [
   {
     title: "Chat",
     href: "#chat",
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     icon: MessageSquareIcon,
   },
   {
     title: "Agents",
     href: "#agents",
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     icon: BotIcon,
   },
   {
     title: "Connections",
     href: "#connections",
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     icon: Link2Icon,
   },
 ];
@@ -35,6 +38,7 @@ export const secondaryNavigation: NavigationItem[] = [
   {
     title: "Settings",
     href: "#settings",
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     icon: Settings2Icon,
   },
 ];

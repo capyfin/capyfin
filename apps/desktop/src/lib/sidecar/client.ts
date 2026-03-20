@@ -9,6 +9,7 @@ import {
   connectProviderSecretRequestSchema,
   createAgentRequestSchema,
   createAgentSessionRequestSchema,
+  installSkillRequestSchema,
   updateAgentRequestSchema,
   updateAgentSessionRequestSchema,
   providerModelCatalogSchema,
@@ -17,6 +18,7 @@ import {
   savedConnectionSchema,
   setProviderModelRequestSchema,
   selectConnectionRequestSchema,
+  skillCatalogSchema,
   sidecarBootstrapSchema,
   sidecarConnectionSchema,
   sidecarHealthSchema,
@@ -33,6 +35,7 @@ import {
   type SidecarBootstrap,
   type SidecarConnection,
   type SidecarHealth,
+  type SkillCatalog,
 } from "@capyfin/contracts";
 
 export class SidecarClient {
@@ -273,6 +276,28 @@ export class SidecarClient {
   async deletePortfolio(agentId: string): Promise<{ deleted: boolean }> {
     return (await this.request(
       `/agents/${encodeURIComponent(agentId)}/portfolio`,
+      {
+        method: "DELETE",
+      },
+    )) as { deleted: boolean };
+  }
+
+  async listSkills(): Promise<SkillCatalog> {
+    return skillCatalogSchema.parse(await this.request("/skills"));
+  }
+
+  async installSkill(
+    skillId: string,
+  ): Promise<{ message: string; skillId: string; path: string }> {
+    return (await this.request("/skills/install", {
+      body: JSON.stringify(installSkillRequestSchema.parse({ skillId })),
+      method: "POST",
+    })) as { message: string; skillId: string; path: string };
+  }
+
+  async removeSkill(skillId: string): Promise<{ deleted: boolean }> {
+    return (await this.request(
+      `/skills/${encodeURIComponent(skillId)}`,
       {
         method: "DELETE",
       },

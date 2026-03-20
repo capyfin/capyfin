@@ -58,10 +58,18 @@ export async function runCli(
     const command = normalizedArgv[0] as CommandName;
     switch (command) {
       case "metadata":
-        handleStaticCommand("metadata", normalizedArgv.slice(1), resolvedOptions);
+        handleStaticCommand(
+          "metadata",
+          normalizedArgv.slice(1),
+          resolvedOptions,
+        );
         return 0;
       case "workspace":
-        handleStaticCommand("workspace", normalizedArgv.slice(1), resolvedOptions);
+        handleStaticCommand(
+          "workspace",
+          normalizedArgv.slice(1),
+          resolvedOptions,
+        );
         return 0;
       case "agents":
         await runAgentsCommand(normalizedArgv.slice(1), resolvedOptions);

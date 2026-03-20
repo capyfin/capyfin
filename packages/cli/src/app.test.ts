@@ -79,7 +79,9 @@ void test("auth login stores and selects a provider profile", async (context) =>
 
 void test("auth providers emits provider metadata as json", async () => {
   const io = new MemoryCliIo();
-  const exitCode = await runCli(["auth", "providers", "--output", "json"], { io });
+  const exitCode = await runCli(["auth", "providers", "--output", "json"], {
+    io,
+  });
 
   assert.equal(exitCode, 0);
   const providers = JSON.parse(io.stdoutMessages.join("")) as { id: string }[];
@@ -96,7 +98,16 @@ void test("agents create and sessions create persist agent state", async (contex
   });
 
   const createExitCode = await runCli(
-    ["agents", "create", "--name", "Research", "--provider", "openai", "--model", "gpt-5"],
+    [
+      "agents",
+      "create",
+      "--name",
+      "Research",
+      "--provider",
+      "openai",
+      "--model",
+      "gpt-5",
+    ],
     { io, storePath },
   );
   assert.equal(createExitCode, 0);
@@ -104,7 +115,15 @@ void test("agents create and sessions create persist agent state", async (contex
 
   const sessionIo = new MemoryCliIo();
   const sessionExitCode = await runCli(
-    ["sessions", "create", "research", "--label", "Morning brief", "--output", "json"],
+    [
+      "sessions",
+      "create",
+      "research",
+      "--label",
+      "Morning brief",
+      "--output",
+      "json",
+    ],
     { io: sessionIo, storePath },
   );
   assert.equal(sessionExitCode, 0);

@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckIcon, LoaderCircleIcon, RefreshCcwIcon, Trash2Icon } from "lucide-react";
-import type { AuthOverview, ProviderModelCatalog, SavedConnection } from "@/app/types";
+import {
+  CheckIcon,
+  LoaderCircleIcon,
+  RefreshCcwIcon,
+  Trash2Icon,
+} from "lucide-react";
+import type {
+  AuthOverview,
+  ProviderModelCatalog,
+  SavedConnection,
+} from "@/app/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +41,12 @@ export function ConnectionsWorkspace({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
-  const [modelCatalogs, setModelCatalogs] = useState<Record<string, ProviderModelCatalog>>({});
-  const [modelBusyProviderId, setModelBusyProviderId] = useState<string | null>(null);
+  const [modelCatalogs, setModelCatalogs] = useState<
+    Record<string, ProviderModelCatalog>
+  >({});
+  const [modelBusyProviderId, setModelBusyProviderId] = useState<string | null>(
+    null,
+  );
 
   async function refreshOverview(): Promise<void> {
     if (!client) {
@@ -54,12 +67,19 @@ export function ConnectionsWorkspace({
     const runtimeClient = client;
 
     async function loadModelCatalogs(): Promise<void> {
-      const uniqueProviderIds = [...new Set(storedConnections.map((connection) => connection.providerId))];
+      const uniqueProviderIds = [
+        ...new Set(
+          storedConnections.map((connection) => connection.providerId),
+        ),
+      ];
       const entries = await Promise.all(
-        uniqueProviderIds.map(async (providerId) => [
-          providerId,
-          await runtimeClient.providerModels(providerId),
-        ] as const),
+        uniqueProviderIds.map(
+          async (providerId) =>
+            [
+              providerId,
+              await runtimeClient.providerModels(providerId),
+            ] as const,
+        ),
       );
       if (cancelled) {
         return;
@@ -118,7 +138,10 @@ export function ConnectionsWorkspace({
     }
   }
 
-  async function handleSetModel(providerId: string, modelRef: string): Promise<void> {
+  async function handleSetModel(
+    providerId: string,
+    modelRef: string,
+  ): Promise<void> {
     if (!client) {
       return;
     }
@@ -210,7 +233,9 @@ export function ConnectionsWorkspace({
                     key={connection.profileId}
                     connection={connection}
                     isBusy={isBusy}
-                    isUpdatingModel={modelBusyProviderId === connection.providerId}
+                    isUpdatingModel={
+                      modelBusyProviderId === connection.providerId
+                    }
                     modelCatalog={modelCatalogs[connection.providerId]}
                     onDelete={handleDelete}
                     onSelectDefault={handleSelectDefault}
@@ -246,11 +271,15 @@ function ConnectionRow({
   const selectedModelRef =
     modelCatalog?.currentModelRef ??
     modelCatalog?.models[0]?.modelRef ??
-    (connection.activeModelId ? `${connection.providerId}/${connection.activeModelId}` : "");
+    (connection.activeModelId
+      ? `${connection.providerId}/${connection.activeModelId}`
+      : "");
 
   return (
     <TableRow className="border-border/60 transition-colors hover:bg-muted/20">
-      <TableCell className="text-[12px] font-medium">{connection.providerName}</TableCell>
+      <TableCell className="text-[12px] font-medium">
+        {connection.providerName}
+      </TableCell>
       <TableCell>
         <div className="flex items-center gap-1.5">
           <span className="text-[12px]">{connection.label}</span>
@@ -268,7 +297,11 @@ function ConnectionRow({
         <div className="flex min-w-[14rem] items-center gap-1.5">
           <select
             className="h-8 w-full rounded-md border border-border bg-background px-2.5 text-[12px] text-foreground outline-none transition-colors focus:border-primary"
-            disabled={isUpdatingModel || !modelCatalog || modelCatalog.models.length === 0}
+            disabled={
+              isUpdatingModel ||
+              !modelCatalog ||
+              modelCatalog.models.length === 0
+            }
             value={selectedModelRef}
             onChange={(event) => {
               void onSetModel(connection.providerId, event.target.value);
@@ -280,7 +313,9 @@ function ConnectionRow({
               </option>
             ))}
           </select>
-          {isUpdatingModel ? <LoaderCircleIcon className="size-3.5 animate-spin text-muted-foreground" /> : null}
+          {isUpdatingModel ? (
+            <LoaderCircleIcon className="size-3.5 animate-spin text-muted-foreground" />
+          ) : null}
         </div>
       </TableCell>
       <TableCell className="text-[12px] text-muted-foreground/60">

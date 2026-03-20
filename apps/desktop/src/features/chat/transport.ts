@@ -69,9 +69,13 @@ function createDesktopTransport(
         throw new Error("Chat message cannot be empty.");
       }
 
-      const [{ Channel, invoke }] = await Promise.all([import("@tauri-apps/api/core")]);
+      const [{ Channel, invoke }] = await Promise.all([
+        import("@tauri-apps/api/core"),
+      ]);
 
-      return new ReadableStream<UIMessageChunk<unknown, { activity: ChatActivity }>>({
+      return new ReadableStream<
+        UIMessageChunk<unknown, { activity: ChatActivity }>
+      >({
         start(controller) {
           const events = new Channel<TauriChatStreamEvent>();
           let closed = false;

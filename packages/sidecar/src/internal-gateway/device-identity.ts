@@ -30,7 +30,9 @@ function derivePublicKeyRaw(publicKeyPem: string): Buffer {
 
   if (
     publicKey.length === ED25519_SPKI_PREFIX.length + 32 &&
-    publicKey.subarray(0, ED25519_SPKI_PREFIX.length).equals(ED25519_SPKI_PREFIX)
+    publicKey
+      .subarray(0, ED25519_SPKI_PREFIX.length)
+      .equals(ED25519_SPKI_PREFIX)
   ) {
     return publicKey.subarray(ED25519_SPKI_PREFIX.length);
   }
@@ -39,7 +41,10 @@ function derivePublicKeyRaw(publicKeyPem: string): Buffer {
 }
 
 function fingerprintPublicKey(publicKeyPem: string): string {
-  return crypto.createHash("sha256").update(derivePublicKeyRaw(publicKeyPem)).digest("hex");
+  return crypto
+    .createHash("sha256")
+    .update(derivePublicKeyRaw(publicKeyPem))
+    .digest("hex");
 }
 
 function buildDeviceAuthPayload(params: {
@@ -81,7 +86,9 @@ function generateDeviceIdentity(): DeviceIdentity {
   };
 }
 
-export async function loadOrCreateDeviceIdentity(pathname: string): Promise<DeviceIdentity> {
+export async function loadOrCreateDeviceIdentity(
+  pathname: string,
+): Promise<DeviceIdentity> {
   try {
     const raw = await readFile(pathname, "utf8");
     const parsed = JSON.parse(raw) as Partial<StoredDeviceIdentity>;
@@ -121,9 +128,14 @@ export function publicKeyRawBase64UrlFromPem(publicKeyPem: string): string {
   return base64UrlEncode(derivePublicKeyRaw(publicKeyPem));
 }
 
-export function signDevicePayload(privateKeyPem: string, payload: string): string {
+export function signDevicePayload(
+  privateKeyPem: string,
+  payload: string,
+): string {
   const privateKey = crypto.createPrivateKey(privateKeyPem);
-  return base64UrlEncode(crypto.sign(null, Buffer.from(payload, "utf8"), privateKey));
+  return base64UrlEncode(
+    crypto.sign(null, Buffer.from(payload, "utf8"), privateKey),
+  );
 }
 
 export async function createSignedGatewayDevice(params: {

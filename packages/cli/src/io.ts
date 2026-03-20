@@ -16,7 +16,9 @@ export function createProcessCliIo(): CliIo {
     },
     async prompt(message: string): Promise<string> {
       if (!process.stdin.isTTY || !process.stdout.isTTY) {
-        throw new Error("Interactive input is unavailable in the current terminal.");
+        throw new Error(
+          "Interactive input is unavailable in the current terminal.",
+        );
       }
 
       const terminal = createInterface({
@@ -32,7 +34,9 @@ export function createProcessCliIo(): CliIo {
     },
     async promptSecret(message: string): Promise<string> {
       if (!process.stdin.isTTY || !process.stdout.isTTY) {
-        throw new Error("Interactive secret input is unavailable in the current terminal.");
+        throw new Error(
+          "Interactive secret input is unavailable in the current terminal.",
+        );
       }
 
       return promptHidden(message, process.stdin, process.stdout);

@@ -33,7 +33,10 @@ void test("POST /main/portfolio uploads CSV and creates file", async () => {
     await writeFile(join(workspaceDir, "USER.md"), "# User\n", "utf8");
 
     const app = new Hono();
-    app.route("/agents", createPortfolioRoutes(createMockRuntime(workspaceDir)));
+    app.route(
+      "/agents",
+      createPortfolioRoutes(createMockRuntime(workspaceDir)),
+    );
 
     const csv = "ticker,shares,cost_basis\nAAPL,100,150.00\nMSFT,50,300.00\n";
     const response = await app.request("/agents/main/portfolio", {
@@ -52,7 +55,10 @@ void test("POST /main/portfolio uploads CSV and creates file", async () => {
 
     // Verify USER.md was updated
     const userMd = await readFile(join(workspaceDir, "USER.md"), "utf8");
-    assert.ok(userMd.includes("portfolio.csv"), "USER.md should reference portfolio.csv");
+    assert.ok(
+      userMd.includes("portfolio.csv"),
+      "USER.md should reference portfolio.csv",
+    );
   } finally {
     await rm(workspaceDir, { recursive: true, force: true });
   }
@@ -63,7 +69,10 @@ void test("POST /main/portfolio rejects empty CSV", async () => {
 
   try {
     const app = new Hono();
-    app.route("/agents", createPortfolioRoutes(createMockRuntime(workspaceDir)));
+    app.route(
+      "/agents",
+      createPortfolioRoutes(createMockRuntime(workspaceDir)),
+    );
 
     const response = await app.request("/agents/main/portfolio", {
       method: "POST",
@@ -82,7 +91,10 @@ void test("GET /main/portfolio returns hasPortfolio:false when no file", async (
 
   try {
     const app = new Hono();
-    app.route("/agents", createPortfolioRoutes(createMockRuntime(workspaceDir)));
+    app.route(
+      "/agents",
+      createPortfolioRoutes(createMockRuntime(workspaceDir)),
+    );
 
     const response = await app.request("/agents/main/portfolio");
     assert.equal(response.status, 200);
@@ -106,12 +118,18 @@ void test("GET /main/portfolio returns hasPortfolio:true after upload", async ()
     );
 
     const app = new Hono();
-    app.route("/agents", createPortfolioRoutes(createMockRuntime(workspaceDir)));
+    app.route(
+      "/agents",
+      createPortfolioRoutes(createMockRuntime(workspaceDir)),
+    );
 
     const response = await app.request("/agents/main/portfolio");
     assert.equal(response.status, 200);
 
-    const body = (await response.json()) as { hasPortfolio: boolean; rows: number };
+    const body = (await response.json()) as {
+      hasPortfolio: boolean;
+      rows: number;
+    };
     assert.equal(body.hasPortfolio, true);
     assert.equal(body.rows, 2);
   } finally {
@@ -131,7 +149,10 @@ void test("DELETE /main/portfolio removes the file", async () => {
     );
 
     const app = new Hono();
-    app.route("/agents", createPortfolioRoutes(createMockRuntime(workspaceDir)));
+    app.route(
+      "/agents",
+      createPortfolioRoutes(createMockRuntime(workspaceDir)),
+    );
 
     const deleteResponse = await app.request("/agents/main/portfolio", {
       method: "DELETE",
@@ -154,7 +175,10 @@ void test("POST /main/portfolio rejects oversized CSV", async () => {
 
   try {
     const app = new Hono();
-    app.route("/agents", createPortfolioRoutes(createMockRuntime(workspaceDir)));
+    app.route(
+      "/agents",
+      createPortfolioRoutes(createMockRuntime(workspaceDir)),
+    );
 
     // Create a CSV larger than 1MB
     const bigCsv = "ticker,shares\n" + "AAPL,100\n".repeat(200_000);

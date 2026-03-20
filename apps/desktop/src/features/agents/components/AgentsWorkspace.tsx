@@ -1,5 +1,11 @@
 import { startTransition, useEffect, useMemo, useState } from "react";
-import { BotIcon, LoaderCircleIcon, PlusIcon, RefreshCcwIcon, SparklesIcon } from "lucide-react";
+import {
+  BotIcon,
+  LoaderCircleIcon,
+  PlusIcon,
+  RefreshCcwIcon,
+  SparklesIcon,
+} from "lucide-react";
 import type { Agent, AuthOverview, ProviderModelCatalog } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,8 +50,8 @@ export function AgentsWorkspace({
   createRequestToken,
 }: AgentsWorkspaceProps) {
   const connectedProviders = useMemo(
-    () =>
-      [...new Map(
+    () => [
+      ...new Map(
         (authOverview?.connections ?? []).map((connection) => [
           connection.providerId,
           {
@@ -53,11 +59,14 @@ export function AgentsWorkspace({
             providerName: connection.providerName,
           },
         ]),
-      ).values()],
+      ).values(),
+    ],
     [authOverview],
   );
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [modelCatalogs, setModelCatalogs] = useState<Record<string, ProviderModelCatalog>>({});
+  const [modelCatalogs, setModelCatalogs] = useState<
+    Record<string, ProviderModelCatalog>
+  >({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -68,7 +77,9 @@ export function AgentsWorkspace({
 
   useEffect(() => {
     const nextProviderId =
-      authOverview?.selectedProviderId ?? connectedProviders[0]?.providerId ?? "";
+      authOverview?.selectedProviderId ??
+      connectedProviders[0]?.providerId ??
+      "";
 
     setDraft((current) =>
       current.providerId
@@ -91,10 +102,13 @@ export function AgentsWorkspace({
 
     async function loadModelCatalogs(): Promise<void> {
       const entries = await Promise.all(
-        connectedProviders.map(async (provider) => [
-          provider.providerId,
-          await runtimeClient.providerModels(provider.providerId),
-        ] as const),
+        connectedProviders.map(
+          async (provider) =>
+            [
+              provider.providerId,
+              await runtimeClient.providerModels(provider.providerId),
+            ] as const,
+        ),
       );
 
       if (!cancelled) {
@@ -167,9 +181,12 @@ export function AgentsWorkspace({
   }, [createRequestToken]);
 
   const selectedProviderName =
-    connectedProviders.find((provider) => provider.providerId === draft.providerId)
-      ?.providerName ?? "selected provider";
-  const selectedProviderCatalog = draft.providerId ? modelCatalogs[draft.providerId] : undefined;
+    connectedProviders.find(
+      (provider) => provider.providerId === draft.providerId,
+    )?.providerName ?? "selected provider";
+  const selectedProviderCatalog = draft.providerId
+    ? modelCatalogs[draft.providerId]
+    : undefined;
   const canCreate =
     Boolean(client) &&
     Boolean(draft.name.trim()) &&
@@ -254,7 +271,9 @@ export function AgentsWorkspace({
       );
 
       setAgents((current) =>
-        current.map((currentAgent) => (currentAgent.id === agent.id ? updatedAgent : currentAgent)),
+        current.map((currentAgent) =>
+          currentAgent.id === agent.id ? updatedAgent : currentAgent,
+        ),
       );
       setFeedback(`Updated ${updatedAgent.name}.`);
     } catch (error) {
@@ -288,7 +307,9 @@ export function AgentsWorkspace({
           </CardHeader>
           <CardContent className="grid gap-3 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
             <label className="grid gap-1.5 text-sm">
-              <span className="text-[11px] font-medium text-muted-foreground">Agent name</span>
+              <span className="text-[11px] font-medium text-muted-foreground">
+                Agent name
+              </span>
               <Input
                 className="h-9 rounded-md text-[13px]"
                 placeholder="Research"
@@ -301,7 +322,9 @@ export function AgentsWorkspace({
             </label>
 
             <label className="grid gap-1.5 text-sm">
-              <span className="text-[11px] font-medium text-muted-foreground">Provider</span>
+              <span className="text-[11px] font-medium text-muted-foreground">
+                Provider
+              </span>
               <select
                 className="h-9 rounded-md border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary"
                 value={draft.providerId}
@@ -324,7 +347,9 @@ export function AgentsWorkspace({
             </label>
 
             <label className="grid gap-1.5 text-sm">
-              <span className="text-[11px] font-medium text-muted-foreground">Model</span>
+              <span className="text-[11px] font-medium text-muted-foreground">
+                Model
+              </span>
               <select
                 className="h-9 rounded-md border border-border bg-background px-3 text-[13px] text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!draft.providerId}
@@ -433,7 +458,10 @@ export function AgentsWorkspace({
             </div>
           ) : (
             agents.map((agent) => {
-              const effectiveProviderId = resolveAgentProviderId(agent, authOverview);
+              const effectiveProviderId = resolveAgentProviderId(
+                agent,
+                authOverview,
+              );
               const effectiveModelCatalog = effectiveProviderId
                 ? modelCatalogs[effectiveProviderId]
                 : undefined;
@@ -543,14 +571,17 @@ function resolveAgentProviderId(
   return agent.providerId ?? authOverview?.selectedProviderId;
 }
 
-function providerLabel(providerId: string | undefined, connectedProviders: ConnectedProviderOption[]): string {
+function providerLabel(
+  providerId: string | undefined,
+  connectedProviders: ConnectedProviderOption[],
+): string {
   if (!providerId) {
     return "No provider connected";
   }
 
   return (
-    connectedProviders.find((provider) => provider.providerId === providerId)?.providerName ??
-    providerId
+    connectedProviders.find((provider) => provider.providerId === providerId)
+      ?.providerName ?? providerId
   );
 }
 
@@ -566,18 +597,23 @@ async function updateAgentWithFallback(
     return client.updateAgent(agentId, payload);
   }
 
-  const response = await fetch(client.createApiUrl(`/agents/${encodeURIComponent(agentId)}`), {
-    body: JSON.stringify(payload),
-    headers: (() => {
-      const headers = client.createAuthHeaders();
-      headers.set("Content-Type", "application/json");
-      return headers;
-    })(),
-    method: "PATCH",
-  });
+  const response = await fetch(
+    client.createApiUrl(`/agents/${encodeURIComponent(agentId)}`),
+    {
+      body: JSON.stringify(payload),
+      headers: (() => {
+        const headers = client.createAuthHeaders();
+        headers.set("Content-Type", "application/json");
+        return headers;
+      })(),
+      method: "PATCH",
+    },
+  );
 
   if (!response.ok) {
-    throw new Error(`Sidecar request failed with status ${String(response.status)}.`);
+    throw new Error(
+      `Sidecar request failed with status ${String(response.status)}.`,
+    );
   }
 
   return response.json() as Promise<Agent>;

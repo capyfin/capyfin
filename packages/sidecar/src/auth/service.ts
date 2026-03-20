@@ -111,16 +111,23 @@ export function buildProviderModelCatalog(params: {
         modelId: entry.id,
         modelRef,
         providerId: entry.provider,
-        ...(typeof entry.reasoning === "boolean" ? { reasoning: entry.reasoning } : {}),
+        ...(typeof entry.reasoning === "boolean"
+          ? { reasoning: entry.reasoning }
+          : {}),
       };
     });
 
   const hasSelectedModel =
-    Boolean(selectedRef) && models.some((entry) => entry.modelRef === selectedRef);
+    Boolean(selectedRef) &&
+    models.some((entry) => entry.modelRef === selectedRef);
 
   return {
-    ...(hasSelectedModel && selected.modelId ? { currentModelId: selected.modelId } : {}),
-    ...(hasSelectedModel && selectedRef ? { currentModelRef: selectedRef } : {}),
+    ...(hasSelectedModel && selected.modelId
+      ? { currentModelId: selected.modelId }
+      : {}),
+    ...(hasSelectedModel && selectedRef
+      ? { currentModelRef: selectedRef }
+      : {}),
     models,
     providerId: normalizedProviderId,
   };
@@ -140,7 +147,10 @@ function createEmptyMetadataStore(): ConnectionMetadataStore {
   };
 }
 
-function parseGitHubJson(value: unknown, errorMessage: string): Record<string, unknown> {
+function parseGitHubJson(
+  value: unknown,
+  errorMessage: string,
+): Record<string, unknown> {
   if (!value || typeof value !== "object") {
     throw new Error(errorMessage);
   }
@@ -161,7 +171,9 @@ async function requestGitHubCopilotDeviceCode(): Promise<GitHubDeviceCodeRespons
   });
 
   if (!response.ok) {
-    throw new Error(`GitHub device code failed: HTTP ${String(response.status)}`);
+    throw new Error(
+      `GitHub device code failed: HTTP ${String(response.status)}`,
+    );
   }
 
   const payload = parseGitHubJson(
@@ -203,7 +215,9 @@ async function pollForGitHubCopilotAccessToken(params: {
     });
 
     if (!response.ok) {
-      throw new Error(`GitHub device token failed: HTTP ${String(response.status)}`);
+      throw new Error(
+        `GitHub device token failed: HTTP ${String(response.status)}`,
+      );
     }
 
     const payload = parseGitHubJson(
@@ -220,11 +234,15 @@ async function pollForGitHubCopilotAccessToken(params: {
       continue;
     }
     if (errorCode === "slow_down") {
-      await new Promise((resolve) => setTimeout(resolve, params.intervalMs + 2_000));
+      await new Promise((resolve) =>
+        setTimeout(resolve, params.intervalMs + 2_000),
+      );
       continue;
     }
     if (errorCode === "expired_token") {
-      throw new Error("GitHub device code expired; start the sign-in flow again.");
+      throw new Error(
+        "GitHub device code expired; start the sign-in flow again.",
+      );
     }
     if (errorCode === "access_denied") {
       throw new Error("GitHub sign-in was cancelled.");
@@ -329,13 +347,15 @@ function normalizeMetadataStore(raw: unknown): ConnectionMetadataStore {
   const record = raw as Record<string, unknown>;
   return {
     updatedAtByProfileId:
-      record.updatedAtByProfileId && typeof record.updatedAtByProfileId === "object"
+      record.updatedAtByProfileId &&
+      typeof record.updatedAtByProfileId === "object"
         ? Object.fromEntries(
-            Object.entries(record.updatedAtByProfileId as Record<string, unknown>).flatMap(
-              ([profileId, value]) =>
-                typeof value === "string" && value.trim()
-                  ? ([[profileId, value.trim()]] as const)
-                  : [],
+            Object.entries(
+              record.updatedAtByProfileId as Record<string, unknown>,
+            ).flatMap(([profileId, value]) =>
+              typeof value === "string" && value.trim()
+                ? ([[profileId, value.trim()]] as const)
+                : [],
             ),
           )
         : {},
@@ -363,7 +383,10 @@ async function loadJsonFile<T>(
   }
 }
 
-async function writeJsonFile(filePath: string, payload: unknown): Promise<void> {
+async function writeJsonFile(
+  filePath: string,
+  payload: unknown,
+): Promise<void> {
   const directory = dirname(filePath);
   const temporaryPath = join(
     directory,
@@ -411,7 +434,11 @@ function inferMethodInput(params: {
   if (choice === "github-copilot") {
     return "device_code";
   }
-  if (choice.includes("oauth") || choice === "openai-codex" || choice === "chutes") {
+  if (
+    choice.includes("oauth") ||
+    choice === "openai-codex" ||
+    choice === "chutes"
+  ) {
     return "oauth";
   }
   if (choice === "token" || label.includes("token")) {
@@ -471,10 +498,13 @@ function resolveConfiguredModelForProvider(
   }
 
   const models =
-    config.agents?.defaults?.models && typeof config.agents.defaults.models === "object"
+    config.agents?.defaults?.models &&
+    typeof config.agents.defaults.models === "object"
       ? (config.agents.defaults.models as Record<string, unknown>)
       : {};
-  const match = Object.keys(models).find((modelRef) => splitModelRef(modelRef).providerId === providerId);
+  const match = Object.keys(models).find(
+    (modelRef) => splitModelRef(modelRef).providerId === providerId,
+  );
   return match ? splitModelRef(match).modelId : undefined;
 }
 
@@ -483,14 +513,20 @@ function dedupeProfileOrder(profileIds: string[]): string[] {
 }
 
 function resolveStorePath(paths: EmbeddedGatewayPaths): string {
-  return join(resolveGatewayAgentDir(paths, DEFAULT_AGENT_ID), "auth-profiles.json");
+  return join(
+    resolveGatewayAgentDir(paths, DEFAULT_AGENT_ID),
+    "auth-profiles.json",
+  );
 }
 
 function resolveConnectionMetadataPath(paths: EmbeddedGatewayPaths): string {
   return join(paths.rootDir, "connection-metadata.json");
 }
 
-function resolveAuthStoreProfileIds(store: RuntimeAuthStore, providerId: string): string[] {
+function resolveAuthStoreProfileIds(
+  store: RuntimeAuthStore,
+  providerId: string,
+): string[] {
   return Object.entries(store.profiles)
     .filter(([, credential]) => credential.provider === providerId)
     .map(([profileId]) => profileId);
@@ -512,7 +548,10 @@ function resolveSelectedProfileForProvider(
   return ordered.find((profileId) => Boolean(store.profiles[profileId]));
 }
 
-function resolveProfileLabel(profileId: string, credential: RuntimeAuthCredential): string {
+function resolveProfileLabel(
+  profileId: string,
+  credential: RuntimeAuthCredential,
+): string {
   if (credential.type === "oauth" && credential.email?.trim()) {
     return credential.email.trim();
   }
@@ -534,7 +573,9 @@ function buildSelection(params: {
   const defaultModel = splitModelRef(resolveDefaultModelRef(params.config));
   const defaultProviderWithConnection =
     defaultModel.providerId &&
-    params.connections.some((connection) => connection.providerId === defaultModel.providerId)
+    params.connections.some(
+      (connection) => connection.providerId === defaultModel.providerId,
+    )
       ? defaultModel.providerId
       : undefined;
   const fallbackConnection =
@@ -547,8 +588,14 @@ function buildSelection(params: {
   }
 
   const selectedProfileId =
-    resolveSelectedProfileForProvider(params.config, params.store, selectedProviderId) ??
-    params.connections.find((connection) => connection.providerId === selectedProviderId)?.profileId;
+    resolveSelectedProfileForProvider(
+      params.config,
+      params.store,
+      selectedProviderId,
+    ) ??
+    params.connections.find(
+      (connection) => connection.providerId === selectedProviderId,
+    )?.profileId;
   const selectedConnection = params.connections.find(
     (connection) => connection.profileId === selectedProfileId,
   );
@@ -581,12 +628,15 @@ function resolveCurrentModelRefForProvider(
   }
 
   const models =
-    config.agents?.defaults?.models && typeof config.agents.defaults.models === "object"
+    config.agents?.defaults?.models &&
+    typeof config.agents.defaults.models === "object"
       ? (config.agents.defaults.models as Record<string, unknown>)
       : {};
   return Object.keys(models).find((modelRef) => {
     const parsed = splitModelRef(modelRef);
-    return parsed.providerId ? isSameProvider(parsed.providerId, providerId) : false;
+    return parsed.providerId
+      ? isSameProvider(parsed.providerId, providerId)
+      : false;
   });
 }
 
@@ -596,19 +646,27 @@ export function buildAllowlistWithProviderModel(params: {
   providerId: string;
 }): string[] {
   const existingModels =
-    params.config.agents?.defaults?.models && typeof params.config.agents.defaults.models === "object"
-      ? Object.keys(params.config.agents.defaults.models as Record<string, unknown>)
+    params.config.agents?.defaults?.models &&
+    typeof params.config.agents.defaults.models === "object"
+      ? Object.keys(
+          params.config.agents.defaults.models as Record<string, unknown>,
+        )
       : [];
   const keep = existingModels.filter(
     (candidate) =>
-      !isSameProvider(splitModelRef(candidate).providerId ?? "", params.providerId) &&
-      candidate !== params.modelRef,
+      !isSameProvider(
+        splitModelRef(candidate).providerId ?? "",
+        params.providerId,
+      ) && candidate !== params.modelRef,
   );
 
   return [params.modelRef, ...keep];
 }
 
-function hasExistingSelection(config: GatewayConfig, store: RuntimeAuthStore): boolean {
+function hasExistingSelection(
+  config: GatewayConfig,
+  store: RuntimeAuthStore,
+): boolean {
   if (Object.keys(store.profiles).length > 0) {
     return true;
   }
@@ -622,10 +680,7 @@ function hasExistingSelection(config: GatewayConfig, store: RuntimeAuthStore): b
     return true;
   }
 
-  if (
-    config.auth?.profiles &&
-    Object.keys(config.auth.profiles).length > 0
-  ) {
+  if (config.auth?.profiles && Object.keys(config.auth.profiles).length > 0) {
     return true;
   }
 
@@ -648,7 +703,9 @@ function createRuntimeEnv(): RuntimeEnvLike {
 
 function createPassivePrompter(): WizardPrompterLike {
   const unsupported = (message: string): never => {
-    throw new Error(`Model selection needs unsupported interactive runtime input: ${message}`);
+    throw new Error(
+      `Model selection needs unsupported interactive runtime input: ${message}`,
+    );
   };
 
   return {
@@ -672,7 +729,10 @@ export class RuntimeProviderAuthService {
   readonly #paths: EmbeddedGatewayPaths;
   readonly #runtimeEnv: RuntimeEnvLike;
 
-  constructor(paths: EmbeddedGatewayPaths, env: NodeJS.ProcessEnv = process.env) {
+  constructor(
+    paths: EmbeddedGatewayPaths,
+    env: NodeJS.ProcessEnv = process.env,
+  ) {
     this.#env = env;
     this.#paths = paths;
     this.#runtimeEnv = createRuntimeEnv();
@@ -712,7 +772,9 @@ export class RuntimeProviderAuthService {
     };
   }
 
-  async getProviderModelCatalog(providerId: string): Promise<ProviderModelCatalog> {
+  async getProviderModelCatalog(
+    providerId: string,
+  ): Promise<ProviderModelCatalog> {
     const normalizedProviderId = providerId.trim();
     if (!normalizedProviderId) {
       throw new Error("Provider is required.");
@@ -722,7 +784,10 @@ export class RuntimeProviderAuthService {
       loadModelCatalogModule(),
       this.#loadConfig(),
     ]);
-    const currentModelRef = resolveCurrentModelRefForProvider(config, normalizedProviderId);
+    const currentModelRef = resolveCurrentModelRefForProvider(
+      config,
+      normalizedProviderId,
+    );
     const catalog = await loadModelCatalog({
       config,
       useCache: false,
@@ -775,7 +840,10 @@ export class RuntimeProviderAuthService {
         providerId,
       }),
     );
-    const nextConfig = isSameProvider(currentSelection.selectedProviderId ?? "", providerId)
+    const nextConfig = isSameProvider(
+      currentSelection.selectedProviderId ?? "",
+      providerId,
+    )
       ? applyDefaultModelPrimaryUpdate({
           cfg: allowlistedConfig,
           field: "model",
@@ -801,7 +869,11 @@ export class RuntimeProviderAuthService {
     secret: string;
   }): Promise<SavedConnection> {
     const method = await this.getMethod(params.authChoice);
-    if (method.input !== "api_key" && method.input !== "token" && method.input !== "custom") {
+    if (
+      method.input !== "api_key" &&
+      method.input !== "token" &&
+      method.input !== "custom"
+    ) {
       throw new Error(`${method.label} requires an interactive sign-in flow.`);
     }
 
@@ -811,19 +883,22 @@ export class RuntimeProviderAuthService {
     });
 
     if (!result.connection) {
-      throw new Error(`Connected ${method.label}, but no saved connection was created.`);
+      throw new Error(
+        `Connected ${method.label}, but no saved connection was created.`,
+      );
     }
 
     return result.connection;
   }
 
   async selectProfile(profileId: string): Promise<SavedConnection> {
-    const [{ applyDefaultModelPrimaryUpdate }, config, store, metadata] = await Promise.all([
-      loadModelSelectionModule(),
-      this.#loadConfig(),
-      this.#loadStore(),
-      this.#loadMetadata(),
-    ]);
+    const [{ applyDefaultModelPrimaryUpdate }, config, store, metadata] =
+      await Promise.all([
+        loadModelSelectionModule(),
+        this.#loadConfig(),
+        this.#loadStore(),
+        this.#loadMetadata(),
+      ]);
     const credential = store.profiles[profileId];
     if (!credential) {
       throw new Error(`Unknown connection: ${profileId}`);
@@ -835,7 +910,10 @@ export class RuntimeProviderAuthService {
       ...(store.order?.[providerId] ?? []),
       ...(config.auth?.order?.[providerId] ?? []),
       ...resolveAuthStoreProfileIds(store, providerId),
-    ]).filter((candidate) => candidate !== profileId || Boolean(store.profiles[candidate]));
+    ]).filter(
+      (candidate) =>
+        candidate !== profileId || Boolean(store.profiles[candidate]),
+    );
 
     store.order = {
       ...(store.order ?? {}),
@@ -863,7 +941,10 @@ export class RuntimeProviderAuthService {
     const timestamp = new Date().toISOString();
     metadata.updatedAtByProfileId[profileId] = timestamp;
 
-    const configuredModelId = resolveConfiguredModelForProvider(config, providerId);
+    const configuredModelId = resolveConfiguredModelForProvider(
+      config,
+      providerId,
+    );
     const nextConfig = configuredModelId
       ? applyDefaultModelPrimaryUpdate({
           cfg: config,
@@ -879,7 +960,9 @@ export class RuntimeProviderAuthService {
     ]);
 
     const overview = await this.getOverview();
-    const selected = overview.connections.find((connection) => connection.profileId === profileId);
+    const selected = overview.connections.find(
+      (connection) => connection.profileId === profileId,
+    );
     if (!selected) {
       throw new Error(`Connection ${profileId} could not be selected.`);
     }
@@ -899,7 +982,9 @@ export class RuntimeProviderAuthService {
 
     delete store.profiles[profileId];
     if (store.lastGood) {
-      for (const [providerId, currentProfileId] of Object.entries(store.lastGood)) {
+      for (const [providerId, currentProfileId] of Object.entries(
+        store.lastGood,
+      )) {
         if (currentProfileId === profileId) {
           delete store.lastGood[providerId];
         }
@@ -969,14 +1054,19 @@ export class RuntimeProviderAuthService {
       return await this.#applyGitHubCopilotDeviceFlow(params);
     }
 
-    const [{ applyAuthChoice }, method, previousConfig, previousStore, metadata] =
-      await Promise.all([
-        loadAuthChoiceModule(),
-        this.getMethod(params.authChoice),
-        this.#loadConfig(),
-        this.#loadStore(),
-        this.#loadMetadata(),
-      ]);
+    const [
+      { applyAuthChoice },
+      method,
+      previousConfig,
+      previousStore,
+      metadata,
+    ] = await Promise.all([
+      loadAuthChoiceModule(),
+      this.getMethod(params.authChoice),
+      this.#loadConfig(),
+      this.#loadStore(),
+      this.#loadMetadata(),
+    ]);
 
     const hadSelection = hasExistingSelection(previousConfig, previousStore);
     const agentDir = resolveGatewayAgentDir(this.#paths, DEFAULT_AGENT_ID);
@@ -1126,7 +1216,9 @@ export class RuntimeProviderAuthService {
   }> {
     const providers = await this.#listProviders();
     for (const provider of providers) {
-      const method = provider.methods.find((candidate) => candidate.id === authChoice);
+      const method = provider.methods.find(
+        (candidate) => candidate.id === authChoice,
+      );
       if (method) {
         return {
           ...(method.hint ? { hint: method.hint } : {}),
@@ -1142,13 +1234,17 @@ export class RuntimeProviderAuthService {
   }
 
   async #listProviders(): Promise<ProviderDefinition[]> {
-    const [{ buildAuthChoiceGroups }, { resolvePreferredProviderForAuthChoice }, config, store] =
-      await Promise.all([
-        loadAuthChoiceOptionsModule(),
-        loadAuthChoiceModule(),
-        this.#loadConfig(),
-        this.#loadStore(),
-      ]);
+    const [
+      { buildAuthChoiceGroups },
+      { resolvePreferredProviderForAuthChoice },
+      config,
+      store,
+    ] = await Promise.all([
+      loadAuthChoiceOptionsModule(),
+      loadAuthChoiceModule(),
+      this.#loadConfig(),
+      this.#loadStore(),
+    ]);
 
     const workspaceDir = join(this.#paths.workspacesDir, DEFAULT_AGENT_ID);
     const { groups } = buildAuthChoiceGroups({
@@ -1194,7 +1290,10 @@ export class RuntimeProviderAuthService {
     for (const provider of params.providers) {
       for (const method of provider.methods) {
         if (!providerNameById.has(method.providerId)) {
-          providerNameById.set(method.providerId, method.label === "Use API key" ? provider.name : method.label);
+          providerNameById.set(
+            method.providerId,
+            method.label === "Use API key" ? provider.name : method.label,
+          );
         }
       }
       if (!providerNameById.has(provider.id)) {
@@ -1216,11 +1315,19 @@ export class RuntimeProviderAuthService {
           params.metadata.updatedAtByProfileId[profileId] ?? storeUpdatedAt;
         return {
           ...(resolveConfiguredModelForProvider(params.config, providerId)
-            ? { activeModelId: resolveConfiguredModelForProvider(params.config, providerId) }
+            ? {
+                activeModelId: resolveConfiguredModelForProvider(
+                  params.config,
+                  providerId,
+                ),
+              }
             : {}),
           isDefault:
-            resolveSelectedProfileForProvider(params.config, params.store, providerId) ===
-            profileId,
+            resolveSelectedProfileForProvider(
+              params.config,
+              params.store,
+              providerId,
+            ) === profileId,
           label: resolveProfileLabel(profileId, credential),
           profileId,
           providerId,
@@ -1240,13 +1347,22 @@ export class RuntimeProviderAuthService {
   }
 
   async #loadConfig(): Promise<GatewayConfig> {
-    return await loadJsonFile(this.getConfigPath(), () => ({}), (raw) =>
-      raw && typeof raw === "object" ? ({ ...(raw as Record<string, unknown>) } as GatewayConfig) : {},
+    return await loadJsonFile(
+      this.getConfigPath(),
+      () => ({}),
+      (raw) =>
+        raw && typeof raw === "object"
+          ? ({ ...(raw as Record<string, unknown>) } as GatewayConfig)
+          : {},
     );
   }
 
   async #loadStore(): Promise<RuntimeAuthStore> {
-    return await loadJsonFile(this.getStorePath(), createEmptyAuthStore, normalizeAuthStore);
+    return await loadJsonFile(
+      this.getStorePath(),
+      createEmptyAuthStore,
+      normalizeAuthStore,
+    );
   }
 
   async #loadMetadata(): Promise<ConnectionMetadataStore> {
@@ -1269,7 +1385,9 @@ function resolveTouchedProfiles(params: {
 }): string[] {
   const touched = new Set<string>();
 
-  for (const [profileId, credential] of Object.entries(params.nextStore.profiles)) {
+  for (const [profileId, credential] of Object.entries(
+    params.nextStore.profiles,
+  )) {
     if (credential.provider !== params.providerId) {
       continue;
     }
@@ -1315,7 +1433,9 @@ function createSingleSecretPrompter(secret: string): WizardPrompterLike {
     },
     multiselect() {
       return Promise.reject(
-        new Error("This connection method requires an interactive selection flow."),
+        new Error(
+          "This connection method requires an interactive selection flow.",
+        ),
       );
     },
     note() {
@@ -1347,7 +1467,9 @@ function createSingleSecretPrompter(secret: string): WizardPrompterLike {
     text() {
       if (consumedSecret) {
         return Promise.reject(
-          new Error("This connection method requires additional interactive input."),
+          new Error(
+            "This connection method requires additional interactive input.",
+          ),
         );
       }
       consumedSecret = true;

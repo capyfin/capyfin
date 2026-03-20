@@ -70,7 +70,10 @@ export class SidecarClient {
     return authOverviewSchema.parse(await this.request("/auth/overview"));
   }
 
-  async chatBootstrap(agentId?: string, sessionId?: string): Promise<ChatBootstrap> {
+  async chatBootstrap(
+    agentId?: string,
+    sessionId?: string,
+  ): Promise<ChatBootstrap> {
     const params = new URLSearchParams();
     if (agentId) {
       params.set("agentId", agentId);
@@ -86,7 +89,9 @@ export class SidecarClient {
 
   async listSessions(agentId?: string): Promise<AgentSessionList> {
     const query = agentId ? `?agentId=${encodeURIComponent(agentId)}` : "";
-    return agentSessionListSchema.parse(await this.request(`/agents/sessions${query}`));
+    return agentSessionListSchema.parse(
+      await this.request(`/agents/sessions${query}`),
+    );
   }
 
   async createSession(payload: {
@@ -107,7 +112,10 @@ export class SidecarClient {
     });
   }
 
-  async updateSessionLabel(sessionId: string, label: string): Promise<AgentSession> {
+  async updateSessionLabel(
+    sessionId: string,
+    label: string,
+  ): Promise<AgentSession> {
     return agentSessionSchema.parse(
       await this.request(`/agents/sessions/${encodeURIComponent(sessionId)}`, {
         body: JSON.stringify(updateAgentSessionRequestSchema.parse({ label })),
@@ -173,7 +181,9 @@ export class SidecarClient {
   async selectConnection(profileId: string): Promise<SavedConnection> {
     return savedConnectionSchema.parse(
       await this.request("/auth/select", {
-        body: JSON.stringify(selectConnectionRequestSchema.parse({ profileId })),
+        body: JSON.stringify(
+          selectConnectionRequestSchema.parse({ profileId }),
+        ),
         method: "POST",
       }),
     );
@@ -181,16 +191,26 @@ export class SidecarClient {
 
   async providerModels(providerId: string): Promise<ProviderModelCatalog> {
     return providerModelCatalogSchema.parse(
-      await this.request(`/auth/providers/${encodeURIComponent(providerId)}/models`),
+      await this.request(
+        `/auth/providers/${encodeURIComponent(providerId)}/models`,
+      ),
     );
   }
 
-  async setProviderModel(providerId: string, modelRef: string): Promise<AuthOverview> {
+  async setProviderModel(
+    providerId: string,
+    modelRef: string,
+  ): Promise<AuthOverview> {
     return authOverviewSchema.parse(
-      await this.request(`/auth/providers/${encodeURIComponent(providerId)}/model`, {
-        body: JSON.stringify(setProviderModelRequestSchema.parse({ modelRef })),
-        method: "POST",
-      }),
+      await this.request(
+        `/auth/providers/${encodeURIComponent(providerId)}/model`,
+        {
+          body: JSON.stringify(
+            setProviderModelRequestSchema.parse({ modelRef }),
+          ),
+          method: "POST",
+        },
+      ),
     );
   }
 
@@ -223,31 +243,40 @@ export class SidecarClient {
   ): Promise<AuthSession> {
     return authSessionSchema.parse(
       await this.request(`/auth/sessions/${sessionId}/respond`, {
-        body: JSON.stringify(
-          respondAuthSessionRequestSchema.parse({ value }),
-        ),
+        body: JSON.stringify(respondAuthSessionRequestSchema.parse({ value })),
         method: "POST",
       }),
     );
   }
 
-  async uploadPortfolio(agentId: string, csv: string): Promise<{ message: string; rows: number }> {
-    return (await this.request(`/agents/${encodeURIComponent(agentId)}/portfolio`, {
-      body: JSON.stringify({ csv }),
-      method: "POST",
-    })) as { message: string; rows: number };
+  async uploadPortfolio(
+    agentId: string,
+    csv: string,
+  ): Promise<{ message: string; rows: number }> {
+    return (await this.request(
+      `/agents/${encodeURIComponent(agentId)}/portfolio`,
+      {
+        body: JSON.stringify({ csv }),
+        method: "POST",
+      },
+    )) as { message: string; rows: number };
   }
 
-  async getPortfolioStatus(agentId: string): Promise<{ hasPortfolio: boolean; rows?: number }> {
+  async getPortfolioStatus(
+    agentId: string,
+  ): Promise<{ hasPortfolio: boolean; rows?: number }> {
     return (await this.request(
       `/agents/${encodeURIComponent(agentId)}/portfolio`,
     )) as { hasPortfolio: boolean; rows?: number };
   }
 
   async deletePortfolio(agentId: string): Promise<{ deleted: boolean }> {
-    return (await this.request(`/agents/${encodeURIComponent(agentId)}/portfolio`, {
-      method: "DELETE",
-    })) as { deleted: boolean };
+    return (await this.request(
+      `/agents/${encodeURIComponent(agentId)}/portfolio`,
+      {
+        method: "DELETE",
+      },
+    )) as { deleted: boolean };
   }
 
   createApiUrl(path: string): string {
@@ -263,10 +292,7 @@ export class SidecarClient {
     return headers;
   }
 
-  private async request(
-    path: string,
-    init?: RequestInit,
-  ): Promise<unknown> {
+  private async request(path: string, init?: RequestInit): Promise<unknown> {
     const headers = this.createAuthHeaders();
     const initHeaders = new Headers(init?.headers);
     for (const [key, value] of initHeaders.entries()) {

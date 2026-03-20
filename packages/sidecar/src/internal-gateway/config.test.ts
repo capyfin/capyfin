@@ -140,8 +140,13 @@ void describe("writeEmbeddedGatewayConfig", () => {
     const config = JSON.parse(raw) as TestGatewayConfig;
 
     assert.ok(config.agents);
-    assert.equal(config.agents.defaults?.model?.primary, "openai-codex/gpt-5.4");
-    assert.deepEqual(config.auth?.order["openai-codex"], ["openai-codex:default"]);
+    assert.equal(
+      config.agents.defaults?.model?.primary,
+      "openai-codex/gpt-5.4",
+    );
+    assert.deepEqual(config.auth?.order["openai-codex"], [
+      "openai-codex:default",
+    ]);
     assert.deepEqual(config.agents.list, [
       {
         agentDir: join(paths.stateDir, "agents", "main", "agent"),

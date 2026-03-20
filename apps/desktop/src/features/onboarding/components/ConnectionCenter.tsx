@@ -67,7 +67,9 @@ interface ConnectionCenterProps {
 
 type SetupStep = "providers" | "configure" | "portfolio";
 
-const providerLogos: Partial<Record<string, { color: string; darkColor?: string; svg: string }>> = {
+const providerLogos: Partial<
+  Record<string, { color: string; darkColor?: string; svg: string }>
+> = {
   "ai-gateway": { color: "#111111", darkColor: "#e0e0e0", svg: vercelLogo },
   "cloudflare-ai-gateway": { color: "#F38020", svg: cloudflareLogo },
   anthropic: { color: "#191919", darkColor: "#e8e8e8", svg: anthropicLogo },
@@ -111,15 +113,22 @@ export function ConnectionCenter({
   onRetry,
   runtimeError,
 }: ConnectionCenterProps) {
-  const providers = useMemo(() => authOverview?.providers ?? [], [authOverview?.providers]);
+  const providers = useMemo(
+    () => authOverview?.providers ?? [],
+    [authOverview?.providers],
+  );
   const [step, setStep] = useState<SetupStep>("providers");
-  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
+    null,
+  );
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null);
   const [secret, setSecret] = useState("");
   const [sessionInputValue, setSessionInputValue] = useState("");
   const [sessionSelections, setSessionSelections] = useState<string[]>([]);
   const [authSession, setAuthSession] = useState<AuthSession | null>(null);
-  const [modelCatalog, setModelCatalog] = useState<ProviderModelCatalog | null>(null);
+  const [modelCatalog, setModelCatalog] = useState<ProviderModelCatalog | null>(
+    null,
+  );
   const [selectedModelRef, setSelectedModelRef] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -128,7 +137,12 @@ export function ConnectionCenter({
   const handledCompletedSessionRef = useRef<string | null>(null);
 
   const connectedProviderIds = useMemo(
-    () => new Set((authOverview?.connections ?? []).map((connection) => connection.providerId)),
+    () =>
+      new Set(
+        (authOverview?.connections ?? []).map(
+          (connection) => connection.providerId,
+        ),
+      ),
     [authOverview],
   );
   const canContinue = Boolean(authOverview?.selectedProviderId);
@@ -141,19 +155,25 @@ export function ConnectionCenter({
 
     const preferred =
       providers.find((provider) =>
-        provider.methods.some((method) => method.providerId === authOverview?.selectedProviderId),
+        provider.methods.some(
+          (method) => method.providerId === authOverview?.selectedProviderId,
+        ),
       ) ?? providers[0];
     if (!preferred) {
       return;
     }
 
     setSelectedProviderId((current) =>
-      current && providers.some((provider) => provider.id === current) ? current : preferred.id,
+      current && providers.some((provider) => provider.id === current)
+        ? current
+        : preferred.id,
     );
   }, [authOverview?.selectedProviderId, providers]);
 
   const selectedProvider =
-    providers.find((provider) => provider.id === selectedProviderId) ?? providers[0] ?? null;
+    providers.find((provider) => provider.id === selectedProviderId) ??
+    providers[0] ??
+    null;
 
   useEffect(() => {
     if (!selectedProvider) {
@@ -162,14 +182,17 @@ export function ConnectionCenter({
     }
 
     setSelectedMethodId((current) =>
-      current && selectedProvider.methods.some((method) => method.id === current)
+      current &&
+      selectedProvider.methods.some((method) => method.id === current)
         ? current
-        : selectedProvider.methods[0]?.id ?? null,
+        : (selectedProvider.methods[0]?.id ?? null),
     );
   }, [selectedProvider]);
 
   const selectedMethod =
-    selectedProvider?.methods.find((method) => method.id === selectedMethodId) ??
+    selectedProvider?.methods.find(
+      (method) => method.id === selectedMethodId,
+    ) ??
     selectedProvider?.methods[0] ??
     null;
 
@@ -186,13 +209,17 @@ export function ConnectionCenter({
 
     async function loadProviderModels(): Promise<void> {
       try {
-        const catalog = await runtimeClient.providerModels(runtimeMethod.providerId);
+        const catalog = await runtimeClient.providerModels(
+          runtimeMethod.providerId,
+        );
         if (cancelled) {
           return;
         }
         setErrorMessage(null);
         setModelCatalog(catalog);
-        setSelectedModelRef(catalog.currentModelRef ?? catalog.models[0]?.modelRef ?? "");
+        setSelectedModelRef(
+          catalog.currentModelRef ?? catalog.models[0]?.modelRef ?? "",
+        );
       } catch (error) {
         if (!cancelled) {
           setModelCatalog(null);
@@ -262,7 +289,9 @@ export function ConnectionCenter({
         }
 
         if (nextSession.state === "error") {
-          setErrorMessage(nextSession.error ?? "Could not complete the connection.");
+          setErrorMessage(
+            nextSession.error ?? "Could not complete the connection.",
+          );
         }
       } catch (error) {
         if (!cancelled) {
@@ -280,7 +309,13 @@ export function ConnectionCenter({
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [authSession, client, onAuthOverviewChange, selectedMethod, selectedModelRef]);
+  }, [
+    authSession,
+    client,
+    onAuthOverviewChange,
+    selectedMethod,
+    selectedModelRef,
+  ]);
 
   async function handleSecretConnect(): Promise<void> {
     if (!client || !selectedMethod) {
@@ -297,9 +332,14 @@ export function ConnectionCenter({
         secret: secret.trim(),
       });
       const nextOverview = selectedModelRef.trim()
-        ? await client.setProviderModel(selectedMethod.providerId, selectedModelRef.trim())
+        ? await client.setProviderModel(
+            selectedMethod.providerId,
+            selectedModelRef.trim(),
+          )
         : await client.authOverview();
-      const nextCatalog = await client.providerModels(selectedMethod.providerId);
+      const nextCatalog = await client.providerModels(
+        selectedMethod.providerId,
+      );
       startTransition(() => {
         onAuthOverviewChange(nextOverview);
         setModelCatalog(nextCatalog);
@@ -351,16 +391,19 @@ export function ConnectionCenter({
 
     try {
       const step = authSession.step;
-      const value = valueOverride ?? (
-        step.type === "confirm_prompt"
+      const value =
+        valueOverride ??
+        (step.type === "confirm_prompt"
           ? true
           : step.type === "select_prompt"
             ? step.allowMultiple
               ? sessionSelections
-              : sessionSelections[0] ?? ""
-            : sessionInputValue
+              : (sessionSelections[0] ?? "")
+            : sessionInputValue);
+      const nextSession = await client.respondToAuthSession(
+        authSession.id,
+        value,
       );
-      const nextSession = await client.respondToAuthSession(authSession.id, value);
       setAuthSession(nextSession);
       if (step.type === "text_prompt") {
         setSessionInputValue("");
@@ -418,15 +461,15 @@ export function ConnectionCenter({
                 ? "Upload your portfolio"
                 : step === "providers"
                   ? "Connect a provider"
-                  : selectedProvider?.name ?? "Connection"}
+                  : (selectedProvider?.name ?? "Connection")}
             </h1>
             <p className="mt-2 max-w-xl text-[14px] leading-7 text-muted-foreground">
               {step === "portfolio"
                 ? "Add your holdings so the agent can analyze your actual portfolio. You can skip this and add it later."
                 : step === "providers"
                   ? "Choose the model provider you want to use. You can always add more later."
-                  : selectedProvider?.description ??
-                    "Choose how you want to connect, then finish setup."}
+                  : (selectedProvider?.description ??
+                    "Choose how you want to connect, then finish setup.")}
             </p>
           </div>
 
@@ -504,7 +547,9 @@ export function ConnectionCenter({
                   type="button"
                   className={cn(
                     "group rounded-lg border bg-card p-4 text-left transition-all duration-150 hover:bg-accent",
-                    connectedProviderIds.has(resolveProviderConnectionId(provider))
+                    connectedProviderIds.has(
+                      resolveProviderConnectionId(provider),
+                    )
                       ? "border-success/30"
                       : "border-border/60 hover:border-primary/30",
                   )}
@@ -526,7 +571,9 @@ export function ConnectionCenter({
                         ) : null}
                       </div>
                     </div>
-                    {connectedProviderIds.has(resolveProviderConnectionId(provider)) ? (
+                    {connectedProviderIds.has(
+                      resolveProviderConnectionId(provider),
+                    ) ? (
                       <span className="inline-flex items-center gap-0.5 rounded-md bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
                         <CheckIcon className="size-3" />
                         Connected
@@ -606,21 +653,24 @@ export function ConnectionCenter({
                       ))}
                     </select>
                     <p className="text-[12px] leading-5 text-muted-foreground">
-                      CapyFin will use this model for {formatProviderName(selectedProvider)}.
+                      CapyFin will use this model for{" "}
+                      {formatProviderName(selectedProvider)}.
                     </p>
                   </div>
                 ) : null}
               </div>
 
               <div className="mt-8 max-w-2xl">
-                {selectedMethod.input === "api_key" || selectedMethod.input === "token" ? (
+                {selectedMethod.input === "api_key" ||
+                selectedMethod.input === "token" ? (
                   <div className="space-y-4">
                     <div className="space-y-1">
                       <h2 className="text-[16px] font-semibold tracking-tight text-foreground">
                         {selectedMethod.label}
                       </h2>
                       <p className="text-[13px] leading-6 text-muted-foreground">
-                        {selectedMethod.hint ?? "Paste the credential you want CapyFin to use."}
+                        {selectedMethod.hint ??
+                          "Paste the credential you want CapyFin to use."}
                       </p>
                     </div>
 
@@ -734,10 +784,7 @@ export function ConnectionCenter({
               </div>
             </section>
           ) : step === "portfolio" ? (
-            <PortfolioUploadStep
-              client={client}
-              onContinue={onContinue}
-            />
+            <PortfolioUploadStep client={client} onContinue={onContinue} />
           ) : null}
         </div>
       </div>
@@ -755,7 +802,10 @@ function PortfolioUploadStep({
   onContinue: () => void;
 }) {
   const [isDragOver, setIsDragOver] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<{ name: string; rows: number } | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<{
+    name: string;
+    rows: number;
+  } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -783,7 +833,9 @@ function PortfolioUploadStep({
       const result = await client.uploadPortfolio("main", csv);
       setUploadedFile({ name: file.name, rows: result.rows });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Upload failed.");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Upload failed.",
+      );
     } finally {
       setIsBusy(false);
     }
@@ -814,9 +866,12 @@ function PortfolioUploadStep({
               <FileSpreadsheetIcon className="size-5" />
             </div>
             <div className="text-center">
-              <p className="text-[15px] font-semibold text-foreground">{uploadedFile.name}</p>
+              <p className="text-[15px] font-semibold text-foreground">
+                {uploadedFile.name}
+              </p>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                {uploadedFile.rows} holding{uploadedFile.rows === 1 ? "" : "s"} loaded
+                {uploadedFile.rows} holding{uploadedFile.rows === 1 ? "" : "s"}{" "}
+                loaded
               </p>
             </div>
             <Button
@@ -975,9 +1030,13 @@ function AuthSessionPanel({
   if (step.type === "auth_link") {
     return (
       <div className="rounded-lg border border-border/60 bg-card px-3.5 py-3.5 text-[13px]">
-        <div className="font-medium text-foreground">{step.label ?? "Browser sign-in ready"}</div>
+        <div className="font-medium text-foreground">
+          {step.label ?? "Browser sign-in ready"}
+        </div>
         {step.instructions ? (
-          <p className="mt-1 leading-5 text-muted-foreground">{step.instructions}</p>
+          <p className="mt-1 leading-5 text-muted-foreground">
+            {step.instructions}
+          </p>
         ) : null}
         <Button
           type="button"
@@ -1031,7 +1090,9 @@ function AuthSessionPanel({
   if (step.type === "text_prompt") {
     return (
       <div className="rounded-lg border border-border/60 bg-card px-3.5 py-3.5">
-        <label className="block text-[13px] font-medium text-foreground">{step.message}</label>
+        <label className="block text-[13px] font-medium text-foreground">
+          {step.message}
+        </label>
         <Input
           type={step.secret ? "password" : "text"}
           className="mt-2 h-9 rounded-md text-[13px]"
@@ -1095,7 +1156,7 @@ function AuthSessionPanel({
         className="mt-3 h-8 rounded-md text-[12px]"
         disabled={isBusy || selections.length === 0}
         onClick={() => {
-          onRespond(step.allowMultiple ? selections : selections[0] ?? "");
+          onRespond(step.allowMultiple ? selections : (selections[0] ?? ""));
         }}
       >
         Continue

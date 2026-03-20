@@ -22,6 +22,7 @@
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@capyfin/contracts": "workspace:*",
     "@capyfin/core": "workspace:*",
     "@hono/node-server": "^1.19.11",
     "ai": "^6.0.116",

@@ -28,7 +28,13 @@ function stripFrontMatter(content: string): string {
 export async function loadPackagedTemplate(name: string): Promise<string> {
   const entry = require.resolve("openclaw");
   const packageRoot = dirname(dirname(entry));
-  const templatePath = join(packageRoot, "docs", "reference", "templates", name);
+  const templatePath = join(
+    packageRoot,
+    "docs",
+    "reference",
+    "templates",
+    name,
+  );
   return stripFrontMatter(await readFile(templatePath, "utf8"));
 }
 
@@ -65,8 +71,9 @@ export async function migrateLegacyDefaultWorkspacePersona(
     userExists ? readFile(userPath, "utf8") : Promise.resolve(""),
   ]);
 
-  const shouldReset =
-    files.some((content) => content && containsLegacyCapyfinPersona(content));
+  const shouldReset = files.some(
+    (content) => content && containsLegacyCapyfinPersona(content),
+  );
 
   if (!shouldReset) {
     return false;
@@ -85,7 +92,9 @@ export async function migrateLegacyDefaultWorkspacePersona(
     writeFile(identityPath, identityTemplate, "utf8"),
     writeFile(userPath, userTemplate, "utf8"),
     fileExists(bootstrapPath).then((exists) =>
-      exists ? Promise.resolve() : writeFile(bootstrapPath, bootstrapTemplate, "utf8"),
+      exists
+        ? Promise.resolve()
+        : writeFile(bootstrapPath, bootstrapTemplate, "utf8"),
     ),
   ]);
 

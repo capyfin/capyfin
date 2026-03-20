@@ -224,7 +224,10 @@ async function login(
       authChoice: selectedMethod.id,
       secret: explicitApiKey ?? explicitToken ?? "",
     });
-  } else if (selectedMethod.input === "api_key" || selectedMethod.input === "token") {
+  } else if (
+    selectedMethod.input === "api_key" ||
+    selectedMethod.input === "token"
+  ) {
     const secret = await io.promptSecret(
       `Enter ${provider.name} ${selectedMethod.input === "token" ? "token" : "API key"}: `,
     );
@@ -244,7 +247,11 @@ async function login(
     throw new Error(`Connected ${provider.name}, but no profile was stored.`);
   }
 
-  if (!activate && previousSelection && previousSelection !== connection.profileId) {
+  if (
+    !activate &&
+    previousSelection &&
+    previousSelection !== connection.profileId
+  ) {
     await authService.selectProfile(previousSelection);
   }
 
@@ -269,7 +276,9 @@ async function selectConnection(
   const selector = positionals[0]?.trim();
 
   if (!selector) {
-    throw new Error("Missing provider or profile identifier. Usage: capyfin auth select <provider|profile-id>");
+    throw new Error(
+      "Missing provider or profile identifier. Usage: capyfin auth select <provider|profile-id>",
+    );
   }
 
   const { authService } = await createCliAuthContext(options);
@@ -301,7 +310,9 @@ async function promptForProviderSelection(
     );
   });
 
-  const selection = await io.prompt(`Enter a number (1-${String(providers.length)}): `);
+  const selection = await io.prompt(
+    `Enter a number (1-${String(providers.length)}): `,
+  );
   const index = Number.parseInt(selection, 10) - 1;
   const provider = providers[index];
   if (!provider) {
@@ -320,8 +331,9 @@ async function resolveLoginMethod(params: {
 }): Promise<ProviderMethod> {
   if (params.explicitOauth) {
     return (
-      params.provider.methods.find((method) => isInteractiveInput(method.input)) ??
-      failMissingMethod(params.provider, "interactive sign-in")
+      params.provider.methods.find((method) =>
+        isInteractiveInput(method.input),
+      ) ?? failMissingMethod(params.provider, "interactive sign-in")
     );
   }
 
@@ -343,7 +355,9 @@ async function resolveLoginMethod(params: {
   if (params.provider.methods.length === 1) {
     const onlyMethod = params.provider.methods[0];
     if (!onlyMethod) {
-      throw new Error(`${params.provider.name} does not expose any connection methods.`);
+      throw new Error(
+        `${params.provider.name} does not expose any connection methods.`,
+      );
     }
     return onlyMethod;
   }
@@ -388,15 +402,18 @@ function buildProviderStatus(
   selectedProfileId?: string;
   selectedConnection?: SavedConnection;
 } {
-  const providerIds = new Set(provider.methods.map((method) => method.providerId));
+  const providerIds = new Set(
+    provider.methods.map((method) => method.providerId),
+  );
   providerIds.add(provider.id);
 
   const connections = overview.connections.filter((connection) =>
     providerIds.has(connection.providerId),
   );
   const selectedConnection =
-    connections.find((connection) => connection.profileId === overview.selectedProfileId) ??
-    connections.find((connection) => connection.isDefault);
+    connections.find(
+      (connection) => connection.profileId === overview.selectedProfileId,
+    ) ?? connections.find((connection) => connection.isDefault);
 
   return {
     connections,
@@ -428,7 +445,9 @@ function renderProviderStatus(status: {
   ];
 
   if (status.selectedConnection) {
-    lines.push(`  Selected: ${status.selectedProfileId ?? status.selectedConnection.profileId}`);
+    lines.push(
+      `  Selected: ${status.selectedProfileId ?? status.selectedConnection.profileId}`,
+    );
   }
 
   if (status.connections.length === 0) {
@@ -472,8 +491,7 @@ function resolveProfileIdForSelector(
 
   const status = buildProviderStatus(overview, provider);
   return (
-    status.selectedConnection?.profileId ??
-    status.connections[0]?.profileId
+    status.selectedConnection?.profileId ?? status.connections[0]?.profileId
   );
 }
 
@@ -489,11 +507,15 @@ function createCliPrompter(io: CliIo): CliPrompterLike {
   return {
     async confirm(params) {
       if (!io.isInteractive) {
-        throw new Error("Interactive confirmation is required for this connection flow.");
+        throw new Error(
+          "Interactive confirmation is required for this connection flow.",
+        );
       }
 
       const suffix = params.initialValue === false ? " [y/N]: " : " [Y/n]: ";
-      const answer = (await io.prompt(`${params.message}${suffix}`)).trim().toLowerCase();
+      const answer = (await io.prompt(`${params.message}${suffix}`))
+        .trim()
+        .toLowerCase();
       if (!answer) {
         return params.initialValue !== false;
       }
@@ -505,21 +527,35 @@ function createCliPrompter(io: CliIo): CliPrompterLike {
     },
     async multiselect(params) {
       if (!io.isInteractive) {
-        throw new Error("Interactive selection is required for this connection flow.");
+        throw new Error(
+          "Interactive selection is required for this connection flow.",
+        );
       }
 
       io.stdout(`${params.message}\n`);
       params.options.forEach((option, index) => {
-        io.stdout(`${String(index + 1)}. ${option.label}${option.hint ? ` - ${option.hint}` : ""}\n`);
+        io.stdout(
+          `${String(index + 1)}. ${option.label}${option.hint ? ` - ${option.hint}` : ""}\n`,
+        );
       });
-      const answer = await io.prompt("Select one or more numbers separated by commas: ");
+      const answer = await io.prompt(
+        "Select one or more numbers separated by commas: ",
+      );
       const indexes = answer
         .split(",")
         .map((value) => Number.parseInt(value.trim(), 10) - 1)
         .filter((value) => Number.isInteger(value));
       const selected = indexes
         .map((index) => params.options[index])
-        .filter((option): option is { hint?: string; label: string; value: typeof params.options[number]["value"] } => Boolean(option))
+        .filter(
+          (
+            option,
+          ): option is {
+            hint?: string;
+            label: string;
+            value: (typeof params.options)[number]["value"];
+          } => Boolean(option),
+        )
         .map((option) => option.value);
 
       if (selected.length === 0) {
@@ -551,14 +587,20 @@ function createCliPrompter(io: CliIo): CliPrompterLike {
     },
     async select(params) {
       if (!io.isInteractive) {
-        throw new Error("Interactive selection is required for this connection flow.");
+        throw new Error(
+          "Interactive selection is required for this connection flow.",
+        );
       }
 
       io.stdout(`${params.message}\n`);
       params.options.forEach((option, index) => {
-        io.stdout(`${String(index + 1)}. ${option.label}${option.hint ? ` - ${option.hint}` : ""}\n`);
+        io.stdout(
+          `${String(index + 1)}. ${option.label}${option.hint ? ` - ${option.hint}` : ""}\n`,
+        );
       });
-      const answer = await io.prompt(`Enter a number (1-${String(params.options.length)}): `);
+      const answer = await io.prompt(
+        `Enter a number (1-${String(params.options.length)}): `,
+      );
       const index = Number.parseInt(answer.trim(), 10) - 1;
       const option = params.options[index];
       if (!option) {

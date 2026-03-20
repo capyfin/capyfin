@@ -43,7 +43,6 @@ import { cn } from "@/lib/utils";
 import type { ChatStatus, FileUIPart, SourceDocumentUIPart } from "ai";
 import {
   CornerDownLeftIcon,
-  ImageIcon,
   Monitor,
   PaperclipIcon,
   PlusIcon,
@@ -56,13 +55,12 @@ import type {
   ChangeEventHandler,
   ClipboardEventHandler,
   ComponentProps,
-  FormEvent,
-  FormEventHandler,
   HTMLAttributes,
   KeyboardEventHandler,
   PropsWithChildren,
   ReactNode,
   RefObject,
+  SyntheticEvent,
 } from "react";
 import {
   Children,
@@ -85,12 +83,12 @@ const convertBlobUrlToDataUrl = async (url: string): Promise<string | null> => {
     const blob = await response.blob();
     // FileReader uses callback-based API, wrapping in Promise is necessary
     // oxlint-disable-next-line eslint-plugin-promise(avoid-new)
-    return new Promise((resolve) => {
+    return await new Promise<string | null>((resolve) => {
       const reader = new FileReader();
       // oxlint-disable-next-line eslint-plugin-unicorn(prefer-add-event-listener)
-      reader.onloadend = () => resolve(reader.result as string);
+      reader.onloadend = () => { resolve(reader.result as string); };
       // oxlint-disable-next-line eslint-plugin-unicorn(prefer-add-event-listener)
-      reader.onerror = () => resolve(null);
+      reader.onerror = () => { resolve(null); };
       reader.readAsDataURL(blob);
     });
   } catch {
@@ -101,6 +99,7 @@ const convertBlobUrlToDataUrl = async (url: string): Promise<string | null> => {
 const captureScreenshot = async (): Promise<File | null> => {
   if (
     typeof navigator === "undefined" ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     !navigator.mediaDevices?.getDisplayMedia
   ) {
     return null;
@@ -123,9 +122,9 @@ const captureScreenshot = async (): Promise<File | null> => {
     // oxlint-disable-next-line eslint-plugin-promise(avoid-new)
     await new Promise<void>((resolve, reject) => {
       // oxlint-disable-next-line eslint-plugin-unicorn(prefer-add-event-listener)
-      video.onloadedmetadata = () => resolve();
+      video.onloadedmetadata = () => { resolve(); };
       // oxlint-disable-next-line eslint-plugin-unicorn(prefer-add-event-listener)
-      video.onerror = () => reject(new Error("Failed to load screen stream"));
+      video.onerror = () => { reject(new Error("Failed to load screen stream")); };
     });
 
     await video.play();
@@ -252,7 +251,7 @@ export const PromptInputProvider = ({
 }: PromptInputProviderProps) => {
   // ----- textInput state
   const [textInput, setTextInput] = useState(initialTextInput);
-  const clearInput = useCallback(() => setTextInput(""), []);
+  const clearInput = useCallback(() => { setTextInput(""); }, []);
 
   // ----- attachments state (global when wrapped)
   const [attachmentFiles, setAttachmentFiles] = useState<
@@ -260,6 +259,7 @@ export const PromptInputProvider = ({
   >([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   // oxlint-disable-next-line eslint(no-empty-function)
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const openRef = useRef<() => void>(() => {});
 
   const add = useCallback((files: File[] | FileList) => {
@@ -321,7 +321,7 @@ export const PromptInputProvider = ({
   );
 
   const openFileDialog = useCallback(() => {
-    openRef.current?.();
+    openRef.current();
   }, []);
 
   const attachments = useMemo<AttachmentsContext>(
@@ -475,7 +475,11 @@ export const PromptInputActionAddScreenshot = ({
   );
 
   return (
-    <DropdownMenuItem {...props} onSelect={handleSelect}>
+    <DropdownMenuItem
+      {...props}
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      onSelect={handleSelect}
+    >
       <Monitor className="mr-2 size-4" />
       {label}
     </DropdownMenuItem>
@@ -508,7 +512,7 @@ export type PromptInputProps = Omit<
   }) => void;
   onSubmit: (
     message: PromptInputMessage,
-    event: FormEvent<HTMLFormElement>
+    event: SyntheticEvent<HTMLFormElement>
   ) => void | Promise<void>;
 };
 
@@ -633,13 +637,13 @@ export const PromptInput = ({
 
   const removeLocal = useCallback(
     (id: string) =>
-      setItems((prev) => {
+      { setItems((prev) => {
         const found = prev.find((file) => file.id === id);
         if (found?.url) {
           URL.revokeObjectURL(found.url);
         }
         return prev.filter((file) => file.id !== id);
-      }),
+      }); },
     []
   );
 
@@ -688,22 +692,25 @@ export const PromptInput = ({
   );
 
   const clearAttachments = useCallback(
-    () =>
-      usingProvider
-        ? controller?.attachments.clear()
-        : setItems((prev) => {
-            for (const file of prev) {
-              if (file.url) {
-                URL.revokeObjectURL(file.url);
-              }
+    () => {
+      if (usingProvider) {
+        controller.attachments.clear();
+      } else {
+        setItems((prev) => {
+          for (const file of prev) {
+            if (file.url) {
+              URL.revokeObjectURL(file.url);
             }
-            return [];
-          }),
+          }
+          return [];
+        });
+      }
+    },
     [usingProvider, controller]
   );
 
   const clearReferencedSources = useCallback(
-    () => setReferencedSources([]),
+    () => { setReferencedSources([]); },
     []
   );
 
@@ -746,11 +753,13 @@ export const PromptInput = ({
     }
 
     const onDragOver = (e: DragEvent) => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (e.dataTransfer?.types?.includes("Files")) {
         e.preventDefault();
       }
     };
     const onDrop = (e: DragEvent) => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (e.dataTransfer?.types?.includes("Files")) {
         e.preventDefault();
       }
@@ -772,11 +781,13 @@ export const PromptInput = ({
     }
 
     const onDragOver = (e: DragEvent) => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (e.dataTransfer?.types?.includes("Files")) {
         e.preventDefault();
       }
     };
     const onDrop = (e: DragEvent) => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (e.dataTransfer?.types?.includes("Files")) {
         e.preventDefault();
       }
@@ -846,8 +857,8 @@ export const PromptInput = ({
     [referencedSources, clearReferencedSources]
   );
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback(
-    async (event) => {
+  const handleSubmit = useCallback(
+    async (event: SyntheticEvent<HTMLFormElement>) => {
       event.preventDefault();
 
       const form = event.currentTarget;
@@ -867,8 +878,9 @@ export const PromptInput = ({
       try {
         // Convert blob URLs to data URLs asynchronously
         const convertedFiles: FileUIPart[] = await Promise.all(
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           files.map(async ({ id: _id, ...item }) => {
-            if (item.url?.startsWith("blob:")) {
+            if (item.url.startsWith("blob:")) {
               const dataUrl = await convertBlobUrlToDataUrl(item.url);
               // If conversion failed, keep the original blob URL
               return {
@@ -922,6 +934,7 @@ export const PromptInput = ({
       />
       <form
         className={cn("w-full", className)}
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onSubmit={handleSubmit}
         ref={formRef}
         {...props}
@@ -1018,11 +1031,7 @@ export const PromptInputTextarea = ({
 
   const handlePaste: ClipboardEventHandler<HTMLTextAreaElement> = useCallback(
     (event) => {
-      const items = event.clipboardData?.items;
-
-      if (!items) {
-        return;
-      }
+      const items = event.clipboardData.items;
 
       const files: File[] = [];
 
@@ -1043,8 +1052,8 @@ export const PromptInputTextarea = ({
     [attachments]
   );
 
-  const handleCompositionEnd = useCallback(() => setIsComposing(false), []);
-  const handleCompositionStart = useCallback(() => setIsComposing(true), []);
+  const handleCompositionEnd = useCallback(() => { setIsComposing(false); }, []);
+  const handleCompositionStart = useCallback(() => { setIsComposing(true); }, []);
 
   const controlledProps = controller
     ? {
@@ -1409,7 +1418,9 @@ export type PromptInputCommandProps = ComponentProps<typeof Command>;
 export const PromptInputCommand = ({
   className,
   ...props
-}: PromptInputCommandProps) => <Command className={cn(className)} {...props} />;
+}: PromptInputCommandProps) => (
+  <Command className={cn(className as string)} {...props} />
+);
 
 export type PromptInputCommandInputProps = ComponentProps<typeof CommandInput>;
 
@@ -1417,7 +1428,7 @@ export const PromptInputCommandInput = ({
   className,
   ...props
 }: PromptInputCommandInputProps) => (
-  <CommandInput className={cn(className)} {...props} />
+  <CommandInput className={cn(className as string)} {...props} />
 );
 
 export type PromptInputCommandListProps = ComponentProps<typeof CommandList>;
@@ -1426,7 +1437,7 @@ export const PromptInputCommandList = ({
   className,
   ...props
 }: PromptInputCommandListProps) => (
-  <CommandList className={cn(className)} {...props} />
+  <CommandList className={cn(className as string)} {...props} />
 );
 
 export type PromptInputCommandEmptyProps = ComponentProps<typeof CommandEmpty>;
@@ -1435,7 +1446,7 @@ export const PromptInputCommandEmpty = ({
   className,
   ...props
 }: PromptInputCommandEmptyProps) => (
-  <CommandEmpty className={cn(className)} {...props} />
+  <CommandEmpty className={cn(className as string)} {...props} />
 );
 
 export type PromptInputCommandGroupProps = ComponentProps<typeof CommandGroup>;
@@ -1444,7 +1455,7 @@ export const PromptInputCommandGroup = ({
   className,
   ...props
 }: PromptInputCommandGroupProps) => (
-  <CommandGroup className={cn(className)} {...props} />
+  <CommandGroup className={cn(className as string)} {...props} />
 );
 
 export type PromptInputCommandItemProps = ComponentProps<typeof CommandItem>;
@@ -1453,7 +1464,7 @@ export const PromptInputCommandItem = ({
   className,
   ...props
 }: PromptInputCommandItemProps) => (
-  <CommandItem className={cn(className)} {...props} />
+  <CommandItem className={cn(className as string)} {...props} />
 );
 
 export type PromptInputCommandSeparatorProps = ComponentProps<
@@ -1464,5 +1475,5 @@ export const PromptInputCommandSeparator = ({
   className,
   ...props
 }: PromptInputCommandSeparatorProps) => (
-  <CommandSeparator className={cn(className)} {...props} />
+  <CommandSeparator className={cn(className as string)} {...props} />
 );

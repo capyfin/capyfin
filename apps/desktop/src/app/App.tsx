@@ -84,18 +84,6 @@ export function App() {
     };
   }, []);
 
-  const refreshSessions = useCallback(async () => {
-    if (!client) {
-      return;
-    }
-    try {
-      const sessionList = await client.listSessions("main");
-      setSessions(sessionList.sessions);
-    } catch {
-      // Silently ignore — sessions will refresh on next hydration
-    }
-  }, [client]);
-
   const handleNewChat = useCallback(async () => {
     if (!client) {
       return;
@@ -174,7 +162,7 @@ export function App() {
           if (client) {
             void client.getPortfolioStatus("main").then((status) => {
               setHasPortfolio(status.hasPortfolio);
-            }).catch(() => {});
+            }).catch(() => { /* ignore — refreshed on next hydration */ });
           }
         }}
         onRetry={() => {

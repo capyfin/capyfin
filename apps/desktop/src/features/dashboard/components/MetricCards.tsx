@@ -30,7 +30,9 @@ export function MetricCards() {
   return (
     <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
       {dashboardMetrics.map((metric, index) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const Icon = metricIcons[index] ?? WalletCardsIcon;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const TrendIcon =
           metric.trend === "up" ? ArrowUpRightIcon : ArrowDownRightIcon;
         const trendClassName =

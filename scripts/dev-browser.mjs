@@ -1,3 +1,4 @@
+import { createConnection } from "node:net";
 import { spawn } from "node:child_process";
 
 const hostname = process.env.CAPYFIN_DEV_SIDECAR_HOSTNAME || "127.0.0.1";
@@ -51,6 +52,31 @@ function spawnPnpm(args) {
   return child;
 }
 
+function waitForPort(host, targetPort, timeoutMs = 30_000) {
+  const start = Date.now();
+  return new Promise((resolve, reject) => {
+    function attempt() {
+      if (isShuttingDown) {
+        reject(new Error("Shutting down"));
+        return;
+      }
+      if (Date.now() - start > timeoutMs) {
+        reject(new Error(`Sidecar not ready after ${timeoutMs}ms`));
+        return;
+      }
+      const socket = createConnection({ host, port: targetPort }, () => {
+        socket.destroy();
+        resolve();
+      });
+      socket.on("error", () => {
+        socket.destroy();
+        setTimeout(attempt, 250);
+      });
+    }
+    attempt();
+  });
+}
+
 function shutdown() {
   if (isShuttingDown) {
     return;
@@ -68,14 +94,17 @@ process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
 spawnPnpm(["sidecar:dev"]);
-spawnPnpm([
-  "--filter",
-  "@capyfin/desktop",
-  "exec",
-  "vite",
-  "--host",
-  "127.0.0.1",
-  "--port",
-  appPort,
-  "--strictPort",
-]);
+
+waitForPort(hostname, Number(port)).then(() => {
+  spawnPnpm([
+    "--filter",
+    "@capyfin/desktop",
+    "exec",
+    "vite",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    appPort,
+    "--strictPort",
+  ]);
+});

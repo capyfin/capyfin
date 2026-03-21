@@ -91,6 +91,117 @@ const SKILLS = [
       "provider",
     ],
   },
+  {
+    id: "deep-dive",
+    expectedName: "Deep Dive",
+    minLines: 300,
+    expectedRequires: ["web_search", "fetch"],
+    requiredSections: [
+      "Purpose",
+      "Data Sourcing",
+      "Tier 0",
+      "Tier 1",
+      "Business Overview",
+      "Moat Assessment",
+      "Financial Health",
+      "Recent Developments",
+      "Key Risks",
+      "Verdict",
+      "Output Template",
+      "Quality",
+    ],
+    requiredContent: [
+      "fundamental-analyst",
+      "SEC EDGAR",
+      "10-K",
+      "10-Q",
+      "network effects",
+      "switching costs",
+      "cost advantages",
+      "intangible assets",
+      "efficient scale",
+      "moat-framework.md",
+      "revenue growth",
+      "free cash flow",
+      "web search",
+      "FMP",
+      "HIGH",
+      "MEDIUM",
+      "LOW",
+      "provider",
+      "None",
+      "Narrow",
+      "Wide",
+    ],
+  },
+  {
+    id: "fair-value",
+    expectedName: "Fair Value",
+    minLines: 300,
+    expectedRequires: ["web_search", "fetch"],
+    requiredSections: [
+      "Purpose",
+      "Data Sourcing",
+      "Tier 0",
+      "Tier 1",
+      "Current Price",
+      "DCF",
+      "Comparable",
+      "Analyst Price Targets",
+      "Verdict",
+      "Output Template",
+      "Quality",
+    ],
+    requiredContent: [
+      "fundamental-analyst",
+      "dcf-methodology.md",
+      "WACC",
+      "terminal value",
+      "sensitivity",
+      "EV/EBITDA",
+      "P/E",
+      "P/S",
+      "SEC EDGAR",
+      "web search",
+      "FMP",
+      "15%",
+      "provider",
+      "fair value range",
+    ],
+  },
+] as const;
+
+const REFERENCE_DOCS = [
+  {
+    skillId: "deep-dive",
+    path: "deep-dive/references/moat-framework.md",
+    minLines: 80,
+    requiredContent: [
+      "network effects",
+      "switching costs",
+      "cost advantages",
+      "intangible assets",
+      "efficient scale",
+      "None",
+      "Narrow",
+      "Wide",
+    ],
+  },
+  {
+    skillId: "fair-value",
+    path: "fair-value/references/dcf-methodology.md",
+    minLines: 100,
+    requiredContent: [
+      "free cash flow",
+      "WACC",
+      "terminal value",
+      "discount",
+      "sensitivity",
+      "15%",
+      "growth rate",
+      "present value",
+    ],
+  },
 ] as const;
 
 for (const skill of SKILLS) {
@@ -195,6 +306,65 @@ for (const skill of SKILLS) {
     assert.ok(
       content.includes("## Output Template") || content.includes("## Output Format"),
       "File should have an Output Template or Output Format section",
+    );
+  });
+}
+
+// Reference document tests
+for (const ref of REFERENCE_DOCS) {
+  const refPath = join(moduleDir, ref.path);
+
+  void test(`${ref.path} exists`, async () => {
+    const info = await stat(refPath);
+    assert.ok(info.isFile(), `${refPath} should be a file`);
+  });
+
+  void test(`${ref.path} is ${ref.minLines}+ lines`, async () => {
+    const content = await readFile(refPath, "utf8");
+    const lineCount = content.split("\n").length;
+    assert.ok(
+      lineCount >= ref.minLines,
+      `File should be ${ref.minLines}+ lines, got ${lineCount}`,
+    );
+  });
+
+  void test(`${ref.path} contains required domain keywords`, async () => {
+    const content = await readFile(refPath, "utf8");
+    const contentLower = content.toLowerCase();
+    for (const keyword of ref.requiredContent) {
+      assert.ok(
+        contentLower.includes(keyword.toLowerCase()),
+        `File should contain keyword "${keyword}"`,
+      );
+    }
+  });
+}
+
+// Deep-dive specific: references moat-framework.md
+void test("deep-dive/SKILL.md references moat-framework.md", async () => {
+  const content = await readFile(join(moduleDir, "deep-dive", "SKILL.md"), "utf8");
+  assert.ok(
+    content.includes("references/moat-framework.md"),
+    "Deep Dive skill should reference references/moat-framework.md",
+  );
+});
+
+// Fair-value specific: references dcf-methodology.md
+void test("fair-value/SKILL.md references dcf-methodology.md", async () => {
+  const content = await readFile(join(moduleDir, "fair-value", "SKILL.md"), "utf8");
+  assert.ok(
+    content.includes("references/dcf-methodology.md"),
+    "Fair Value skill should reference references/dcf-methodology.md",
+  );
+});
+
+// Data freshness footer test for research skills
+for (const id of ["deep-dive", "fair-value"] as const) {
+  void test(`${id}/SKILL.md includes data freshness footer format`, async () => {
+    const content = await readFile(join(moduleDir, id, "SKILL.md"), "utf8");
+    assert.ok(
+      content.includes("Data as of:") && content.includes("Sources:") && content.includes("Tier:"),
+      "File should include the data freshness footer format",
     );
   });
 }

@@ -53,6 +53,45 @@ export const actionCards: ActionCard[] = [
     prompt:
       "Estimate the fair value of {ticker}. Build a DCF model (5-year projection with sensitivity table), compare multiples to peers, gather analyst price targets, and provide a valuation verdict.",
   },
+  {
+    id: "earnings-xray",
+    title: "Earnings X-Ray",
+    promise:
+      "Beat or miss? Guidance quality? Post-earnings drift score?",
+    icon: "FileBarChart",
+    category: "research",
+    input: "ticker",
+    skills: ["earnings-xray"],
+    persona: "fundamental-analyst",
+    prompt:
+      "Analyze the most recent earnings for {ticker}. If earnings have been reported, cover revenue and EPS vs. estimates, guidance quality, segment performance, management tone (key quotes), post-earnings price action, and assign a Drift Score (A-F). If earnings are upcoming, provide consensus estimates, historical beat/miss pattern (last 4 quarters), key metrics to watch, and implied move.",
+  },
+  {
+    id: "bull-bear",
+    title: "Bull / Bear",
+    promise:
+      "Strongest arguments for and against — sourced, structured, no bias",
+    icon: "Scale",
+    category: "research",
+    input: "ticker",
+    skills: ["bull-bear"],
+    persona: "fundamental-analyst",
+    prompt:
+      "Build the strongest bull and bear cases for {ticker}. Produce exactly 3 bull arguments and 3 bear arguments, each citing specific evidence (data points, filing sections, metrics) and naming the key risk that invalidates it. Identify the single key swing factor that determines which thesis wins. State your verdict with the explicit assumption behind it.",
+  },
+  {
+    id: "breakout-setups",
+    title: "Breakout Setups",
+    promise:
+      "VCP patterns, base breakouts, Stage 2 uptrend candidates — scored 0-100",
+    icon: "TrendingUp",
+    category: "setups",
+    input: "none",
+    skills: ["breakout-setups"],
+    persona: "technical-analyst",
+    prompt:
+      "Scan for high-quality breakout setups: VCP patterns, cup-and-handle formations, flat bases, and ascending bases. Score each candidate 0-100 using the VCP criteria framework. Present a table of 5-10 candidates with ticker, pattern type, score, current price vs. pivot point, volume profile, sector, and stage. Include invalidation levels for each setup.",
+  },
 ];
 
 export const cardSections: CardSection[] = [
@@ -65,5 +104,10 @@ export const cardSections: CardSection[] = [
     id: "research",
     title: "Research",
     cards: actionCards.filter((c) => c.category === "research"),
+  },
+  {
+    id: "setups",
+    title: "Find Setups",
+    cards: actionCards.filter((c) => c.category === "setups"),
   },
 ];

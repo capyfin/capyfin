@@ -38,6 +38,7 @@ import {
 import { createSignedGatewayDevice } from "./device-identity.ts";
 import { loadPackagedTemplate } from "./workspace-bootstrap.ts";
 import { installBundledSkills } from "./skill-bootstrap.ts";
+import { buildSkillCatalog } from "./skill-catalog.ts";
 import type {
   CreateAgentRequest,
   UpdateAgentRequest,
@@ -56,12 +57,7 @@ You are a financial research assistant powered by Capyfin. Your purpose is to he
 
 ## Capabilities
 
-You have access to financial research skills that let you:
-- Analyze individual stocks (price, fundamentals, news, analyst ratings)
-- Analyze the user's portfolio (allocation, performance, risk)
-- Summarize company earnings (results, guidance, market reaction)
-- Screen stocks by financial criteria
-- Provide market overviews (indices, sectors, movers, news)
+You have access to financial research skills and analyst personas installed in your workspace. See the "Available Financial Skills" section below for the full catalog. When a user's question matches a skill domain, read the relevant SKILL.md file and follow its framework to produce structured analysis.
 
 ## Working with the User's Portfolio
 
@@ -1205,13 +1201,22 @@ export class EmbeddedGatewayClient {
   async applyAgentWorkspace(agent: Agent): Promise<void> {
     const hasCustomInstructions = Boolean(agent.instructions.trim());
 
-    const soulContent = hasCustomInstructions
+    let soulContent = hasCustomInstructions
       ? `# SOUL.md - ${agent.name}\n\n${agent.instructions.trim()}\n`
       : FINANCIAL_SOUL_TEMPLATE;
     const identityContent = hasCustomInstructions
       ? `# IDENTITY.md - ${agent.name}\n\n- Name: ${agent.name}\n`
       : FINANCIAL_IDENTITY_TEMPLATE;
     const userContent = await loadPackagedTemplate("USER.md");
+
+    // Install bundled financial skills and append skill catalog to system prompt
+    if (agent.workspaceDir) {
+      const installedSkills = await installBundledSkills(agent.workspaceDir);
+      const catalog = buildSkillCatalog(installedSkills);
+      if (catalog) {
+        soulContent += catalog;
+      }
+    }
 
     await this.request("agents.files.set", {
       agentId: agent.id,
@@ -1233,11 +1238,6 @@ export class EmbeddedGatewayClient {
         agentId: agent.id,
         model: normalizeGatewayModelRef(agent),
       });
-    }
-
-    // Install bundled financial skills into the agent's workspace
-    if (agent.workspaceDir) {
-      await installBundledSkills(agent.workspaceDir);
     }
   }
 

@@ -3,8 +3,11 @@ import {
   Activity,
   ArrowRight,
   Calculator,
+  FileBarChart,
   Newspaper,
+  Scale,
   Search,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -19,6 +22,9 @@ const iconMap: Record<string, LucideIcon> = {
   Activity,
   Search,
   Calculator,
+  FileBarChart,
+  Scale,
+  TrendingUp,
 };
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 

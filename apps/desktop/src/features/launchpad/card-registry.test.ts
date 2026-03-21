@@ -6,8 +6,8 @@ import { actionCards, cardSections } from "./card-registry";
 // Card registry — shape & completeness
 // ---------------------------------------------------------------------------
 
-void test("actionCards exports exactly 4 P0 cards", () => {
-  assert.equal(actionCards.length, 4);
+void test("actionCards exports exactly 7 cards", () => {
+  assert.equal(actionCards.length, 7);
 });
 
 void test("every card has a unique id", () => {
@@ -73,7 +73,7 @@ void test("Fair Value card has correct metadata", () => {
 
 void test("cardSections exports sections with cards", () => {
   assert.ok(Array.isArray(cardSections));
-  assert.ok(cardSections.length >= 2, "should have at least Today and Research");
+  assert.ok(cardSections.length >= 3, "should have at least Today, Research, and Find Setups");
 });
 
 void test("Today section contains Morning Brief and Market Health", () => {
@@ -85,13 +85,50 @@ void test("Today section contains Morning Brief and Market Health", () => {
   assert.ok(ids.includes("market-health"));
 });
 
-void test("Research section contains Deep Dive and Fair Value", () => {
+void test("Research section contains Deep Dive, Fair Value, Earnings X-Ray, and Bull / Bear", () => {
   const research = cardSections.find((s) => s.id === "research");
   assert.ok(research, "research section not found");
   assert.equal(research.title, "Research");
   const ids = research.cards.map((c) => c.id);
   assert.ok(ids.includes("deep-dive"));
   assert.ok(ids.includes("fair-value"));
+  assert.ok(ids.includes("earnings-xray"));
+  assert.ok(ids.includes("bull-bear"));
+});
+
+void test("Earnings X-Ray card has correct metadata", () => {
+  const card = actionCards.find((c) => c.id === "earnings-xray");
+  assert.ok(card, "earnings-xray card not found");
+  assert.equal(card.category, "research");
+  assert.equal(card.input, "ticker");
+  assert.deepEqual(card.skills, ["earnings-xray"]);
+  assert.equal(card.persona, "fundamental-analyst");
+});
+
+void test("Bull / Bear card has correct metadata", () => {
+  const card = actionCards.find((c) => c.id === "bull-bear");
+  assert.ok(card, "bull-bear card not found");
+  assert.equal(card.category, "research");
+  assert.equal(card.input, "ticker");
+  assert.deepEqual(card.skills, ["bull-bear"]);
+  assert.equal(card.persona, "fundamental-analyst");
+});
+
+void test("Breakout Setups card has correct metadata", () => {
+  const card = actionCards.find((c) => c.id === "breakout-setups");
+  assert.ok(card, "breakout-setups card not found");
+  assert.equal(card.category, "setups");
+  assert.equal(card.input, "none");
+  assert.deepEqual(card.skills, ["breakout-setups"]);
+  assert.equal(card.persona, "technical-analyst");
+});
+
+void test("Find Setups section contains Breakout Setups", () => {
+  const setups = cardSections.find((s) => s.id === "setups");
+  assert.ok(setups, "setups section not found");
+  assert.equal(setups.title, "Find Setups");
+  const ids = setups.cards.map((c) => c.id);
+  assert.ok(ids.includes("breakout-setups"));
 });
 
 void test("no card exposes skill IDs, persona names, or prompt text to the user-facing fields", () => {

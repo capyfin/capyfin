@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import {
   FALLBACK_AGENT_DESCRIPTION,
   formatAgentCount,
+  isDevDescription,
 } from "@/features/agents/copy";
 import { buildAgentModelUpdatePayload } from "@/features/agents/model-selection";
 import { cn, formatDate, getErrorMessage } from "@/lib/utils";
@@ -487,7 +488,7 @@ export function AgentsWorkspace({
                       ) : null}
                     </div>
                     <p className="text-[12px] leading-relaxed text-muted-foreground">
-                      {agent.description ?? FALLBACK_AGENT_DESCRIPTION}
+                      {isDevDescription(agent.description) ? FALLBACK_AGENT_DESCRIPTION : agent.description}
                     </p>
                   </div>
 

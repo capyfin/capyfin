@@ -11,8 +11,11 @@ import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCen
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { initializeSidecarConnection } from "@/lib/runtime/connection";
 import { SidecarClient } from "@/lib/sidecar/client";
-import { appReducer, createInitialState } from "@/app/state/app-state";
-type AppView = "connections" | "connections-add" | "chat" | "agents";
+import {
+  appReducer,
+  createInitialState,
+  type AppView,
+} from "@/app/state/app-state";
 
 export function App() {
   const [state, dispatch] = useReducer(

@@ -49,8 +49,9 @@ import type {
   ProviderModelCatalog,
 } from "@/app/types";
 import { Button } from "@/components/ui/button";
+import { FeedbackBanner } from "@/components/FeedbackBanner";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import { openExternalUrl } from "@/lib/platform/open-external-url";
 import { SidecarClient } from "@/lib/sidecar/client";
 
@@ -524,13 +525,17 @@ export function ConnectionCenter({
 
         <div className="mt-8 flex flex-1 flex-col gap-5">
           {runtimeError ? (
-            <Banner tone="error">
+            <FeedbackBanner tone="error">
               Couldn&apos;t load connection setup. Retry to continue.
-            </Banner>
+            </FeedbackBanner>
           ) : null}
 
-          {errorMessage ? <Banner tone="error">{errorMessage}</Banner> : null}
-          {feedback ? <Banner tone="success">{feedback}</Banner> : null}
+          {errorMessage ? (
+            <FeedbackBanner tone="error">{errorMessage}</FeedbackBanner>
+          ) : null}
+          {feedback ? (
+            <FeedbackBanner tone="success">{feedback}</FeedbackBanner>
+          ) : null}
 
           {isLoading && !authOverview ? (
             <div className="flex flex-1 items-center justify-center py-10">
@@ -974,27 +979,6 @@ function PortfolioUploadStep({
   );
 }
 
-function Banner({
-  children,
-  tone,
-}: {
-  children: string;
-  tone: "error" | "success";
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-lg border px-3.5 py-2.5 text-[13px]",
-        tone === "error"
-          ? "border-warning/20 bg-warning/8 text-warning-foreground"
-          : "border-success/20 bg-success/8 text-success",
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
 function AuthSessionPanel({
   inputValue,
   isBusy,
@@ -1211,8 +1195,4 @@ function formatProviderName(provider: ProviderDefinition): string {
     return "GitHub Copilot";
   }
   return provider.name;
-}
-
-function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

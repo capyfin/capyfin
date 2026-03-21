@@ -10,6 +10,11 @@ import {
   createAgentRequestSchema,
   createAgentSessionRequestSchema,
   installSkillRequestSchema,
+  installSkillResponseSchema,
+  portfolioDeleteResponseSchema,
+  portfolioStatusResponseSchema,
+  portfolioUploadResponseSchema,
+  removeSkillResponseSchema,
   updateAgentRequestSchema,
   updateAgentSessionRequestSchema,
   providerModelCatalogSchema,
@@ -30,7 +35,12 @@ import {
   type AgentCatalog,
   type AuthSession,
   type ChatBootstrap,
+  type InstallSkillResponse,
+  type PortfolioDeleteResponse,
+  type PortfolioStatusResponse,
+  type PortfolioUploadResponse,
   type ProviderModelCatalog,
+  type RemoveSkillResponse,
   type SavedConnection,
   type SidecarBootstrap,
   type SidecarConnection,
@@ -255,53 +265,48 @@ export class SidecarClient {
   async uploadPortfolio(
     agentId: string,
     csv: string,
-  ): Promise<{ message: string; rows: number }> {
-    return (await this.request(
-      `/agents/${encodeURIComponent(agentId)}/portfolio`,
-      {
+  ): Promise<PortfolioUploadResponse> {
+    return portfolioUploadResponseSchema.parse(
+      await this.request(`/agents/${encodeURIComponent(agentId)}/portfolio`, {
         body: JSON.stringify({ csv }),
         method: "POST",
-      },
-    )) as { message: string; rows: number };
+      }),
+    );
   }
 
-  async getPortfolioStatus(
-    agentId: string,
-  ): Promise<{ hasPortfolio: boolean; rows?: number }> {
-    return (await this.request(
-      `/agents/${encodeURIComponent(agentId)}/portfolio`,
-    )) as { hasPortfolio: boolean; rows?: number };
+  async getPortfolioStatus(agentId: string): Promise<PortfolioStatusResponse> {
+    return portfolioStatusResponseSchema.parse(
+      await this.request(`/agents/${encodeURIComponent(agentId)}/portfolio`),
+    );
   }
 
-  async deletePortfolio(agentId: string): Promise<{ deleted: boolean }> {
-    return (await this.request(
-      `/agents/${encodeURIComponent(agentId)}/portfolio`,
-      {
+  async deletePortfolio(agentId: string): Promise<PortfolioDeleteResponse> {
+    return portfolioDeleteResponseSchema.parse(
+      await this.request(`/agents/${encodeURIComponent(agentId)}/portfolio`, {
         method: "DELETE",
-      },
-    )) as { deleted: boolean };
+      }),
+    );
   }
 
   async listSkills(): Promise<SkillCatalog> {
     return skillCatalogSchema.parse(await this.request("/skills"));
   }
 
-  async installSkill(
-    skillId: string,
-  ): Promise<{ message: string; skillId: string; path: string }> {
-    return (await this.request("/skills/install", {
-      body: JSON.stringify(installSkillRequestSchema.parse({ skillId })),
-      method: "POST",
-    })) as { message: string; skillId: string; path: string };
+  async installSkill(skillId: string): Promise<InstallSkillResponse> {
+    return installSkillResponseSchema.parse(
+      await this.request("/skills/install", {
+        body: JSON.stringify(installSkillRequestSchema.parse({ skillId })),
+        method: "POST",
+      }),
+    );
   }
 
-  async removeSkill(skillId: string): Promise<{ deleted: boolean }> {
-    return (await this.request(
-      `/skills/${encodeURIComponent(skillId)}`,
-      {
+  async removeSkill(skillId: string): Promise<RemoveSkillResponse> {
+    return removeSkillResponseSchema.parse(
+      await this.request(`/skills/${encodeURIComponent(skillId)}`, {
         method: "DELETE",
-      },
-    )) as { deleted: boolean };
+      }),
+    );
   }
 
   createApiUrl(path: string): string {

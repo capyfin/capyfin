@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AuthOverview, ChatBootstrap } from "@/app/types";
+import { getAgentDisplayName } from "@/features/agents/copy";
 import { CHAT_EMPTY_STATE_SUBTITLE, CHAT_INPUT_PLACEHOLDER } from "@/features/chat/chat-placeholder";
 import {
   Attachment,
@@ -362,7 +363,7 @@ function ChatSessionView({
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
             <BotIcon className="size-3" />
-            {bootstrap.agent.name}
+            {getAgentDisplayName(bootstrap.agent.name)}
           </span>
           {providerName ? (
             <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">

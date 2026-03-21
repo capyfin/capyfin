@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   FALLBACK_AGENT_DESCRIPTION,
   formatAgentCount,
+  getAgentDisplayName,
   isDevDescription,
 } from "./copy.ts";
 
@@ -51,6 +52,27 @@ void test("isDevDescription returns false for custom user-written description", 
 
 void test("isDevDescription returns false for the fallback description itself", () => {
   assert.equal(isDevDescription(FALLBACK_AGENT_DESCRIPTION), false);
+});
+
+// --- getAgentDisplayName tests ---
+
+void test("getAgentDisplayName replaces 'Main' with 'CapyFin'", () => {
+  assert.equal(getAgentDisplayName("Main"), "CapyFin");
+});
+
+void test("getAgentDisplayName passes through custom agent names", () => {
+  assert.equal(getAgentDisplayName("Technical Analyst"), "Technical Analyst");
+  assert.equal(getAgentDisplayName("My Bot"), "My Bot");
+});
+
+void test("getAgentDisplayName handles other dev-facing names", () => {
+  assert.equal(getAgentDisplayName("default"), "CapyFin");
+  assert.equal(getAgentDisplayName("assistant"), "CapyFin");
+});
+
+void test("getAgentDisplayName is case-sensitive for custom names", () => {
+  // "main" lowercase is unlikely to be a user-chosen name, but we only override exact known dev names
+  assert.equal(getAgentDisplayName("Custom Agent"), "Custom Agent");
 });
 
 void test("FALLBACK_AGENT_DESCRIPTION does not contain developer jargon", () => {

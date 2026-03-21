@@ -17,6 +17,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  FALLBACK_AGENT_DESCRIPTION,
+  formatAgentCount,
+} from "@/features/agents/copy";
 import { buildAgentModelUpdatePayload } from "@/features/agents/model-selection";
 import { cn, formatDate, getErrorMessage } from "@/lib/utils";
 import { SidecarClient } from "@/lib/sidecar/client";
@@ -415,9 +419,7 @@ export function AgentsWorkspace({
               Agent library
             </h2>
             <p className="mt-0.5 text-[12px] text-muted-foreground">
-              {agents.length === 0
-                ? "No custom agents yet."
-                : `${String(agents.length)} agents available`}
+              {formatAgentCount(agents.length)}
             </p>
           </div>
           <Button
@@ -485,8 +487,7 @@ export function AgentsWorkspace({
                       ) : null}
                     </div>
                     <p className="text-[12px] leading-relaxed text-muted-foreground">
-                      {agent.description ??
-                        "Finance planning, research, and execution support."}
+                      {agent.description ?? FALLBACK_AGENT_DESCRIPTION}
                     </p>
                   </div>
 

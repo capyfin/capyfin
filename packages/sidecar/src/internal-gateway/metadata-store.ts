@@ -237,7 +237,8 @@ export class AgentMetadataStoreService {
     const workspaceDir = join(this.#paths.workspacesDir, DEFAULT_AGENT_ID);
     const metadata: StoredAgentMetadata = {
       createdAt: timestamp,
-      description: "Default workspace agent.",
+      description:
+        "Your financial research assistant — analyzes markets, reads SEC filings, and tracks your watchlist.",
       id: DEFAULT_AGENT_ID,
       instructions: DEFAULT_AGENT_INSTRUCTIONS,
       name: "Main",

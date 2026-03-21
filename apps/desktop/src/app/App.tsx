@@ -8,6 +8,7 @@ import {
 } from "@/features/chat/components/ChatWorkspace";
 import { ConnectionsWorkspace } from "@/features/connections/components/ConnectionsWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
+import { LaunchpadWorkspace } from "@/features/launchpad/components/LaunchpadWorkspace";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { initializeSidecarConnection } from "@/lib/runtime/connection";
 import { SidecarClient } from "@/lib/sidecar/client";
@@ -214,7 +215,9 @@ export function App() {
         <div
           className={`flex min-h-0 flex-1 flex-col ${currentView === "chat" ? "" : "gap-4 p-4 lg:p-5"}`}
         >
-          {currentView === "chat" ? (
+          {currentView === "launchpad" ? (
+            <LaunchpadWorkspace />
+          ) : currentView === "chat" ? (
             <ChatWorkspace
               authOverview={state.authOverview}
               client={state.client}
@@ -255,6 +258,10 @@ function readViewFromHash(): AppView {
 
   if (window.location.hash === "#agents") {
     return "agents";
+  }
+
+  if (window.location.hash === "#launchpad") {
+    return "launchpad";
   }
 
   return "chat";

@@ -1,7 +1,12 @@
-import { BotIcon, Link2Icon, MessageSquareIcon } from "lucide-react";
+import { BotIcon, HomeIcon, Link2Icon, MessageSquareIcon } from "lucide-react";
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
 export const primaryNavigation = [
+  {
+    title: "Home",
+    href: "#launchpad",
+    icon: HomeIcon,
+  },
   {
     title: "Chat",
     href: "#chat",

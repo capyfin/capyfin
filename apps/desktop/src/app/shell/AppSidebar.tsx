@@ -36,7 +36,7 @@ import type { AuthOverview } from "@/app/types";
 
 interface AppSidebarProps {
   activeSessionId?: string | undefined;
-  activeView: "connections" | "chat" | "agents";
+  activeView: "connections" | "chat" | "agents" | "launchpad";
   authOverview: AuthOverview | null;
   onNewChat?: (() => void) | undefined;
   onSessionDelete?: ((sessionId: string) => void) | undefined;
@@ -100,7 +100,9 @@ export function AppSidebar({
                       (item.href === "#connections" &&
                         activeView === "connections") ||
                       (item.href === "#chat" && activeView === "chat") ||
-                      (item.href === "#agents" && activeView === "agents")
+                      (item.href === "#agents" && activeView === "agents") ||
+                      (item.href === "#launchpad" &&
+                        activeView === "launchpad")
                     }
                   >
                     <a href={item.href}>

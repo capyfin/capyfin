@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AuthOverview, ChatBootstrap } from "@/app/types";
-import { CHAT_INPUT_PLACEHOLDER } from "@/features/chat/chat-placeholder";
+import { CHAT_EMPTY_STATE_SUBTITLE, CHAT_INPUT_PLACEHOLDER } from "@/features/chat/chat-placeholder";
 import {
   Attachment,
   AttachmentPreview,
@@ -397,8 +397,7 @@ function ChatSessionView({
                   Start a conversation
                 </h1>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  Ask {bootstrap.agent.name} about planning, analysis, and
-                  finance decisions.
+                  {CHAT_EMPTY_STATE_SUBTITLE}
                 </p>
               </div>
             </div>

@@ -74,11 +74,13 @@ export function AppHeader({
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
   const options: { value: Theme; icon: LucideIcon; label: string }[] = [
     { value: "light", icon: SunIcon, label: "Light" },
     { value: "dark", icon: MoonIcon, label: "Dark" },
     { value: "system", icon: MonitorIcon, label: "System" },
   ];
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
   return (
     <div className="flex items-center rounded-md border border-border/60 bg-muted/50 p-0.5">

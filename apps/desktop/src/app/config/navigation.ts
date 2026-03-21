@@ -1,14 +1,7 @@
-import type { LucideIcon } from "lucide-react";
 import { BotIcon, Link2Icon, MessageSquareIcon } from "lucide-react";
 
-export interface NavigationItem {
-  title: string;
-  href: string;
-  icon: LucideIcon;
-  badge?: string;
-}
-
-export const primaryNavigation: NavigationItem[] = [
+/* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
+export const primaryNavigation = [
   {
     title: "Chat",
     href: "#chat",
@@ -24,4 +17,5 @@ export const primaryNavigation: NavigationItem[] = [
     href: "#connections",
     icon: Link2Icon,
   },
-];
+] as const;
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

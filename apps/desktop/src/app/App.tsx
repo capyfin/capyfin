@@ -163,19 +163,6 @@ export function App() {
         onContinue={() => {
           dispatch({ type: "FINISH_ONBOARDING" });
           window.location.hash = "#chat";
-          if (state.client) {
-            void state.client
-              .getPortfolioStatus("main")
-              .then((status) => {
-                dispatch({
-                  type: "SET_HAS_PORTFOLIO",
-                  hasPortfolio: status.hasPortfolio,
-                });
-              })
-              .catch(() => {
-                /* ignore — refreshed on next hydration */
-              });
-          }
         }}
         onRetry={() => {
           dispatch({ type: "REQUEST_RETRY" });

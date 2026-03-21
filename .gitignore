@@ -14,3 +14,5 @@ apps/desktop/src-tauri/target
 agent-orchestrator.yaml
 .claude/settings.json
 .claude/metadata-updater.sh
+.gstack
+.project

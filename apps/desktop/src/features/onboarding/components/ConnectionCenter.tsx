@@ -6,8 +6,6 @@ import {
   ExternalLinkIcon,
   LoaderCircleIcon,
   RefreshCcwIcon,
-  UploadIcon,
-  FileSpreadsheetIcon,
   XIcon,
 } from "lucide-react";
 import alibabaCloudLogo from "simple-icons/icons/alibabacloud.svg?raw";
@@ -66,7 +64,7 @@ interface ConnectionCenterProps {
   runtimeError: string | null;
 }
 
-type SetupStep = "providers" | "configure" | "portfolio";
+type SetupStep = "providers" | "configure";
 
 const providerLogos: Partial<
   Record<string, { color: string; darkColor?: string; svg: string }>
@@ -458,35 +456,27 @@ export function ConnectionCenter({
               CapyFin
             </div>
             <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground lg:text-4xl">
-              {step === "portfolio"
-                ? "Upload your portfolio"
-                : step === "providers"
-                  ? "Connect a provider"
-                  : (selectedProvider?.name ?? "Connection")}
+              {step === "providers"
+                ? "Connect a provider"
+                : (selectedProvider?.name ?? "Connection")}
             </h1>
             <p className="mt-2 max-w-xl text-[14px] leading-7 text-muted-foreground">
-              {step === "portfolio"
-                ? "Add your holdings so the agent can analyze your actual portfolio. You can skip this and add it later."
-                : step === "providers"
-                  ? "Choose the model provider you want to use. You can always add more later."
-                  : (selectedProvider?.description ??
-                    "Choose how you want to connect, then finish setup.")}
+              {step === "providers"
+                ? "Choose the model provider you want to use. You can always add more later."
+                : (selectedProvider?.description ??
+                  "Choose how you want to connect, then finish setup.")}
             </p>
           </div>
 
           <div className="flex items-center gap-1.5">
-            {step === "configure" || step === "portfolio" ? (
+            {step === "configure" ? (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 className="h-8 rounded-md text-[12px]"
                 onClick={() => {
-                  if (step === "portfolio") {
-                    setStep("configure");
-                  } else {
-                    resetToProviders();
-                  }
+                  resetToProviders();
                 }}
               >
                 <ArrowLeftIcon className="size-3.5" />
@@ -783,199 +773,17 @@ export function ConnectionCenter({
                   size="sm"
                   className="h-9 rounded-md px-4 text-[13px]"
                   disabled={!canContinue}
-                  onClick={() => {
-                    setStep("portfolio");
-                  }}
+                  onClick={onContinue}
                 >
                   Continue
                   <ArrowRightIcon className="size-3.5" />
                 </Button>
               </div>
             </section>
-          ) : step === "portfolio" ? (
-            <PortfolioUploadStep client={client} onContinue={onContinue} />
           ) : null}
         </div>
       </div>
     </main>
-  );
-}
-
-const MAX_PORTFOLIO_SIZE_BYTES = 1024 * 1024; // 1 MB — must match server limit
-
-function PortfolioUploadStep({
-  client,
-  onContinue,
-}: {
-  client: SidecarClient | null;
-  onContinue: () => void;
-}) {
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<{
-    name: string;
-    rows: number;
-  } | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isBusy, setIsBusy] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  async function handleFile(file: File): Promise<void> {
-    if (!client) {
-      return;
-    }
-
-    if (!file.name.endsWith(".csv")) {
-      setErrorMessage("Please upload a CSV file.");
-      return;
-    }
-
-    if (file.size > MAX_PORTFOLIO_SIZE_BYTES) {
-      setErrorMessage("File is too large. Maximum size is 1MB.");
-      return;
-    }
-
-    setErrorMessage(null);
-    setIsBusy(true);
-
-    try {
-      const csv = await file.text();
-      const result = await client.uploadPortfolio("main", csv);
-      setUploadedFile({ name: file.name, rows: result.rows });
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Upload failed.",
-      );
-    } finally {
-      setIsBusy(false);
-    }
-  }
-
-  function handleDrop(event: React.DragEvent): void {
-    event.preventDefault();
-    setIsDragOver(false);
-    const file = event.dataTransfer.files[0];
-    if (file) {
-      void handleFile(file);
-    }
-  }
-
-  function handleFileInput(event: React.ChangeEvent<HTMLInputElement>): void {
-    const file = event.target.files?.[0];
-    if (file) {
-      void handleFile(file);
-    }
-  }
-
-  return (
-    <section className="flex flex-1 flex-col">
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 py-8">
-        {uploadedFile ? (
-          <div className="flex w-full flex-col items-center gap-4 rounded-xl border border-success/30 bg-success/5 p-8">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-success/10 text-success">
-              <FileSpreadsheetIcon className="size-5" />
-            </div>
-            <div className="text-center">
-              <p className="text-[15px] font-semibold text-foreground">
-                {uploadedFile.name}
-              </p>
-              <p className="mt-1 text-[13px] text-muted-foreground">
-                {uploadedFile.rows} holding{uploadedFile.rows === 1 ? "" : "s"}{" "}
-                loaded
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-md text-[12px]"
-              onClick={() => {
-                setUploadedFile(null);
-              }}
-            >
-              Replace file
-            </Button>
-          </div>
-        ) : (
-          <div
-            role="button"
-            tabIndex={0}
-            className={cn(
-              "flex w-full cursor-pointer flex-col items-center gap-4 rounded-xl border-2 border-dashed p-8 transition-colors",
-              isDragOver
-                ? "border-primary bg-primary/5"
-                : "border-border/60 hover:border-primary/30",
-            )}
-            onDragOver={(event) => {
-              event.preventDefault();
-              setIsDragOver(true);
-            }}
-            onDragLeave={() => {
-              setIsDragOver(false);
-            }}
-            onDrop={handleDrop}
-            onClick={() => {
-              fileInputRef.current?.click();
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                fileInputRef.current?.click();
-              }
-            }}
-          >
-            <div className="flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              {isBusy ? (
-                <LoaderCircleIcon className="size-5 animate-spin" />
-              ) : (
-                <UploadIcon className="size-5" />
-              )}
-            </div>
-            <div className="text-center">
-              <p className="text-[15px] font-semibold text-foreground">
-                {isBusy ? "Uploading..." : "Drop your portfolio CSV here"}
-              </p>
-              <p className="mt-1 text-[13px] text-muted-foreground">
-                or click to browse. Columns: ticker, shares, cost basis.
-              </p>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileInput}
-            />
-          </div>
-        )}
-
-        {errorMessage ? (
-          <div className="w-full rounded-lg border border-warning/20 bg-warning/8 px-3.5 py-2.5 text-[13px] text-warning-foreground">
-            {errorMessage}
-          </div>
-        ) : null}
-      </div>
-
-      <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-6">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-9 rounded-md px-4 text-[12px] text-muted-foreground"
-          onClick={onContinue}
-        >
-          Skip for now
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          className="h-9 rounded-md px-4 text-[13px]"
-          onClick={onContinue}
-        >
-          {uploadedFile ? "Start researching" : "Continue without portfolio"}
-          <ArrowRightIcon className="size-3.5" />
-        </Button>
-      </div>
-    </section>
   );
 }
 

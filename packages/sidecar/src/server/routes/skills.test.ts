@@ -1,11 +1,5 @@
 import assert from "node:assert/strict";
-import {
-  mkdtemp,
-  readdir,
-  rm,
-  mkdir,
-  writeFile,
-} from "node:fs/promises";
+import { mkdtemp, readdir, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -52,7 +46,10 @@ void test("GET /skills returns bundled skills with installed status", async () =
       }[];
     };
 
-    assert.ok(body.skills.length >= 5, `Expected at least 5 skills, got ${String(body.skills.length)}`);
+    assert.ok(
+      body.skills.length >= 5,
+      `Expected at least 5 skills, got ${String(body.skills.length)}`,
+    );
 
     const stockAnalysis = body.skills.find((s) => s.id === "stock-analysis");
     assert.ok(stockAnalysis, "stock-analysis should be in the list");

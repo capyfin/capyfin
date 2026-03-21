@@ -64,9 +64,7 @@ function createEmptyConfig(): GatewayConfig {
   return {};
 }
 
-async function loadExistingConfig(
-  configPath: string,
-): Promise<GatewayConfig> {
+async function loadExistingConfig(configPath: string): Promise<GatewayConfig> {
   try {
     const source = await readFile(configPath, "utf8");
     const parsed: unknown = JSON.parse(source);

@@ -55,6 +55,7 @@ import {
 } from "@/features/chat/message-parts";
 import { createChatTransport } from "@/features/chat/transport";
 import { SidecarClient } from "@/lib/sidecar/client";
+import type { PendingCardPrompt } from "@/app/state/app-state";
 
 /**
  * Maximum number of Chat instances kept in the cache.
@@ -69,9 +70,17 @@ const CHAT_CACHE_MAX_SIZE = 50;
  */
 const chatCache = new Map<string, Chat<ChatUIMessage>>();
 
+/**
+ * Display labels for card-initiated sessions.
+ * Maps sessionId → displayLabel so the first user message renders the label
+ * instead of the raw constructed prompt.
+ */
+const cardPromptLabels = new Map<string, string>();
+
 /** Remove a session from the chat cache (e.g. on delete). */
 export function evictChatSession(sessionId: string): void {
   chatCache.delete(sessionId);
+  cardPromptLabels.delete(sessionId);
 }
 
 /** Ensure the cache stays within its size budget. */
@@ -89,9 +98,11 @@ interface ChatWorkspaceProps {
   client: SidecarClient | null;
   hasPortfolio?: boolean | undefined;
   onBootstrap?: ((sessionId: string) => void) | undefined;
+  onClearPendingPrompt?: (() => void) | undefined;
   onSessionLabelUpdate?:
     | ((sessionId: string, label: string) => void)
     | undefined;
+  pendingCardPrompt?: PendingCardPrompt | null | undefined;
   sessionId?: string | undefined;
 }
 
@@ -112,7 +123,9 @@ export function ChatWorkspace({
   client,
   hasPortfolio = false,
   onBootstrap,
+  onClearPendingPrompt,
   onSessionLabelUpdate,
+  pendingCardPrompt,
   sessionId,
 }: ChatWorkspaceProps) {
   const [bootstrap, setBootstrap] = useState<ChatBootstrap | null>(null);
@@ -210,7 +223,9 @@ export function ChatWorkspace({
       bootstrap={bootstrap}
       client={client}
       hasPortfolio={hasPortfolio}
+      onClearPendingPrompt={onClearPendingPrompt}
       onSessionLabelUpdate={onSessionLabelUpdate}
+      pendingCardPrompt={pendingCardPrompt}
     />
   );
 }
@@ -228,15 +243,19 @@ function ChatSessionView({
   bootstrap,
   client,
   hasPortfolio,
+  onClearPendingPrompt,
   onSessionLabelUpdate,
+  pendingCardPrompt,
 }: {
   authOverview: AuthOverview | null;
   bootstrap: ChatBootstrap;
   client: SidecarClient | null;
   hasPortfolio?: boolean | undefined;
+  onClearPendingPrompt?: (() => void) | undefined;
   onSessionLabelUpdate?:
     | ((sessionId: string, label: string) => void)
     | undefined;
+  pendingCardPrompt?: PendingCardPrompt | null | undefined;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);
   const hasCustomLabelRef = useRef(bootstrap.messages.length > 0);
@@ -281,6 +300,26 @@ function ChatSessionView({
     });
     didMountRef.current = true;
   }, [messages, status]);
+
+  // Auto-send pending card prompt when this session was initiated from a card click
+  const pendingSentRef = useRef(false);
+  useEffect(() => {
+    if (
+      pendingCardPrompt?.sessionId === bootstrap.session.id &&
+      !pendingSentRef.current
+    ) {
+      pendingSentRef.current = true;
+      cardPromptLabels.set(bootstrap.session.id, pendingCardPrompt.displayLabel);
+      hasCustomLabelRef.current = true;
+      void sendMessage({ text: pendingCardPrompt.prompt });
+      onClearPendingPrompt?.();
+    }
+  }, [
+    pendingCardPrompt,
+    bootstrap.session.id,
+    sendMessage,
+    onClearPendingPrompt,
+  ]);
 
   const isStreaming = status === "streaming" || status === "submitted";
   const latestMessage = messages[messages.length - 1];
@@ -386,9 +425,14 @@ function ChatSessionView({
             </div>
           </div>
         ) : (
-          messages.map((message) => (
+          messages.map((message, index) => (
             <ChatMessage
               key={message.id}
+              displayLabel={
+                index === 0 && message.role === "user"
+                  ? cardPromptLabels.get(bootstrap.session.id)
+                  : undefined
+              }
               isStreaming={isStreaming && latestMessage?.id === message.id}
               message={message}
             />
@@ -489,9 +533,11 @@ function getFileParts(message: ChatUIMessage) {
 }
 
 function ChatMessage({
+  displayLabel,
   isStreaming,
   message,
 }: {
+  displayLabel?: string | undefined;
   isStreaming: boolean;
   message: ChatUIMessage;
 }) {
@@ -510,6 +556,17 @@ function ChatMessage({
       f.mediaType.startsWith("image/"),
     );
     const docParts = fileParts.filter((f) => !f.mediaType.startsWith("image/"));
+
+    // Card-initiated messages show the display label instead of the raw prompt
+    if (displayLabel) {
+      return (
+        <Message from="user">
+          <MessageContent>
+            <p className="font-medium text-foreground">{displayLabel}</p>
+          </MessageContent>
+        </Message>
+      );
+    }
 
     return (
       <Message from="user">

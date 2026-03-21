@@ -72,7 +72,7 @@ export function AppSidebar({
               size="lg"
               className="h-11 data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#chat">
+              <a href="#launchpad">
                 <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Wallet2Icon className="size-4" />
                 </div>

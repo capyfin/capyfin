@@ -11,7 +11,8 @@ export const actionCards: ActionCard[] = [
     input: "none",
     skills: ["morning-brief"],
     persona: "macro-analyst",
-    prompt: "Run morning brief",
+    prompt:
+      "Generate a morning market briefing covering: market regime assessment, index performance, watchlist moves (if watchlist exists), notable earnings this week, sector rotation signals, and 3-5 key news items with impact assessment.",
     schedulable: true,
   },
   {
@@ -24,7 +25,8 @@ export const actionCards: ActionCard[] = [
     input: "none",
     skills: ["market-health"],
     persona: "macro-analyst",
-    prompt: "Run market health check",
+    prompt:
+      "Assess current market health using distribution day analysis, breadth indicators, and sector rotation. Produce a regime verdict (Confirmed Uptrend / Uptrend Under Pressure / Rally Attempt / Downtrend), composite score (0-100), and exposure guidance.",
   },
   {
     id: "deep-dive",
@@ -36,7 +38,8 @@ export const actionCards: ActionCard[] = [
     input: "ticker",
     skills: ["deep-dive"],
     persona: "fundamental-analyst",
-    prompt: "Run deep dive on {ticker}",
+    prompt:
+      "Perform a comprehensive deep dive analysis of {ticker}. Cover business model, moat assessment (5-dimension framework), financial health (5-year trends), recent developments (last 90 days), key risks, and a final verdict with confidence level.",
   },
   {
     id: "fair-value",
@@ -47,7 +50,8 @@ export const actionCards: ActionCard[] = [
     input: "ticker",
     skills: ["fair-value"],
     persona: "fundamental-analyst",
-    prompt: "Run fair value analysis on {ticker}",
+    prompt:
+      "Estimate the fair value of {ticker}. Build a DCF model (5-year projection with sensitivity table), compare multiples to peers, gather analyst price targets, and provide a valuation verdict.",
   },
 ];
 

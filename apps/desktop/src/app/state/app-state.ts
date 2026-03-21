@@ -3,6 +3,12 @@ import type { SidecarClient } from "@/lib/sidecar/client";
 
 export type AppView = "connections" | "connections-add" | "chat" | "agents" | "launchpad";
 
+export interface PendingCardPrompt {
+  sessionId: string;
+  prompt: string;
+  displayLabel: string;
+}
+
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
@@ -19,6 +25,7 @@ export interface AppState {
   activeSessionId: string | undefined;
   hasPortfolio: boolean;
   onboardingActive: boolean;
+  pendingCardPrompt: PendingCardPrompt | null;
 }
 
 export function createInitialState(readHash: () => AppView): AppState {
@@ -34,6 +41,7 @@ export function createInitialState(readHash: () => AppView): AppState {
     activeSessionId: undefined,
     hasPortfolio: false,
     onboardingActive: false,
+    pendingCardPrompt: null,
   };
 }
 
@@ -62,7 +70,9 @@ export type AppAction =
   | { type: "SET_ACTIVE_SESSION"; sessionId: string | undefined }
   | { type: "SET_HAS_PORTFOLIO"; hasPortfolio: boolean }
   | { type: "FINISH_ONBOARDING" }
-  | { type: "SET_AUTH_OVERVIEW"; authOverview: AuthOverview | null };
+  | { type: "SET_AUTH_OVERVIEW"; authOverview: AuthOverview | null }
+  | { type: "SET_PENDING_PROMPT"; pending: PendingCardPrompt }
+  | { type: "CLEAR_PENDING_PROMPT" };
 
 // ---------------------------------------------------------------------------
 // Reducer
@@ -139,5 +149,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case "SET_AUTH_OVERVIEW":
       return { ...state, authOverview: action.authOverview };
+
+    case "SET_PENDING_PROMPT":
+      return { ...state, pendingCardPrompt: action.pending };
+
+    case "CLEAR_PENDING_PROMPT":
+      return { ...state, pendingCardPrompt: null };
   }
 }

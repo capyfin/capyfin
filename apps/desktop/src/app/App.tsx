@@ -9,6 +9,11 @@ import {
 import { ConnectionsWorkspace } from "@/features/connections/components/ConnectionsWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { LaunchpadWorkspace } from "@/features/launchpad/components/LaunchpadWorkspace";
+import {
+  buildCardPrompt,
+  buildDisplayLabel,
+} from "@/features/launchpad/prompt-builder";
+import type { ActionCard } from "@/features/launchpad/types";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { initializeSidecarConnection } from "@/lib/runtime/connection";
 import { SidecarClient } from "@/lib/sidecar/client";
@@ -143,6 +148,34 @@ export function App() {
     [state.client],
   );
 
+  const handleCardClick = useCallback(
+    async (card: ActionCard, input?: string) => {
+      if (!state.client) return;
+      try {
+        const prompt = buildCardPrompt(card, input);
+        const displayLabel = buildDisplayLabel(card, input);
+        const session = await state.client.createSession({
+          agentId: "main",
+          label: displayLabel,
+        });
+        dispatch({ type: "ADD_SESSION", session });
+        dispatch({ type: "SET_ACTIVE_SESSION", sessionId: session.id });
+        dispatch({
+          type: "SET_PENDING_PROMPT",
+          pending: { sessionId: session.id, prompt, displayLabel },
+        });
+        window.location.hash = "#chat";
+      } catch (error) {
+        console.error("Failed to start card session", error);
+      }
+    },
+    [state.client],
+  );
+
+  const handleClearPendingPrompt = useCallback(() => {
+    dispatch({ type: "CLEAR_PENDING_PROMPT" });
+  }, []);
+
   if (
     !state.authOverview?.selectedProviderId ||
     state.onboardingActive ||
@@ -163,7 +196,7 @@ export function App() {
         }}
         onContinue={() => {
           dispatch({ type: "FINISH_ONBOARDING" });
-          window.location.hash = "#chat";
+          window.location.hash = "#launchpad";
         }}
         onRetry={() => {
           dispatch({ type: "REQUEST_RETRY" });
@@ -216,14 +249,20 @@ export function App() {
           className={`flex min-h-0 flex-1 flex-col ${currentView === "chat" ? "" : "gap-4 p-4 lg:p-5"}`}
         >
           {currentView === "launchpad" ? (
-            <LaunchpadWorkspace />
+            <LaunchpadWorkspace
+              onCardClick={(card, input) => {
+                void handleCardClick(card, input);
+              }}
+            />
           ) : currentView === "chat" ? (
             <ChatWorkspace
               authOverview={state.authOverview}
               client={state.client}
               hasPortfolio={state.hasPortfolio}
               onBootstrap={handleBootstrap}
+              onClearPendingPrompt={handleClearPendingPrompt}
               onSessionLabelUpdate={handleSessionLabelUpdate}
+              pendingCardPrompt={state.pendingCardPrompt}
               sessionId={state.activeSessionId}
             />
           ) : currentView === "connections" ? (
@@ -260,9 +299,9 @@ function readViewFromHash(): AppView {
     return "agents";
   }
 
-  if (window.location.hash === "#launchpad") {
-    return "launchpad";
+  if (window.location.hash === "#chat") {
+    return "chat";
   }
 
-  return "chat";
+  return "launchpad";
 }

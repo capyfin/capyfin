@@ -20,3 +20,8 @@ void test("SET_HASH_VIEW accepts launchpad as a valid view", () => {
   const next = appReducer(state, { type: "SET_HASH_VIEW", view: "launchpad" });
   assert.equal(next.hashView, "launchpad");
 });
+
+void test("createInitialState with launchpad returns launchpad as hashView", () => {
+  const state = createInitialState(() => "launchpad");
+  assert.equal(state.hashView, "launchpad");
+});

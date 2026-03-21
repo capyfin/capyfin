@@ -91,6 +91,11 @@ export const actionCards: ActionCard[] = [
     persona: "technical-analyst",
     prompt:
       "Scan for high-quality breakout setups: VCP patterns, cup-and-handle formations, flat bases, and ascending bases. Score each candidate 0-100 using the VCP criteria framework. Present a table of 5-10 candidates with ticker, pattern type, score, current price vs. pivot point, volume profile, sector, and stage. Include invalidation levels for each setup.",
+    tier0Override: {
+      input: "tickers",
+      prompt:
+        "Analyze the following tickers for breakout setups: {tickers}. For each ticker evaluate VCP patterns, cup-and-handle formations, flat bases, and ascending bases. Score each candidate 0-100 using the VCP criteria framework. Present a table with ticker, pattern type, score, current price vs. pivot point, volume profile, sector, and stage. Include invalidation levels for each setup.\n\n💡 Connect FMP in Settings → Providers to unlock full market scanning with the screener API. It's free.",
+    },
   },
 ];
 

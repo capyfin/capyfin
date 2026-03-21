@@ -106,7 +106,11 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
         >
           <Input
             autoFocus
-            placeholder="Enter ticker (e.g. NVDA)"
+            placeholder={
+              card.input === "tickers"
+                ? "Enter tickers to scan (e.g. NVDA, AAPL)"
+                : "Enter ticker (e.g. NVDA)"
+            }
             className="h-8 flex-1 text-[13px] uppercase"
             value={tickerValue}
             onChange={(e) => {

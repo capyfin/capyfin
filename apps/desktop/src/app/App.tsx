@@ -261,6 +261,7 @@ export function App() {
         >
           {currentView === "launchpad" ? (
             <LaunchpadWorkspace
+              client={state.client}
               onCardClick={(card, input) => {
                 void handleCardClick(card, input);
               }}

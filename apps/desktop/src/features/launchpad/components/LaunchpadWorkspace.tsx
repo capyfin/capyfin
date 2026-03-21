@@ -1,14 +1,35 @@
+import { useMemo } from "react";
+import type { SidecarClient } from "@/lib/sidecar/client";
 import { cardSections } from "../card-registry";
+import { resolveCard } from "../resolve-card";
 import type { ActionCard } from "../types";
+import { useFmpConnected } from "../use-fmp-connected";
 import { ActionCardItem } from "./ActionCardItem";
 import { CardSection } from "./CardSection";
 
 interface LaunchpadWorkspaceProps {
+  client: SidecarClient | null;
   onCardClick?: (card: ActionCard, input?: string) => void;
 }
 
-export function LaunchpadWorkspace({ onCardClick }: LaunchpadWorkspaceProps) {
-  const visibleSections = cardSections.filter((s) => s.cards.length > 0);
+export function LaunchpadWorkspace({
+  client,
+  onCardClick,
+}: LaunchpadWorkspaceProps) {
+  const isFmpConnected = useFmpConnected(client);
+
+  const resolvedSections = useMemo(
+    () =>
+      cardSections
+        .map((section) => ({
+          ...section,
+          cards: section.cards.map((card) =>
+            resolveCard(card, isFmpConnected),
+          ),
+        }))
+        .filter((s) => s.cards.length > 0),
+    [isFmpConnected],
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 pb-4">
@@ -21,7 +42,7 @@ export function LaunchpadWorkspace({ onCardClick }: LaunchpadWorkspaceProps) {
         </p>
       </div>
 
-      {visibleSections.map((section) => (
+      {resolvedSections.map((section) => (
         <CardSection key={section.id} title={section.title}>
           {section.cards.map((card) => (
             <ActionCardItem

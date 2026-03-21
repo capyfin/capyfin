@@ -35,6 +35,7 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
   const Icon: LucideIcon | undefined = iconMap[card.icon];
   /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-redundant-type-constituents */
   const needsInput = card.input === "ticker" || card.input === "tickers";
+  const isTodayCard = card.category === "today";
 
   function handleCardClick() {
     if (needsInput) {
@@ -65,6 +66,7 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
       size="sm"
       className={cn(
         "cursor-pointer gap-3 py-0 ring-foreground/8 transition-all hover:ring-foreground/18",
+        isTodayCard && "bg-primary/[0.03] dark:bg-primary/[0.05]",
         isExpanded && "ring-primary/40 hover:ring-primary/40",
       )}
       onClick={!isExpanded ? handleCardClick : undefined}

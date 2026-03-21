@@ -2,15 +2,12 @@ import {
   sidecarConnectionSchema,
   type SidecarConnection,
 } from "@capyfin/contracts";
+import { isTauriRuntime } from "@/lib/platform/runtime";
 
 const DEV_DEFAULT_USERNAME = "capyfin";
 const DEV_DEFAULT_PASSWORD = "capyfin-dev-password";
 
 type InitStep = "sidecar_waiting" | "sidecar_ready" | "done";
-
-function isTauriRuntime(): boolean {
-  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
-}
 
 interface BrowserDevEnv {
   DEV: boolean;

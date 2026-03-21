@@ -500,7 +500,7 @@ export function ConnectionCenter({
               variant="ghost"
               size="sm"
               className="h-8 rounded-md text-[12px] text-muted-foreground"
-              disabled={!client || isBusy || isLoading}
+              disabled={(!client && !runtimeError) || isBusy || isLoading}
               onClick={() => {
                 setErrorMessage(null);
                 setFeedback(null);

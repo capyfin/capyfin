@@ -86,3 +86,61 @@ void test("SET_PENDING_PROMPT overwrites existing pending prompt", () => {
   const next = appReducer(state, { type: "SET_PENDING_PROMPT", pending: newPending });
   assert.deepEqual(next.pendingCardPrompt, newPending);
 });
+
+// ---------------------------------------------------------------------------
+// HYDRATE_FAILURE / REQUEST_RETRY — retry button must stay enabled after failure
+// ---------------------------------------------------------------------------
+
+void test("HYDRATE_FAILURE sets runtimeError and nulls client", () => {
+  const state = makeState({ client: {} as never, runtimeError: null });
+  const next = appReducer(state, {
+    type: "HYDRATE_FAILURE",
+    error: "Connection refused",
+  });
+  assert.equal(next.client, null);
+  assert.equal(next.runtimeError, "Connection refused");
+});
+
+void test("HYDRATE_FAILURE preserves isLoading (HYDRATE_COMPLETE clears it)", () => {
+  const state = makeState({ isLoading: true });
+  const next = appReducer(state, {
+    type: "HYDRATE_FAILURE",
+    error: "timeout",
+  });
+  // isLoading should remain true — only HYDRATE_COMPLETE sets it false
+  assert.equal(next.isLoading, true);
+});
+
+void test("REQUEST_RETRY increments retryToken", () => {
+  const state = makeState({ retryToken: 0 });
+  const next = appReducer(state, { type: "REQUEST_RETRY" });
+  assert.equal(next.retryToken, 1);
+});
+
+void test("REQUEST_RETRY is idempotent — each call increments by 1", () => {
+  let state = makeState({ retryToken: 0 });
+  state = appReducer(state, { type: "REQUEST_RETRY" });
+  state = appReducer(state, { type: "REQUEST_RETRY" });
+  assert.equal(state.retryToken, 2);
+});
+
+void test("HYDRATE_START clears runtimeError for a fresh attempt", () => {
+  const state = makeState({ runtimeError: "Connection refused", isLoading: false });
+  const next = appReducer(state, { type: "HYDRATE_START" });
+  assert.equal(next.runtimeError, null);
+  assert.equal(next.isLoading, true);
+});
+
+void test("after failure the retry-button disabled guard resolves correctly", () => {
+  // Simulates the exact condition used in ConnectionCenter:
+  //   disabled={(!client && !runtimeError) || isBusy || isLoading}
+  // After HYDRATE_FAILURE + HYDRATE_COMPLETE, client is null but runtimeError is set.
+  let state = makeState({ isLoading: true });
+  state = appReducer(state, { type: "HYDRATE_FAILURE", error: "fail" });
+  state = appReducer(state, { type: "HYDRATE_COMPLETE" });
+
+  // client is null after failure, but runtimeError is set — button must NOT be disabled
+  assert.equal(state.client, null);
+  assert.equal(state.runtimeError, "fail");
+  assert.equal(state.isLoading, false, "isLoading should be false after HYDRATE_COMPLETE");
+});

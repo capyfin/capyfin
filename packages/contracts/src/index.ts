@@ -343,6 +343,17 @@ export type ChatActivity = z.infer<typeof chatActivitySchema>;
 export type SkillManifest = z.infer<typeof skillManifestSchema>;
 export type SkillCatalog = z.infer<typeof skillCatalogSchema>;
 export type InstallSkillRequest = z.infer<typeof installSkillRequestSchema>;
+export type PortfolioUploadResponse = z.infer<
+  typeof portfolioUploadResponseSchema
+>;
+export type PortfolioStatusResponse = z.infer<
+  typeof portfolioStatusResponseSchema
+>;
+export type PortfolioDeleteResponse = z.infer<
+  typeof portfolioDeleteResponseSchema
+>;
+export type InstallSkillResponse = z.infer<typeof installSkillResponseSchema>;
+export type RemoveSkillResponse = z.infer<typeof removeSkillResponseSchema>;
 
 export const skillManifestSchema = z.object({
   id: z.string().min(1),
@@ -359,6 +370,30 @@ export const skillCatalogSchema = z.object({
 
 export const installSkillRequestSchema = z.object({
   skillId: z.string().min(1),
+});
+
+export const portfolioUploadResponseSchema = z.object({
+  message: z.string(),
+  rows: z.number().int().nonnegative(),
+});
+
+export const portfolioStatusResponseSchema = z.object({
+  hasPortfolio: z.boolean(),
+  rows: z.number().int().nonnegative().optional(),
+});
+
+export const portfolioDeleteResponseSchema = z.object({
+  deleted: z.boolean(),
+});
+
+export const installSkillResponseSchema = z.object({
+  message: z.string(),
+  skillId: z.string().min(1),
+  path: z.string().min(1),
+});
+
+export const removeSkillResponseSchema = z.object({
+  deleted: z.boolean(),
 });
 
 export const appManifest = appManifestSchema.parse(appManifestJson);

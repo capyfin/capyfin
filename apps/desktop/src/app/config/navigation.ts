@@ -1,9 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import {
-  BotIcon,
-  Link2Icon,
-  MessageSquareIcon,
-} from "lucide-react";
+import { BotIcon, Link2Icon, MessageSquareIcon } from "lucide-react";
 
 export interface NavigationItem {
   title: string;
@@ -16,19 +12,16 @@ export const primaryNavigation: NavigationItem[] = [
   {
     title: "Chat",
     href: "#chat",
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     icon: MessageSquareIcon,
   },
   {
     title: "Agents",
     href: "#agents",
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     icon: BotIcon,
   },
   {
     title: "Connections",
     href: "#connections",
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     icon: Link2Icon,
   },
 ];

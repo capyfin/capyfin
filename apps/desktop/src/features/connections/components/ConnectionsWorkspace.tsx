@@ -12,6 +12,7 @@ import type {
 } from "@/app/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FeedbackBanner } from "@/components/FeedbackBanner";
 import {
   Table,
   TableBody,
@@ -20,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+import { formatDate, getErrorMessage } from "@/lib/utils";
 import { SidecarClient } from "@/lib/sidecar/client";
 
 interface ConnectionsWorkspaceProps {
@@ -169,11 +170,11 @@ export function ConnectionsWorkspace({
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4">
       {errorMessage ? (
-        <MessageBanner tone="error">{errorMessage}</MessageBanner>
+        <FeedbackBanner tone="error">{errorMessage}</FeedbackBanner>
       ) : null}
 
       {feedback ? (
-        <MessageBanner tone="success">{feedback}</MessageBanner>
+        <FeedbackBanner tone="success">{feedback}</FeedbackBanner>
       ) : null}
 
       <section className="min-w-0">
@@ -352,37 +353,4 @@ function ConnectionRow({
       </TableCell>
     </TableRow>
   );
-}
-
-function MessageBanner({
-  children,
-  tone,
-}: {
-  children: string;
-  tone: "error" | "success";
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-lg border px-3.5 py-2.5 text-[13px]",
-        tone === "error"
-          ? "border-warning/20 bg-warning/8 text-warning-foreground"
-          : "border-success/20 bg-success/8 text-success",
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

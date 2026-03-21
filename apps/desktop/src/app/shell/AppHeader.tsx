@@ -1,8 +1,9 @@
+import type { LucideIcon } from "lucide-react";
 import { MonitorIcon, MoonIcon, PlusIcon, SunIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useTheme } from "@/hooks/theme-context";
+import { useTheme, type Theme } from "@/hooks/theme-context";
 import { cn } from "@/lib/utils";
 
 interface AppHeaderProps {
@@ -73,13 +74,10 @@ export function AppHeader({
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
-  const options = [
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    { value: "light" as const, icon: SunIcon, label: "Light" },
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    { value: "dark" as const, icon: MoonIcon, label: "Dark" },
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    { value: "system" as const, icon: MonitorIcon, label: "System" },
+  const options: { value: Theme; icon: LucideIcon; label: string }[] = [
+    { value: "light", icon: SunIcon, label: "Light" },
+    { value: "dark", icon: MoonIcon, label: "Dark" },
+    { value: "system", icon: MonitorIcon, label: "System" },
   ];
 
   return (

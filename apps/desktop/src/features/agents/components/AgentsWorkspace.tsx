@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { buildAgentModelUpdatePayload } from "@/features/agents/model-selection";
-import { cn } from "@/lib/utils";
+import { cn, formatDate, getErrorMessage } from "@/lib/utils";
 import { SidecarClient } from "@/lib/sidecar/client";
 
 interface AgentsWorkspaceProps {
@@ -259,8 +259,7 @@ export function AgentsWorkspace({
     setFeedback(null);
 
     try {
-      const updatedAgent = await updateAgentWithFallback(
-        client,
+      const updatedAgent = await client.updateAgent(
         agent.id,
         buildAgentModelUpdatePayload({
           agent,
@@ -541,7 +540,7 @@ export function AgentsWorkspace({
                   </div>
 
                   <div className="text-[11px] text-muted-foreground/60">
-                    {formatTimestamp(agent.updatedAt)}
+                    {formatDate(agent.updatedAt)}
                   </div>
                 </article>
               );
@@ -551,18 +550,6 @@ export function AgentsWorkspace({
       </section>
     </div>
   );
-}
-
-function formatTimestamp(value: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Something went wrong.";
 }
 
 function resolveAgentProviderId(
@@ -584,38 +571,4 @@ function providerLabel(
     connectedProviders.find((provider) => provider.providerId === providerId)
       ?.providerName ?? providerId
   );
-}
-
-async function updateAgentWithFallback(
-  client: SidecarClient,
-  agentId: string,
-  payload: {
-    modelId?: string;
-    providerId?: string;
-  },
-): Promise<Agent> {
-  if (typeof client.updateAgent === "function") {
-    return client.updateAgent(agentId, payload);
-  }
-
-  const response = await fetch(
-    client.createApiUrl(`/agents/${encodeURIComponent(agentId)}`),
-    {
-      body: JSON.stringify(payload),
-      headers: (() => {
-        const headers = client.createAuthHeaders();
-        headers.set("Content-Type", "application/json");
-        return headers;
-      })(),
-      method: "PATCH",
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `Sidecar request failed with status ${String(response.status)}.`,
-    );
-  }
-
-  return response.json() as Promise<Agent>;
 }

@@ -5,6 +5,7 @@ import {
 } from "ai";
 import type { ChatActivity } from "@capyfin/contracts";
 import type { SidecarClient } from "@/lib/sidecar/client";
+import { isTauriRuntime } from "@/lib/platform/runtime";
 import type { ChatUIMessage } from "./message-parts";
 
 interface CreateChatTransportParams {
@@ -31,10 +32,6 @@ type TauriChatStreamEvent =
   | TauriChatStreamChunkEvent
   | TauriChatStreamDoneEvent
   | TauriChatStreamErrorEvent;
-
-function isTauriRuntime(): boolean {
-  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
-}
 
 function createBrowserTransport(
   params: CreateChatTransportParams,

@@ -1,7 +1,7 @@
 import type { AgentSession, AuthOverview } from "@capyfin/contracts";
 import type { SidecarClient } from "@/lib/sidecar/client";
 
-type AppView = "connections" | "connections-add" | "chat" | "agents";
+export type AppView = "connections" | "connections-add" | "chat" | "agents";
 
 // ---------------------------------------------------------------------------
 // State

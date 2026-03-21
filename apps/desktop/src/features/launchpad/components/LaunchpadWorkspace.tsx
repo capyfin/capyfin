@@ -11,7 +11,7 @@ export function LaunchpadWorkspace({ onCardClick }: LaunchpadWorkspaceProps) {
   const visibleSections = cardSections.filter((s) => s.cards.length > 0);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 pb-4">
       <div>
         <h1 className="text-[24px] font-semibold tracking-tight text-foreground">
           What would you like to explore?

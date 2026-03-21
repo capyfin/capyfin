@@ -55,6 +55,7 @@ import {
 } from "@/features/chat/message-parts";
 import { createChatTransport } from "@/features/chat/transport";
 import { SidecarClient } from "@/lib/sidecar/client";
+import { deriveSessionLabel } from "@/features/chat/session-label";
 import type { PendingCardPrompt } from "@/app/state/app-state";
 
 /**
@@ -228,14 +229,6 @@ export function ChatWorkspace({
       pendingCardPrompt={pendingCardPrompt}
     />
   );
-}
-
-function deriveSessionLabel(text: string): string {
-  const trimmed = text.trim().replace(/\s+/g, " ");
-  if (trimmed.length <= 50) {
-    return trimmed;
-  }
-  return `${trimmed.slice(0, 47)}...`;
 }
 
 function ChatSessionView({

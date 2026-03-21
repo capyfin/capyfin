@@ -11,6 +11,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { primaryNavigation } from "@/app/config/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { formatSessionLabel } from "@/features/chat/session-label";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,10 +44,6 @@ interface AppSidebarProps {
   onSessionRename?: ((sessionId: string, label: string) => void) | undefined;
   onSessionSelect?: ((sessionId: string) => void) | undefined;
   sessions?: AgentSession[] | undefined;
-}
-
-function formatSessionLabel(session: AgentSession): string {
-  return session.label ?? "Untitled chat";
 }
 
 export function AppSidebar({

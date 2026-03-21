@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AuthOverview, ChatBootstrap } from "@/app/types";
+import { CHAT_INPUT_PLACEHOLDER } from "@/features/chat/chat-placeholder";
 import {
   Attachment,
   AttachmentPreview,
@@ -460,7 +461,7 @@ function ChatSessionView({
             <AttachmentPreviews />
           </PromptInputHeader>
           <PromptInputTextarea
-            placeholder={`Message ${bootstrap.agent.name}...`}
+            placeholder={CHAT_INPUT_PLACEHOLDER}
           />
           <PromptInputFooter>
             <PromptInputActionMenu>

@@ -9,10 +9,7 @@ import {
   ZapIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {
-  primaryNavigation,
-  secondaryNavigation,
-} from "@/app/config/navigation";
+import { primaryNavigation } from "@/app/config/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -150,22 +147,6 @@ export function AppSidebar({
           </SidebarGroup>
         ) : null}
 
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondaryNavigation.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <a href={item.href}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>

@@ -75,3 +75,21 @@ export function buildDisplayLabel(card: ActionCard, input?: string): string {
   }
   return card.title;
 }
+
+/**
+ * Ensure a session label is unique among existing labels.
+ * Appends " (2)", " (3)", etc. when a collision is detected.
+ */
+export function makeUniqueLabel(
+  baseLabel: string,
+  existingLabels: string[],
+): string {
+  const labelSet = new Set(existingLabels);
+  if (!labelSet.has(baseLabel)) return baseLabel;
+
+  let counter = 2;
+  while (labelSet.has(`${baseLabel} (${String(counter)})`)) {
+    counter++;
+  }
+  return `${baseLabel} (${String(counter)})`;
+}

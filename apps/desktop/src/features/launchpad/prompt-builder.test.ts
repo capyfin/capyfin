@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildCardPrompt,
   buildDisplayLabel,
+  makeUniqueLabel,
   QUALITY_GATE,
 } from "./prompt-builder";
 import type { ActionCard } from "./types";
@@ -157,4 +158,51 @@ void test("buildDisplayLabel uppercases ticker input", () => {
 void test("buildDisplayLabel returns just title when input is ticker but no value given", () => {
   const card = makeCard({ title: "Deep Dive" });
   assert.equal(buildDisplayLabel(card), "Deep Dive");
+});
+
+// ---------------------------------------------------------------------------
+// makeUniqueLabel
+// ---------------------------------------------------------------------------
+
+void test("makeUniqueLabel returns base label when no collision", () => {
+  assert.equal(makeUniqueLabel("Morning Brief", []), "Morning Brief");
+});
+
+void test("makeUniqueLabel returns base label when existing labels differ", () => {
+  assert.equal(
+    makeUniqueLabel("Morning Brief", ["Deep Dive: NVDA", "Market Health"]),
+    "Morning Brief",
+  );
+});
+
+void test("makeUniqueLabel appends (2) on first collision", () => {
+  assert.equal(
+    makeUniqueLabel("Morning Brief", ["Morning Brief"]),
+    "Morning Brief (2)",
+  );
+});
+
+void test("makeUniqueLabel appends (3) when (2) also exists", () => {
+  assert.equal(
+    makeUniqueLabel("Morning Brief", ["Morning Brief", "Morning Brief (2)"]),
+    "Morning Brief (3)",
+  );
+});
+
+void test("makeUniqueLabel works with ticker-style labels", () => {
+  assert.equal(
+    makeUniqueLabel("Deep Dive: NVDA", ["Deep Dive: NVDA"]),
+    "Deep Dive: NVDA (2)",
+  );
+});
+
+void test("makeUniqueLabel skips gaps in numbering", () => {
+  assert.equal(
+    makeUniqueLabel("Morning Brief", [
+      "Morning Brief",
+      "Morning Brief (2)",
+      "Morning Brief (3)",
+    ]),
+    "Morning Brief (4)",
+  );
 });

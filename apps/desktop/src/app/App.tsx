@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useReducer } from "react";
+import { toast, Toaster } from "sonner";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
 import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
@@ -12,6 +13,7 @@ import { LaunchpadWorkspace } from "@/features/launchpad/components/LaunchpadWor
 import {
   buildCardPrompt,
   buildDisplayLabel,
+  makeUniqueLabel,
 } from "@/features/launchpad/prompt-builder";
 import type { ActionCard } from "@/features/launchpad/types";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -153,7 +155,11 @@ export function App() {
       if (!state.client) return;
       try {
         const prompt = buildCardPrompt(card, input);
-        const displayLabel = buildDisplayLabel(card, input);
+        const baseLabel = buildDisplayLabel(card, input);
+        const existingLabels = state.sessions
+          .map((s) => s.label)
+          .filter((l): l is string => typeof l === "string");
+        const displayLabel = makeUniqueLabel(baseLabel, existingLabels);
         const session = await state.client.createSession({
           agentId: "main",
           label: displayLabel,
@@ -167,9 +173,10 @@ export function App() {
         window.location.hash = "#chat";
       } catch (error) {
         console.error("Failed to start card session", error);
+        toast.error("Failed to start session. Please try again.");
       }
     },
-    [state.client],
+    [state.client, state.sessions],
   );
 
   const handleClearPendingPrompt = useCallback(() => {
@@ -186,6 +193,8 @@ export function App() {
       !state.onboardingActive;
 
     return (
+      <>
+      <Toaster position="top-right" richColors />
       <ConnectionCenter
         authOverview={state.authOverview}
         client={state.client}
@@ -209,6 +218,7 @@ export function App() {
             }
           : {})}
       />
+      </>
     );
   }
 
@@ -219,6 +229,7 @@ export function App() {
       defaultOpen={true}
       className="!min-h-0 h-svh overflow-hidden"
     >
+      <Toaster position="top-right" richColors />
       <AppSidebar
         activeSessionId={state.activeSessionId}
         activeView={currentView}

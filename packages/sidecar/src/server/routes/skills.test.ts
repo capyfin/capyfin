@@ -101,7 +101,7 @@ void test("GET /skills includes category and disableModelInvocation from frontma
   }
 });
 
-void test("GET /skills returns empty bundled list when categories are empty", async () => {
+void test("GET /skills returns bundled persona skills", async () => {
   const workspaceDir = await mkdtemp(join(tmpdir(), "capyfin-skills-"));
 
   try {
@@ -112,15 +112,17 @@ void test("GET /skills returns empty bundled list when categories are empty", as
     assert.equal(response.status, 200);
 
     const body = (await response.json()) as {
-      skills: { id: string; installed: boolean }[];
+      skills: { id: string; installed: boolean; source?: string; category?: string }[];
     };
 
-    // Bundled skills should be empty since categories are empty
+    // Persona skills should be present as bundled
     const bundled = body.skills.filter(
-      (s: { id: string; installed: boolean; source?: string }) =>
-        (s as { source?: string }).source === "bundled",
+      (s) => s.source === "bundled",
     );
-    assert.equal(bundled.length, 0, "No bundled skills when categories are empty");
+    assert.ok(bundled.length >= 2, "Should have at least 2 bundled persona skills");
+
+    const personaSkills = bundled.filter((s) => s.category === "personas");
+    assert.ok(personaSkills.length >= 2, "Should have at least 2 persona skills");
   } finally {
     await rm(workspaceDir, { recursive: true, force: true });
   }

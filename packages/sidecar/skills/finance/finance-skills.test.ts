@@ -169,6 +169,122 @@ const SKILLS = [
       "fair value range",
     ],
   },
+  {
+    id: "earnings-xray",
+    expectedName: "Earnings X-Ray",
+    minLines: 300,
+    expectedRequires: ["web_search", "fetch"],
+    requiredSections: [
+      "Purpose",
+      "Data Sourcing",
+      "Tier 0",
+      "Tier 1",
+      "Revenue",
+      "EPS",
+      "Guidance",
+      "Segment",
+      "Management Tone",
+      "Drift Score",
+      "Output Template",
+      "Quality",
+      "Reported",
+      "Upcoming",
+      "Consensus",
+    ],
+    requiredContent: [
+      "fundamental-analyst",
+      "SEC EDGAR",
+      "10-Q",
+      "PEAD",
+      "A-F",
+      "beat",
+      "miss",
+      "earnings surprise",
+      "volume",
+      "200-day",
+      "50-day",
+      "web search",
+      "FMP",
+      "HIGH",
+      "MEDIUM",
+      "LOW",
+      "provider",
+    ],
+  },
+  {
+    id: "bull-bear",
+    expectedName: "Bull / Bear",
+    minLines: 300,
+    expectedRequires: ["web_search", "fetch"],
+    requiredSections: [
+      "Purpose",
+      "Data Sourcing",
+      "Tier 0",
+      "Tier 1",
+      "Bull Case",
+      "Bear Case",
+      "Swing Factor",
+      "Verdict",
+      "Output Template",
+      "Quality",
+      "Evidence",
+      "Invalidation",
+    ],
+    requiredContent: [
+      "fundamental-analyst",
+      "SEC EDGAR",
+      "10-K",
+      "10-Q",
+      "evidence",
+      "citation",
+      "invalidation",
+      "web search",
+      "FMP",
+      "HIGH",
+      "MEDIUM",
+      "LOW",
+      "provider",
+    ],
+  },
+  {
+    id: "breakout-setups",
+    expectedName: "Breakout Setups",
+    minLines: 300,
+    expectedRequires: ["web_search", "fetch", "read_file"],
+    requiredSections: [
+      "Purpose",
+      "Data Sourcing",
+      "Tier 0",
+      "Tier 1",
+      "VCP",
+      "Pattern",
+      "Score",
+      "Stage 2",
+      "Volume",
+      "Output Template",
+      "Quality",
+      "Pivot",
+      "Invalidation",
+    ],
+    requiredContent: [
+      "technical-analyst",
+      "vcp-criteria.md",
+      "VCP",
+      "cup-and-handle",
+      "flat base",
+      "0-100",
+      "Stage 2",
+      "200-day",
+      "50-day",
+      "RS line",
+      "volume dry-up",
+      "contraction",
+      "web search",
+      "FMP",
+      "screener",
+      "provider",
+    ],
+  },
 ] as const;
 
 const REFERENCE_DOCS = [
@@ -200,6 +316,24 @@ const REFERENCE_DOCS = [
       "15%",
       "growth rate",
       "present value",
+    ],
+  },
+  {
+    skillId: "breakout-setups",
+    path: "breakout-setups/references/vcp-criteria.md",
+    minLines: 100,
+    requiredContent: [
+      "Stage 2",
+      "contraction",
+      "volume dry-up",
+      "RS line",
+      "200-day",
+      "50-day",
+      "90",
+      "80",
+      "70",
+      "60",
+      "scoring",
     ],
   },
 ] as const;
@@ -358,8 +492,17 @@ void test("fair-value/SKILL.md references dcf-methodology.md", async () => {
   );
 });
 
+// Breakout-setups specific: references vcp-criteria.md
+void test("breakout-setups/SKILL.md references vcp-criteria.md", async () => {
+  const content = await readFile(join(moduleDir, "breakout-setups", "SKILL.md"), "utf8");
+  assert.ok(
+    content.includes("references/vcp-criteria.md"),
+    "Breakout Setups skill should reference references/vcp-criteria.md",
+  );
+});
+
 // Data freshness footer test for research skills
-for (const id of ["deep-dive", "fair-value"] as const) {
+for (const id of ["deep-dive", "fair-value", "earnings-xray", "bull-bear"] as const) {
   void test(`${id}/SKILL.md includes data freshness footer format`, async () => {
     const content = await readFile(join(moduleDir, id, "SKILL.md"), "utf8");
     assert.ok(

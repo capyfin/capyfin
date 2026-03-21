@@ -13,10 +13,10 @@ export function LaunchpadWorkspace({ onCardClick }: LaunchpadWorkspaceProps) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8">
       <div>
-        <h1 className="text-[18px] font-semibold tracking-tight text-foreground">
+        <h1 className="text-[24px] font-semibold tracking-tight text-foreground">
           What would you like to explore?
         </h1>
-        <p className="mt-1 text-[13px] text-muted-foreground">
+        <p className="mt-1 text-[14px] text-muted-foreground">
           Pick an action card to get structured, methodology-backed analysis.
         </p>
       </div>

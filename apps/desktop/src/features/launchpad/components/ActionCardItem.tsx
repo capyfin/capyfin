@@ -79,7 +79,7 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
           {Icon ? <Icon className="size-4.5" /> : null}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-[13px] font-semibold leading-snug text-foreground">
+          <h3 className="text-[15px] font-semibold leading-snug text-foreground">
             {card.title}
           </h3>
           <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground">

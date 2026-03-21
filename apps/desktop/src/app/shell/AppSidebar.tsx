@@ -146,7 +146,6 @@ export function AppSidebar({
             </SidebarGroupContent>
           </SidebarGroup>
         ) : null}
-
       </SidebarContent>
 
       <SidebarFooter>

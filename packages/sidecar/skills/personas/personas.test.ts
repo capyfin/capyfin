@@ -62,6 +62,32 @@ const PERSONAS = [
       "employment",
     ],
   },
+  {
+    id: "technical-analyst",
+    expectedName: "Technical Analyst",
+    requiredSections: [
+      "Identity",
+      "Mindset",
+      "Framework",
+      "Market Structure",
+      "Indicators",
+      "Quality Standards",
+      "Anti-Patterns",
+      "Reasoning",
+    ],
+    requiredContent: [
+      "price action",
+      "volume",
+      "VCP",
+      "cup-and-handle",
+      "double bottom",
+      "invalidation",
+      "moving average",
+      "breakout",
+      "relative strength",
+      "distribution day",
+    ],
+  },
 ] as const;
 
 for (const persona of PERSONAS) {

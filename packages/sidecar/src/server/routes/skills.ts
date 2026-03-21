@@ -19,9 +19,11 @@ const installSkillBodySchema = z.object({
   skillId: z.string().min(1),
 });
 
-function parseSkillMdFrontMatter(
-  content: string,
-): { name?: string; description?: string; version?: string } {
+function parseSkillMdFrontMatter(content: string): {
+  name?: string;
+  description?: string;
+  version?: string;
+} {
   if (!content.startsWith("---")) {
     return {};
   }
@@ -139,10 +141,7 @@ export function createSkillRoutes(runtime: SidecarRuntime): Hono {
     try {
       clawHubSkills = await clawHubClient.listSkills();
     } catch {
-      return context.json(
-        { error: "ClawHub registry is not reachable." },
-        502,
-      );
+      return context.json({ error: "ClawHub registry is not reachable." }, 502);
     }
 
     const skill = clawHubSkills.find((s) => s.id === payload.skillId);
@@ -161,7 +160,9 @@ export function createSkillRoutes(runtime: SidecarRuntime): Hono {
       });
       if (!response.ok) {
         return context.json(
-          { error: `Failed to download skill: status ${String(response.status)}` },
+          {
+            error: `Failed to download skill: status ${String(response.status)}`,
+          },
           502,
         );
       }
@@ -198,10 +199,7 @@ export function createSkillRoutes(runtime: SidecarRuntime): Hono {
     // Prevent removing bundled skills
     const bundledIds = await listBundledSkills();
     if (bundledIds.includes(skillId)) {
-      return context.json(
-        { error: "Bundled skills cannot be removed." },
-        400,
-      );
+      return context.json({ error: "Bundled skills cannot be removed." }, 400);
     }
 
     const deleted = await removeSkill(agent.workspaceDir, skillId);

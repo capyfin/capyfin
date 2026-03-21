@@ -259,7 +259,9 @@ const AttachmentPreviewContent = ({
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const Icon = mediaCategoryIcons[mediaCategory];
-  return fallbackIcon ?? <Icon className={cn(iconSize, "text-muted-foreground")} />;
+  return (
+    fallbackIcon ?? <Icon className={cn(iconSize, "text-muted-foreground")} />
+  );
 };
 
 export const AttachmentPreview = ({

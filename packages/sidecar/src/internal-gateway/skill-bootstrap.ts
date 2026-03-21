@@ -5,6 +5,28 @@ import { fileURLToPath } from "node:url";
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 const BUNDLED_SKILLS_DIR = join(moduleDir, "..", "..", "skills");
 
+/** Categories that contain bundled skills. */
+export const SKILL_CATEGORIES = ["finance", "personas"] as const;
+export type SkillCategory = (typeof SKILL_CATEGORIES)[number];
+
+export interface BundledSkillEntry {
+  /** Skill directory name, e.g. "deep-dive" */
+  id: string;
+  /** Category the skill belongs to, e.g. "finance" */
+  category: SkillCategory;
+  /** Relative path including category, e.g. "finance/deep-dive" */
+  path: string;
+}
+
+export interface InstalledSkillEntry {
+  /** Skill directory name or full path */
+  id: string;
+  /** Category if the skill is inside a category directory */
+  category?: SkillCategory;
+  /** Relative path from skills/ root, e.g. "finance/deep-dive" or "custom-skill" */
+  path: string;
+}
+
 async function dirExists(path: string): Promise<boolean> {
   try {
     const info = await stat(path);
@@ -14,49 +36,85 @@ async function dirExists(path: string): Promise<boolean> {
   }
 }
 
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    const info = await stat(path);
+    return info.isFile();
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Returns the list of bundled skill directory names
- * (each contains a SKILL.md).
+ * Returns structured entries for all bundled skills.
+ * Walks each category subdirectory and finds directories containing SKILL.md.
  */
-export async function listBundledSkills(): Promise<string[]> {
+export async function listBundledSkills(): Promise<BundledSkillEntry[]> {
   if (!(await dirExists(BUNDLED_SKILLS_DIR))) {
     return [];
   }
 
-  const entries = await readdir(BUNDLED_SKILLS_DIR, { withFileTypes: true });
-  return entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name);
+  const results: BundledSkillEntry[] = [];
+
+  for (const category of SKILL_CATEGORIES) {
+    const categoryDir = join(BUNDLED_SKILLS_DIR, category);
+    if (!(await dirExists(categoryDir))) {
+      continue;
+    }
+
+    const entries = await readdir(categoryDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+      const skillMdPath = join(categoryDir, entry.name, "SKILL.md");
+      if (await fileExists(skillMdPath)) {
+        results.push({
+          id: entry.name,
+          category,
+          path: `${category}/${entry.name}`,
+        });
+      }
+    }
+  }
+
+  return results;
 }
 
 /**
- * Copy all bundled financial skills into an agent workspace's skills/ directory.
+ * Copy all bundled skills into an agent workspace's skills/ directory,
+ * preserving the category directory structure.
  * Existing skill folders are overwritten so the user always gets the latest version.
  */
 export async function installBundledSkills(
   workspaceDir: string,
-): Promise<string[]> {
-  const skillNames = await listBundledSkills();
-  if (skillNames.length === 0) {
+): Promise<BundledSkillEntry[]> {
+  const skills = await listBundledSkills();
+
+  const targetSkillsDir = join(workspaceDir, "skills");
+
+  // Always create category directories in the workspace even if empty
+  for (const category of SKILL_CATEGORIES) {
+    await mkdir(join(targetSkillsDir, category), { recursive: true });
+  }
+
+  if (skills.length === 0) {
     return [];
   }
 
-  const targetSkillsDir = join(workspaceDir, "skills");
-  await mkdir(targetSkillsDir, { recursive: true });
-
-  const installed: string[] = [];
-  for (const name of skillNames) {
-    const source = join(BUNDLED_SKILLS_DIR, name);
-    const destination = join(targetSkillsDir, name);
+  for (const skill of skills) {
+    const source = join(BUNDLED_SKILLS_DIR, skill.category, skill.id);
+    const destination = join(targetSkillsDir, skill.category, skill.id);
+    await mkdir(dirname(destination), { recursive: true });
     await cp(source, destination, { recursive: true, force: true });
-    installed.push(name);
   }
 
-  return installed;
+  return skills;
 }
 
 /**
  * Install a remote skill into a workspace by writing its SKILL.md content.
+ * Remote skills are installed flat (no category prefix).
  * Returns the path to the installed skill directory.
  */
 export async function installRemoteSkill(
@@ -77,32 +135,63 @@ export async function installRemoteSkill(
 }
 
 /**
- * List all installed skill directory names in a workspace's skills/ folder.
+ * List all installed skills in a workspace's skills/ folder.
+ * Discovers skills in both category subdirectories and flat (ClawHub/local) directories.
  */
 export async function listInstalledSkills(
   workspaceDir: string,
-): Promise<string[]> {
+): Promise<InstalledSkillEntry[]> {
   const skillsDir = join(workspaceDir, "skills");
 
   if (!(await dirExists(skillsDir))) {
     return [];
   }
 
-  const entries = await readdir(skillsDir, { withFileTypes: true });
-  return entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name);
+  const results: InstalledSkillEntry[] = [];
+  const categorySet = new Set<string>(SKILL_CATEGORIES);
+
+  const topEntries = await readdir(skillsDir, { withFileTypes: true });
+  for (const entry of topEntries) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    if (categorySet.has(entry.name)) {
+      // Walk inside the category directory
+      const categoryDir = join(skillsDir, entry.name);
+      const catEntries = await readdir(categoryDir, { withFileTypes: true });
+      for (const catEntry of catEntries) {
+        if (!catEntry.isDirectory()) {
+          continue;
+        }
+        results.push({
+          id: catEntry.name,
+          category: entry.name as SkillCategory,
+          path: `${entry.name}/${catEntry.name}`,
+        });
+      }
+    } else {
+      // Flat skill (ClawHub or local)
+      results.push({
+        id: entry.name,
+        path: entry.name,
+      });
+    }
+  }
+
+  return results;
 }
 
 /**
  * Remove an installed skill from a workspace.
+ * Accepts full path (e.g. "finance/deep-dive" or "custom-skill").
  * Returns true if the skill was found and removed, false otherwise.
  */
 export async function removeSkill(
   workspaceDir: string,
-  skillId: string,
+  skillPath: string,
 ): Promise<boolean> {
-  const skillDir = join(workspaceDir, "skills", skillId);
+  const skillDir = join(workspaceDir, "skills", skillPath);
 
   if (!(await dirExists(skillDir))) {
     return false;

@@ -23,6 +23,7 @@ function parseSkillMdFrontMatter(content: string): {
   name?: string;
   description?: string;
   version?: string;
+  disableModelInvocation?: boolean;
 } {
   if (!content.startsWith("---")) {
     return {};
@@ -34,7 +35,12 @@ function parseSkillMdFrontMatter(content: string): {
   }
 
   const frontMatter = content.slice(3, endIndex);
-  const result: { name?: string; description?: string; version?: string } = {};
+  const result: {
+    name?: string;
+    description?: string;
+    version?: string;
+    disableModelInvocation?: boolean;
+  } = {};
 
   for (const line of frontMatter.split("\n")) {
     const colonIndex = line.indexOf(":");
@@ -49,6 +55,8 @@ function parseSkillMdFrontMatter(content: string): {
       result.description = value;
     } else if (key === "version") {
       result.version = value;
+    } else if (key === "disable-model-invocation") {
+      result.disableModelInvocation = value === "true";
     }
   }
 
@@ -64,38 +72,48 @@ export function createSkillRoutes(runtime: SidecarRuntime): Hono {
     const agent = await runtime.embeddedGateway.getDefaultAgent();
     const workspaceDir = agent.workspaceDir;
 
-    const installedSkillIds = workspaceDir
+    const installedEntries = workspaceDir
       ? await listInstalledSkills(workspaceDir)
       : [];
-    const installedSet = new Set(installedSkillIds);
+    const installedPathSet = new Set(installedEntries.map((e) => e.path));
 
     const skills: SkillManifest[] = [];
 
     // Add bundled skills
-    const bundledIds = await listBundledSkills();
-    for (const id of bundledIds) {
-      let name = id;
+    const bundledEntries = await listBundledSkills();
+    for (const entry of bundledEntries) {
+      let name = entry.id;
       let description: string | undefined;
       let version: string | undefined;
+      let disableModelInvocation: boolean | undefined;
 
       try {
-        const skillMdPath = join(workspaceDir, "skills", id, "SKILL.md");
+        const skillMdPath = join(
+          workspaceDir,
+          "skills",
+          entry.category,
+          entry.id,
+          "SKILL.md",
+        );
         const content = await readFile(skillMdPath, "utf8");
         const parsed = parseSkillMdFrontMatter(content);
-        name = parsed.name ?? id;
+        name = parsed.name ?? entry.id;
         description = parsed.description;
         version = parsed.version;
+        disableModelInvocation = parsed.disableModelInvocation;
       } catch {
         // Skill may not be installed yet; use id as name
       }
 
       skills.push({
-        id,
+        id: entry.path,
         name,
         description,
         version,
         source: "bundled",
-        installed: installedSet.has(id),
+        installed: installedPathSet.has(entry.path),
+        category: entry.category,
+        disableModelInvocation,
       });
     }
 
@@ -119,7 +137,7 @@ export function createSkillRoutes(runtime: SidecarRuntime): Hono {
         description: hubSkill.description,
         version: hubSkill.version,
         source: "clawhub",
-        installed: installedSet.has(hubSkill.id),
+        installed: installedPathSet.has(hubSkill.id),
       });
     }
 
@@ -187,9 +205,10 @@ export function createSkillRoutes(runtime: SidecarRuntime): Hono {
     );
   });
 
-  // DELETE /skills/:skillId - remove an installed skill
-  app.delete("/:skillId", async (context) => {
-    const skillId = context.req.param("skillId");
+  // DELETE /skills/:skillPath - remove an installed skill
+  // Supports both flat paths (custom-skill) and category-prefixed paths (finance/deep-dive)
+  app.delete("/:skillPath{.+}", async (context) => {
+    const skillPath = context.req.param("skillPath");
     const agent = await runtime.embeddedGateway.getDefaultAgent();
 
     if (!agent.workspaceDir) {
@@ -197,12 +216,13 @@ export function createSkillRoutes(runtime: SidecarRuntime): Hono {
     }
 
     // Prevent removing bundled skills
-    const bundledIds = await listBundledSkills();
-    if (bundledIds.includes(skillId)) {
+    const bundledEntries = await listBundledSkills();
+    const bundledPaths = new Set(bundledEntries.map((e) => e.path));
+    if (bundledPaths.has(skillPath)) {
       return context.json({ error: "Bundled skills cannot be removed." }, 400);
     }
 
-    const deleted = await removeSkill(agent.workspaceDir, skillId);
+    const deleted = await removeSkill(agent.workspaceDir, skillPath);
     return context.json({ deleted });
   });
 

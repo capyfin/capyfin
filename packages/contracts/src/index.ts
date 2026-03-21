@@ -362,6 +362,8 @@ export const skillManifestSchema = z.object({
   version: z.string().min(1).optional(),
   source: z.enum(["bundled", "clawhub", "local"]),
   installed: z.boolean(),
+  category: z.enum(["finance", "personas"]).optional(),
+  disableModelInvocation: z.boolean().optional(),
 });
 
 export const skillCatalogSchema = z.object({

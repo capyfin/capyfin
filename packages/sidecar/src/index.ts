@@ -3,6 +3,7 @@ import packageJson from "../package.json" with { type: "json" };
 import { RuntimeProviderAuthService } from "./auth/service.ts";
 import { RuntimeAuthSessionManager } from "./auth/sessions.ts";
 import { loadSidecarConfig, type SidecarConfig } from "./config.ts";
+import { DataProviderService } from "./data-providers/service.ts";
 import { EmbeddedGatewayClient } from "./internal-gateway/gateway-client.ts";
 import { AgentMetadataStoreService } from "./internal-gateway/metadata-store.ts";
 import { EmbeddedGatewaySupervisor } from "./internal-gateway/supervisor.ts";
@@ -45,10 +46,14 @@ export async function startSidecarServer(
     paths: gatewaySupervisor.paths,
     target: gatewaySupervisor.connection,
   });
+  const dataProviderService = new DataProviderService(
+    gatewaySupervisor.paths.stateDir,
+  );
   const runtime = {
     authService,
     authSessions: new RuntimeAuthSessionManager(() => authService),
     config,
+    dataProviderService,
     embeddedGateway,
     gatewaySupervisor,
     startedAt: Date.now(),

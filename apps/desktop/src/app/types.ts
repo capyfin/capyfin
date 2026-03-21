@@ -6,6 +6,8 @@ export type {
   AppManifest as AppMetadata,
   ChatBootstrap,
   ChatTranscriptMessage,
+  DataProviderOverview,
+  DataProviderStatus,
   ProviderDefinition,
   ProviderModelCatalog,
   ProviderMethod,

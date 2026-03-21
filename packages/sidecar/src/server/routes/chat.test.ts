@@ -8,6 +8,7 @@ void test("chat routes expose bootstrap and stream endpoints", async () => {
     {
       authSessions: {} as never,
       authService: {} as never,
+      dataProviderService: {} as never,
       config: {
         hostname: "127.0.0.1",
         password: "password",
@@ -102,6 +103,7 @@ void test("chat routes normalize plain string messages from the transport", asyn
     {
       authSessions: {} as never,
       authService: {} as never,
+      dataProviderService: {} as never,
       config: {
         hostname: "127.0.0.1",
         password: "password",

@@ -9,12 +9,15 @@ import {
   connectProviderSecretRequestSchema,
   createAgentRequestSchema,
   createAgentSessionRequestSchema,
+  dataProviderOverviewSchema,
+  dataProviderStatusSchema,
   installSkillRequestSchema,
   installSkillResponseSchema,
   portfolioDeleteResponseSchema,
   portfolioStatusResponseSchema,
   portfolioUploadResponseSchema,
   removeSkillResponseSchema,
+  saveDataProviderKeyRequestSchema,
   updateAgentRequestSchema,
   updateAgentSessionRequestSchema,
   providerModelCatalogSchema,
@@ -35,6 +38,8 @@ import {
   type AgentCatalog,
   type AuthSession,
   type ChatBootstrap,
+  type DataProviderOverview,
+  type DataProviderStatus,
   type InstallSkillResponse,
   type PortfolioDeleteResponse,
   type PortfolioStatusResponse,
@@ -306,6 +311,36 @@ export class SidecarClient {
       await this.request(`/skills/${encodeURIComponent(skillId)}`, {
         method: "DELETE",
       }),
+    );
+  }
+
+  async getDataProviders(): Promise<DataProviderOverview> {
+    return dataProviderOverviewSchema.parse(
+      await this.request("/providers/data"),
+    );
+  }
+
+  async saveDataProviderKey(
+    providerId: string,
+    apiKey: string,
+  ): Promise<DataProviderStatus> {
+    return dataProviderStatusSchema.parse(
+      await this.request(
+        `/providers/data/${encodeURIComponent(providerId)}`,
+        {
+          body: JSON.stringify(
+            saveDataProviderKeyRequestSchema.parse({ apiKey }),
+          ),
+          method: "PUT",
+        },
+      ),
+    );
+  }
+
+  async deleteDataProviderKey(providerId: string): Promise<void> {
+    await this.request(
+      `/providers/data/${encodeURIComponent(providerId)}`,
+      { method: "DELETE" },
     );
   }
 

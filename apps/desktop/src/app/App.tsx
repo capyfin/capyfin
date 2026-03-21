@@ -6,7 +6,7 @@ import {
   ChatWorkspace,
   evictChatSession,
 } from "@/features/chat/components/ChatWorkspace";
-import { ConnectionsWorkspace } from "@/features/connections/components/ConnectionsWorkspace";
+import { ProvidersWorkspace } from "@/features/providers/components/ProvidersWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { LaunchpadWorkspace } from "@/features/launchpad/components/LaunchpadWorkspace";
 import {
@@ -179,7 +179,7 @@ export function App() {
   if (
     !state.authOverview?.selectedProviderId ||
     state.onboardingActive ||
-    state.hashView === "connections-add"
+    state.hashView === "providers-add"
   ) {
     const isReusableConnectionFlow =
       Boolean(state.authOverview?.selectedProviderId) &&
@@ -204,7 +204,7 @@ export function App() {
         {...(isReusableConnectionFlow
           ? {
               onClose: () => {
-                window.location.hash = "#connections";
+                window.location.hash = "#providers";
               },
             }
           : {})}
@@ -212,7 +212,7 @@ export function App() {
     );
   }
 
-  const currentView: Exclude<AppView, "connections-add"> = state.hashView;
+  const currentView: Exclude<AppView, "providers-add"> = state.hashView;
 
   return (
     <SidebarProvider
@@ -239,7 +239,7 @@ export function App() {
         <AppHeader
           currentView={currentView}
           onAddConnection={() => {
-            window.location.hash = "#connections/add";
+            window.location.hash = "#providers/add";
           }}
           onCreateAgent={() => {
             dispatch({ type: "REQUEST_CREATE_AGENT" });
@@ -265,8 +265,8 @@ export function App() {
               pendingCardPrompt={state.pendingCardPrompt}
               sessionId={state.activeSessionId}
             />
-          ) : currentView === "connections" ? (
-            <ConnectionsWorkspace
+          ) : currentView === "providers" ? (
+            <ProvidersWorkspace
               authOverview={state.authOverview}
               client={state.client}
               onAuthOverviewChange={(overview) => {
@@ -287,12 +287,18 @@ export function App() {
 }
 
 function readViewFromHash(): AppView {
-  if (window.location.hash === "#connections/add") {
-    return "connections-add";
+  if (
+    window.location.hash === "#providers/add" ||
+    window.location.hash === "#connections/add"
+  ) {
+    return "providers-add";
   }
 
-  if (window.location.hash === "#connections") {
-    return "connections";
+  if (
+    window.location.hash === "#providers" ||
+    window.location.hash === "#connections"
+  ) {
+    return "providers";
   }
 
   if (window.location.hash === "#agents") {

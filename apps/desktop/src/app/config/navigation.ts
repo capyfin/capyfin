@@ -1,4 +1,9 @@
-import { BotIcon, HomeIcon, Link2Icon, MessageSquareIcon } from "lucide-react";
+import {
+  BotIcon,
+  HomeIcon,
+  MessageSquareIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react";
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
 export const primaryNavigation = [
@@ -18,9 +23,9 @@ export const primaryNavigation = [
     icon: BotIcon,
   },
   {
-    title: "Connections",
-    href: "#connections",
-    icon: Link2Icon,
+    title: "Providers",
+    href: "#providers",
+    icon: SlidersHorizontalIcon,
   },
 ] as const;
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */

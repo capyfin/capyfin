@@ -7,7 +7,7 @@ import { useTheme, type Theme } from "@/hooks/theme-context";
 import { cn } from "@/lib/utils";
 
 interface AppHeaderProps {
-  currentView: "connections" | "chat" | "agents" | "launchpad";
+  currentView: "providers" | "chat" | "agents" | "launchpad";
   onAddConnection: () => void;
   onCreateAgent: () => void;
 }
@@ -20,8 +20,8 @@ export function AppHeader({
   const pageTitle =
     currentView === "launchpad"
       ? "Home"
-      : currentView === "connections"
-        ? "Connections"
+      : currentView === "providers"
+        ? "Providers"
         : currentView === "agents"
           ? "Agents"
           : "Chat";
@@ -44,7 +44,7 @@ export function AppHeader({
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
 
-          {currentView === "connections" ? (
+          {currentView === "providers" ? (
             <Button
               size="sm"
               variant="outline"

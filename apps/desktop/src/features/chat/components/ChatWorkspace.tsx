@@ -209,7 +209,7 @@ export function ChatWorkspace({
             Retry
           </Button>
           <Button asChild size="sm">
-            <a href="#connections">Manage providers</a>
+            <a href="#providers">Manage providers</a>
           </Button>
         </div>
       </div>

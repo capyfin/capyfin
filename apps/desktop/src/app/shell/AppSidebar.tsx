@@ -36,7 +36,7 @@ import type { AuthOverview } from "@/app/types";
 
 interface AppSidebarProps {
   activeSessionId?: string | undefined;
-  activeView: "connections" | "chat" | "agents" | "launchpad";
+  activeView: "providers" | "chat" | "agents" | "launchpad";
   authOverview: AuthOverview | null;
   onNewChat?: (() => void) | undefined;
   onSessionDelete?: ((sessionId: string) => void) | undefined;
@@ -97,8 +97,8 @@ export function AppSidebar({
                     asChild
                     tooltip={item.title}
                     isActive={
-                      (item.href === "#connections" &&
-                        activeView === "connections") ||
+                      (item.href === "#providers" &&
+                        activeView === "providers") ||
                       (item.href === "#chat" && activeView === "chat") ||
                       (item.href === "#agents" && activeView === "agents") ||
                       (item.href === "#launchpad" &&

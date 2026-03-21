@@ -1,7 +1,7 @@
 import type { AgentSession, AuthOverview } from "@capyfin/contracts";
 import type { SidecarClient } from "@/lib/sidecar/client";
 
-export type AppView = "connections" | "connections-add" | "chat" | "agents" | "launchpad";
+export type AppView = "providers" | "providers-add" | "chat" | "agents" | "launchpad";
 
 export interface PendingCardPrompt {
   sessionId: string;

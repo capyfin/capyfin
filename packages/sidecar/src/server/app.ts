@@ -5,6 +5,7 @@ import { Hono } from "hono";
 import { createAgentRoutes } from "./routes/agents.ts";
 import { createAuthRoutes } from "./routes/auth.ts";
 import { createChatRoutes } from "./routes/chat.ts";
+import { createDataProviderRoutes } from "./routes/data-providers.ts";
 import { createGlobalRoutes } from "./routes/global.ts";
 import { createPortfolioRoutes } from "./routes/portfolio.ts";
 import { createSkillRoutes } from "./routes/skills.ts";
@@ -73,6 +74,7 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
   app.route("/chat", createChatRoutes(runtime));
   app.route("/global", createGlobalRoutes(runtime));
   app.route("/auth", createAuthRoutes(runtime));
+  app.route("/providers", createDataProviderRoutes(runtime));
   app.route("/skills", createSkillRoutes(runtime));
 
   app.notFound((context) => context.json({ error: "Not Found" }, 404));

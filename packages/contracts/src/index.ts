@@ -354,6 +354,14 @@ export type PortfolioDeleteResponse = z.infer<
 >;
 export type InstallSkillResponse = z.infer<typeof installSkillResponseSchema>;
 export type RemoveSkillResponse = z.infer<typeof removeSkillResponseSchema>;
+export type DataProviderDefinition = z.infer<
+  typeof dataProviderDefinitionSchema
+>;
+export type DataProviderStatus = z.infer<typeof dataProviderStatusSchema>;
+export type DataProviderOverview = z.infer<typeof dataProviderOverviewSchema>;
+export type SaveDataProviderKeyRequest = z.infer<
+  typeof saveDataProviderKeyRequestSchema
+>;
 
 export const skillManifestSchema = z.object({
   id: z.string().min(1),
@@ -396,6 +404,32 @@ export const installSkillResponseSchema = z.object({
 
 export const removeSkillResponseSchema = z.object({
   deleted: z.boolean(),
+});
+
+export const dataProviderDefinitionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1),
+  tier: z.string().min(1),
+  signupUrl: z.string().min(1),
+});
+
+export const dataProviderStatusSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1),
+  tier: z.string().min(1),
+  signupUrl: z.string().min(1),
+  connected: z.boolean(),
+  connectedAt: z.string().min(1).optional(),
+});
+
+export const dataProviderOverviewSchema = z.object({
+  providers: z.array(dataProviderStatusSchema),
+});
+
+export const saveDataProviderKeyRequestSchema = z.object({
+  apiKey: z.string().min(1),
 });
 
 export const appManifest = appManifestSchema.parse(appManifestJson);

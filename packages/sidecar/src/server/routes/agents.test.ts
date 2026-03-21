@@ -45,6 +45,7 @@ void test("agent routes manage agents and create sessions", async (context) => {
   const runtime = {
     authSessions: {} as never,
     authService: {} as never,
+    dataProviderService: {} as never,
     config: {
       hostname: "127.0.0.1",
       password: "password",

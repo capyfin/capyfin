@@ -18,7 +18,7 @@
     "bundle:prepare": "node scripts/prepare-bundle.mjs",
     "dev": "tsx src/cli.ts",
     "lint": "eslint src --ext .ts",
-    "test": "tsx --test src/auth/*.test.ts src/chat/*.test.ts src/internal-gateway/*.test.ts src/server/routes/*.test.ts",
+    "test": "tsx --test src/auth/*.test.ts src/chat/*.test.ts src/data-providers/*.test.ts src/internal-gateway/*.test.ts src/server/routes/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {

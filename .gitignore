@@ -16,3 +16,5 @@ agent-orchestrator.yaml
 .claude/metadata-updater.sh
 .gstack
 .project
+# builder
+.project/

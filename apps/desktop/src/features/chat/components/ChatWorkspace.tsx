@@ -100,6 +100,33 @@ function trimChatCache(): void {
   }
 }
 
+const suggestionAccent: Record<string, { card: string; hover: string; iconBg: string; iconText: string }> = {
+  amber: {
+    card: "border-amber-500/15 bg-amber-500/[0.04] dark:bg-amber-500/[0.06]",
+    hover: "hover:border-amber-500/30 hover:bg-amber-500/[0.08] dark:hover:bg-amber-500/[0.10]",
+    iconBg: "bg-amber-500/10",
+    iconText: "text-amber-500",
+  },
+  blue: {
+    card: "border-blue-500/15 bg-blue-500/[0.04] dark:bg-blue-500/[0.06]",
+    hover: "hover:border-blue-500/30 hover:bg-blue-500/[0.08] dark:hover:bg-blue-500/[0.10]",
+    iconBg: "bg-blue-500/10",
+    iconText: "text-blue-500",
+  },
+  emerald: {
+    card: "border-emerald-500/15 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.06]",
+    hover: "hover:border-emerald-500/30 hover:bg-emerald-500/[0.08] dark:hover:bg-emerald-500/[0.10]",
+    iconBg: "bg-emerald-500/10",
+    iconText: "text-emerald-500",
+  },
+  rose: {
+    card: "border-rose-500/15 bg-rose-500/[0.04] dark:bg-rose-500/[0.06]",
+    hover: "hover:border-rose-500/30 hover:bg-rose-500/[0.08] dark:hover:bg-rose-500/[0.10]",
+    iconBg: "bg-rose-500/10",
+    iconText: "text-rose-500",
+  },
+};
+
 interface ChatWorkspaceProps {
   authOverview: AuthOverview | null;
   client: SidecarClient | null;
@@ -397,19 +424,25 @@ function ChatSessionView({
             </div>
 
             <div className="grid w-full gap-2 sm:grid-cols-3">
-              {starterPrompts.map((prompt) => (
-                <button
-                  key={prompt.text}
-                  type="button"
-                  className="flex items-start gap-2.5 rounded-lg border border-border/60 bg-card px-3.5 py-3 text-left text-sm leading-relaxed text-muted-foreground transition-all duration-150 hover:border-primary/30 hover:bg-accent hover:text-foreground"
-                  onClick={() => {
-                    handleSubmit({ text: prompt.text });
-                  }}
-                >
-                  <prompt.icon className="mt-0.5 size-4 shrink-0 text-primary/60" />
-                  <span>{prompt.text}</span>
-                </button>
-              ))}
+              {starterPrompts.map((prompt) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- fallback guaranteed
+                const accent = (suggestionAccent[prompt.color] ?? suggestionAccent.amber)!;
+                return (
+                  <button
+                    key={prompt.text}
+                    type="button"
+                    className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 text-left text-sm font-medium leading-relaxed transition-all duration-150 ${accent.card} ${accent.hover}`}
+                    onClick={() => {
+                      handleSubmit({ text: prompt.text });
+                    }}
+                  >
+                    <div className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md ${accent.iconBg}`}>
+                      <prompt.icon className={`size-4 ${accent.iconText}`} />
+                    </div>
+                    <span className="text-muted-foreground">{prompt.text}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         ) : (

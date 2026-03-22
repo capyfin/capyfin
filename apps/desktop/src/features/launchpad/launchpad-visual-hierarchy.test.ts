@@ -23,10 +23,10 @@ void test("ActionCardItem applies bg-primary fill for today-category cards", () 
     "ActionCardItem must read card.category to differentiate styling",
   );
 
-  // Must include the subtle primary fill class for today cards
+  // Must include the subtle amber fill class for today cards
   assert.ok(
-    src.includes("bg-primary/"),
-    "ActionCardItem must apply a bg-primary fill for today-category cards",
+    src.includes("bg-amber-500/"),
+    "ActionCardItem must apply a bg-amber-500 fill for today-category cards",
   );
 });
 
@@ -35,7 +35,7 @@ void test("ActionCardItem uses dark mode variant for today-category fill", () =>
 
   // Must include dark mode variant for the filled background
   assert.ok(
-    src.includes("dark:bg-primary/"),
+    src.includes("dark:bg-amber-500/"),
     "ActionCardItem must include a dark: variant for the today-category fill",
   );
 });

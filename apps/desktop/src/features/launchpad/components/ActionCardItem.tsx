@@ -14,7 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { ActionCard } from "../types";
+import type { ActionCard, ActionCategory } from "../types";
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
 const iconMap: Record<string, LucideIcon> = {
@@ -27,6 +27,13 @@ const iconMap: Record<string, LucideIcon> = {
   TrendingUp,
 };
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+
+const categoryAccent: Record<ActionCategory, { bg: string; text: string }> = {
+  today: { bg: "bg-amber-500/8", text: "text-amber-500" },
+  research: { bg: "bg-blue-500/8", text: "text-blue-500" },
+  setups: { bg: "bg-emerald-500/8", text: "text-emerald-500" },
+  portfolio: { bg: "bg-amber-500/8", text: "text-amber-500" },
+};
 
 interface ActionCardItemProps {
   card: ActionCard;
@@ -42,6 +49,7 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
   /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-redundant-type-constituents */
   const needsInput = card.input === "ticker" || card.input === "tickers";
   const isTodayCard = card.category === "today";
+  const accent = categoryAccent[card.category];
 
   function handleCardClick() {
     if (needsInput) {
@@ -72,7 +80,7 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
       size="sm"
       className={cn(
         "cursor-pointer gap-3 py-0 ring-foreground/8 transition-all hover:ring-foreground/18",
-        isTodayCard && "bg-primary/[0.03] dark:bg-primary/[0.05]",
+        isTodayCard && "bg-amber-500/[0.03] dark:bg-amber-500/[0.05]",
         isExpanded && "ring-primary/40 hover:ring-primary/40",
       )}
       onClick={!isExpanded ? handleCardClick : undefined}
@@ -83,7 +91,7 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
       }}
     >
       <div className="flex items-start gap-3.5 px-4 pt-4 group-data-[size=sm]/card:px-3 group-data-[size=sm]/card:pt-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">
+        <div className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", accent.bg, accent.text)}>
           {Icon ? <Icon className="size-4.5" /> : null}
         </div>
         <div className="min-w-0 flex-1">

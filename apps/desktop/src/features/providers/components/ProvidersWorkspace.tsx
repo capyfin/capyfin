@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getConnectionDisplayName, getProviderDisplayName } from "@/features/agents/copy";
+import { formatModelId, getConnectionDisplayName, getProviderDisplayName } from "@/features/agents/copy";
 import { formatDate, getErrorMessage } from "@/lib/utils";
 import { SidecarClient } from "@/lib/sidecar/client";
 import { FinancialDataSection } from "./FinancialDataSection";
@@ -306,7 +306,7 @@ function ConnectionRow({
           >
             {modelCatalog?.models.map((model) => (
               <option key={model.modelRef} value={model.modelRef}>
-                {model.label}
+                {formatModelId(model.modelId)}
               </option>
             ))}
           </select>

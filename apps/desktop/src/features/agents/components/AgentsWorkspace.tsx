@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import {
   FALLBACK_AGENT_DESCRIPTION,
   formatAgentCount,
+  formatModelId,
   formatProviderId,
   getProviderDisplayName,
   isDevDescription,
@@ -373,7 +374,7 @@ export function AgentsWorkspace({
                 <option value="">Provider default</option>
                 {selectedProviderCatalog?.models.map((model) => (
                   <option key={model.modelRef} value={model.modelId}>
-                    {model.label}
+                    {formatModelId(model.modelId)}
                   </option>
                 ))}
               </select>
@@ -536,7 +537,7 @@ export function AgentsWorkspace({
                           <option value="">Provider default</option>
                           {effectiveModelCatalog?.models.map((model) => (
                             <option key={model.modelRef} value={model.modelId}>
-                              {model.label}
+                              {formatModelId(model.modelId)}
                             </option>
                           ))}
                         </select>

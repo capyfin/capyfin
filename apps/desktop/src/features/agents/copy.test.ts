@@ -254,6 +254,21 @@ void test("formatModelId handles underscore separators", () => {
   assert.equal(formatModelId("gpt_4_mini"), "GPT-4 Mini");
 });
 
+void test("formatModelId formats 'gpt-5-mini' to 'GPT-5 Mini'", () => {
+  assert.equal(formatModelId("gpt-5-mini"), "GPT-5 Mini");
+});
+
+void test("formatModelId formats GPT-5.1 Codex variants with spaces", () => {
+  assert.equal(formatModelId("gpt-5.1-codex"), "GPT-5.1 Codex");
+  assert.equal(formatModelId("gpt-5.1-codex-max"), "GPT-5.1 Codex Max");
+  assert.equal(formatModelId("gpt-5.1-codex-mini"), "GPT-5.1 Codex Mini");
+});
+
+void test("formatModelId formats GPT-5.2 and GPT-5.3 Codex variants", () => {
+  assert.equal(formatModelId("gpt-5.2-codex"), "GPT-5.2 Codex");
+  assert.equal(formatModelId("gpt-5.3-codex"), "GPT-5.3 Codex");
+});
+
 // --- getModelDisplayName tests ---
 
 const MOCK_MODEL_CATALOG: ProviderModelCatalog = {

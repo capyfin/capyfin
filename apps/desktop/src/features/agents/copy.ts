@@ -109,7 +109,7 @@ export function formatModelId(modelId: string): string {
   let prevWasNumeric = false;
 
   for (const seg of segments) {
-    const isNumeric = /^\d+$/.test(seg);
+    const isNumeric = /^\d+(\.\d+)*$/.test(seg);
     const known = MODEL_BRAND_UPPER[seg.toLowerCase()];
     const formatted =
       known ??

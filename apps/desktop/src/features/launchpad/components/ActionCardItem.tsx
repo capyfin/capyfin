@@ -98,7 +98,7 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
           <h3 className="text-[15px] font-semibold leading-snug text-foreground">
             {card.title}
           </h3>
-          <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground">
+          <p className="mt-0.5 line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
             {card.promise}
           </p>
         </div>

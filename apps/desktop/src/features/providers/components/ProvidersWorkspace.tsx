@@ -331,7 +331,7 @@ function ConnectionRow({
             }}
           >
             <CheckIcon className="size-3" />
-            Default
+            {connection.isDefault ? null : "Default"}
           </Button>
           <Button
             type="button"

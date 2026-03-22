@@ -64,9 +64,7 @@ export function buildSkillCatalog(skills: BundledSkillEntry[]): string {
   }
 
   if (personas.length > 0) {
-    lines.push(
-      `Personas: ${personas.map((p) => p.id).join(", ")}`,
-    );
+    lines.push(`Personas: ${personas.map((p) => p.id).join(", ")}`);
     lines.push("");
   }
 

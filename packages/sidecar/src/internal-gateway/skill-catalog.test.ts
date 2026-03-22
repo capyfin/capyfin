@@ -34,9 +34,18 @@ const P1_SKILLS: BundledSkillEntry[] = [
 void test("buildSkillCatalog with P0-only skills includes correct domains", () => {
   const catalog = buildSkillCatalog(P0_SKILLS);
 
-  assert.ok(catalog.includes("## Available Financial Skills"), "Should have header");
-  assert.ok(catalog.includes("Daily Intelligence"), "Should include Daily Intelligence domain");
-  assert.ok(catalog.includes("Company Research"), "Should include Company Research domain");
+  assert.ok(
+    catalog.includes("## Available Financial Skills"),
+    "Should have header",
+  );
+  assert.ok(
+    catalog.includes("Daily Intelligence"),
+    "Should include Daily Intelligence domain",
+  );
+  assert.ok(
+    catalog.includes("Company Research"),
+    "Should include Company Research domain",
+  );
   assert.ok(catalog.includes("morning-brief"), "Should list morning-brief");
   assert.ok(catalog.includes("market-health"), "Should list market-health");
   assert.ok(catalog.includes("deep-dive"), "Should list deep-dive");
@@ -47,9 +56,18 @@ void test("buildSkillCatalog with P0-only skills includes correct domains", () =
 void test("buildSkillCatalog with P0+P1 skills includes all skills", () => {
   const catalog = buildSkillCatalog([...P0_SKILLS, ...P1_SKILLS]);
 
-  assert.ok(catalog.includes("Daily Intelligence"), "Should include Daily Intelligence");
-  assert.ok(catalog.includes("Company Research"), "Should include Company Research");
-  assert.ok(catalog.includes("Setup Screening"), "Should include Setup Screening");
+  assert.ok(
+    catalog.includes("Daily Intelligence"),
+    "Should include Daily Intelligence",
+  );
+  assert.ok(
+    catalog.includes("Company Research"),
+    "Should include Company Research",
+  );
+  assert.ok(
+    catalog.includes("Setup Screening"),
+    "Should include Setup Screening",
+  );
   assert.ok(catalog.includes("earnings-xray"), "Should list earnings-xray");
   assert.ok(catalog.includes("bull-bear"), "Should list bull-bear");
   assert.ok(catalog.includes("breakout-setups"), "Should list breakout-setups");
@@ -58,9 +76,15 @@ void test("buildSkillCatalog with P0+P1 skills includes all skills", () => {
 void test("buildSkillCatalog lists personas correctly", () => {
   const catalog = buildSkillCatalog([...P0_SKILLS, ...P1_SKILLS]);
 
-  assert.ok(catalog.includes("fundamental-analyst"), "Should list fundamental-analyst");
+  assert.ok(
+    catalog.includes("fundamental-analyst"),
+    "Should list fundamental-analyst",
+  );
   assert.ok(catalog.includes("macro-analyst"), "Should list macro-analyst");
-  assert.ok(catalog.includes("technical-analyst"), "Should list technical-analyst");
+  assert.ok(
+    catalog.includes("technical-analyst"),
+    "Should list technical-analyst",
+  );
   assert.ok(catalog.includes("Personas:"), "Should have Personas line");
 });
 
@@ -87,7 +111,8 @@ void test("buildSkillCatalog includes skill file path hints", () => {
     "Should reference skill file paths",
   );
   assert.ok(
-    catalog.includes("./skills/personas/") || catalog.includes("skills/personas"),
+    catalog.includes("./skills/personas/") ||
+      catalog.includes("skills/personas"),
     "Should reference persona paths",
   );
 });
@@ -105,6 +130,12 @@ void test("buildSkillCatalog does not interfere with Launchpad — catalog is pu
 
   // The catalog should be a string without any executable code or imports
   assert.equal(typeof catalog, "string");
-  assert.ok(!catalog.includes("import "), "Should not contain import statements");
-  assert.ok(!catalog.includes("require("), "Should not contain require statements");
+  assert.ok(
+    !catalog.includes("import "),
+    "Should not contain import statements",
+  );
+  assert.ok(
+    !catalog.includes("require("),
+    "Should not contain require statements",
+  );
 });

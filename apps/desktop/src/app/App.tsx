@@ -193,30 +193,30 @@ export function App() {
 
     return (
       <>
-      <Toaster position="top-right" richColors />
-      <ConnectionCenter
-        authOverview={state.authOverview}
-        client={state.client}
-        isLoading={state.isLoading}
-        runtimeError={state.runtimeError}
-        onAuthOverviewChange={(overview) => {
-          dispatch({ type: "SET_AUTH_OVERVIEW", authOverview: overview });
-        }}
-        onContinue={() => {
-          dispatch({ type: "FINISH_ONBOARDING" });
-          window.location.hash = "#launchpad";
-        }}
-        onRetry={() => {
-          dispatch({ type: "REQUEST_RETRY" });
-        }}
-        {...(isReusableConnectionFlow
-          ? {
-              onClose: () => {
-                window.location.hash = "#providers";
-              },
-            }
-          : {})}
-      />
+        <Toaster position="top-right" richColors />
+        <ConnectionCenter
+          authOverview={state.authOverview}
+          client={state.client}
+          isLoading={state.isLoading}
+          runtimeError={state.runtimeError}
+          onAuthOverviewChange={(overview) => {
+            dispatch({ type: "SET_AUTH_OVERVIEW", authOverview: overview });
+          }}
+          onContinue={() => {
+            dispatch({ type: "FINISH_ONBOARDING" });
+            window.location.hash = "#launchpad";
+          }}
+          onRetry={() => {
+            dispatch({ type: "REQUEST_RETRY" });
+          }}
+          {...(isReusableConnectionFlow
+            ? {
+                onClose: () => {
+                  window.location.hash = "#providers";
+                },
+              }
+            : {})}
+        />
       </>
     );
   }

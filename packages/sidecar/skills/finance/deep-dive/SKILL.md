@@ -66,6 +66,7 @@ Before writing any analysis, gather ALL of the following data. Do not begin writ
 - Search for `"{ticker} insider transactions"` for management alignment signals
 
 **Important Tier 0 Notes:**
+
 - SEC EDGAR data is authoritative — prefer it over web-searched financials when available
 - Web-searched financial data may lag by days or weeks — note the data date
 - Cross-reference web-searched numbers against SEC filings when possible
@@ -109,6 +110,7 @@ Produce a clear, factual overview of what the company does and how it makes mone
 6. **Competitive landscape** — Name 3-5 direct competitors. State the basis of competition (price, features, brand, distribution, technology).
 
 **Where to find this data:**
+
 - 10-K Item 1 (Business) for company description and competitive landscape
 - 10-K Financial Statement Notes for segment breakdown
 - Company investor relations page for segment reporting
@@ -131,6 +133,7 @@ Evaluate the company's competitive advantage using the 5-dimension moat framewor
 5. **Efficient Scale** — Does the market naturally limit the number of profitable competitors? Score: None / Narrow / Wide
 
 **Overall Moat Rating:**
+
 - **Wide Moat**: At least 2 dimensions rated Wide, or 1 Wide + 2 Narrow
 - **Narrow Moat**: At least 2 dimensions rated Narrow, or 1 Wide
 - **No Moat**: Fewer than 2 Narrow ratings
@@ -146,6 +149,7 @@ Evaluate the company's competitive advantage using the 5-dimension moat framewor
 Analyze the company's financial performance and trajectory. Focus on trends, not snapshots — 5-year data minimum when available, 3-year minimum.
 
 **Revenue Growth:**
+
 - Annual revenue for each of the last 5 years
 - Year-over-year growth rate for each year
 - Compound annual growth rate (CAGR) over the period
@@ -153,6 +157,7 @@ Analyze the company's financial performance and trajectory. Focus on trends, not
 - Revenue growth trajectory: accelerating, stable, or decelerating
 
 **Margin Analysis:**
+
 - Gross margin: level and 5-year trend (expanding, stable, compressing)
 - Operating margin: level and 5-year trend
 - Net margin: level and 5-year trend
@@ -160,6 +165,7 @@ Analyze the company's financial performance and trajectory. Focus on trends, not
 - Compare each margin to sector averages — is the company best-in-class, average, or below-average?
 
 **Free Cash Flow:**
+
 - Annual FCF for each of the last 5 years
 - FCF margin (FCF / Revenue)
 - FCF conversion (FCF / Net Income) — >80% is healthy, <50% signals issues
@@ -167,6 +173,7 @@ Analyze the company's financial performance and trajectory. Focus on trends, not
 - Identify any years with unusual CapEx spikes and the reason
 
 **Leverage & Balance Sheet:**
+
 - Debt/equity ratio and trend
 - Net debt/EBITDA ratio
 - Interest coverage ratio (EBIT / Interest Expense) — >5x comfortable, <2x warning
@@ -174,11 +181,13 @@ Analyze the company's financial performance and trajectory. Focus on trends, not
 - Debt maturity schedule — any wall of maturities in the next 2-3 years?
 
 **Capital Efficiency:**
+
 - Return on Equity (ROE) — 5-year trend
 - Return on Invested Capital (ROIC) — 5-year trend
 - ROIC vs. estimated WACC — is the company creating or destroying value?
 
 **Red Flags — explicitly flag any of these:**
+
 - Declining revenue growth for 3+ consecutive quarters
 - Margin compression without clear strategic rationale
 - Rising debt without corresponding asset or revenue growth
@@ -194,6 +203,7 @@ Analyze the company's financial performance and trajectory. Focus on trends, not
 Cover material events from the last 90 days. This section provides time-sensitive context that financial statements miss.
 
 **What to cover:**
+
 - **Earnings results** (if within the period): actual vs. estimate for revenue and EPS, guidance changes, management commentary
 - **SEC filings**: Any 8-K filings (material events — acquisitions, executive changes, restructuring)
 - **Management changes**: CEO, CFO, or board changes
@@ -204,6 +214,7 @@ Cover material events from the last 90 days. This section provides time-sensitiv
 - **M&A activity**: Acquisitions announced, divestitures, activist investor involvement
 
 **Where to find this data:**
+
 - SEC EDGAR for 8-K filings and Form 4 (insider transactions)
 - Web search for `"{ticker} news last 90 days"` and `"{ticker} analyst rating changes"`
 - Web search for `"{ticker} earnings results"` if within the period
@@ -217,12 +228,14 @@ Cover material events from the last 90 days. This section provides time-sensitiv
 Identify and assess the material risks facing the company. This section should help the reader understand what could go wrong.
 
 **Process:**
+
 1. **Extract risks from the 10-K Item 1A (Risk Factors)** — Read the full risk factors section. Categorize each risk.
 2. **Distinguish boilerplate from company-specific risks** — Every 10-K includes generic risks (natural disasters, pandemic, cybersecurity). Focus on company-specific risks that are uniquely relevant to THIS business.
 3. **Add analyst-identified risks** — Web search for risks that analysts and the market are focused on but may not appear in the 10-K (e.g., competitive threats that emerged after the filing date).
 4. **Categorize and rate each risk:**
 
 **Risk Categories:**
+
 - **Competitive**: New entrants, substitutes, pricing pressure, market share loss
 - **Regulatory**: Government action, compliance requirements, antitrust
 - **Financial**: Debt burden, liquidity, currency exposure, interest rate sensitivity
@@ -230,6 +243,7 @@ Identify and assess the material risks facing the company. This section should h
 - **Macro**: Economic cycle sensitivity, geopolitical exposure, commodity prices
 
 **Severity Ratings:**
+
 - **Critical**: Could materially impair the business (>20% revenue impact or existential threat)
 - **Significant**: Would meaningfully affect financials or competitive position (5-20% revenue impact)
 - **Moderate**: Manageable risk with limited financial impact (<5% revenue impact)
@@ -243,6 +257,7 @@ Identify and assess the material risks facing the company. This section should h
 Synthesize all prior sections into a concise, actionable assessment. This is the payoff — the reader should walk away with a clear understanding of the company's quality and key considerations.
 
 **Requirements:**
+
 1. Write a **1-paragraph synthesis** (4-6 sentences) that ties together the moat assessment, financial health, recent developments, and key risks
 2. State a **confidence level** (HIGH / MEDIUM / LOW) for the overall assessment with rationale:
    - HIGH: Analysis based on audited filings, well-established business, abundant data
@@ -332,6 +347,7 @@ When operating at Tier 0 (no FMP configured), include this single line at the ve
 > 💡 Connect FMP in Settings → Providers for structured financial statements and faster results. It's free.
 
 Rules for the nudge:
+
 - Include it once per report, at the bottom — never inline or mid-content
 - This is NOT an error, NOT a locked-feature badge — it is a gentle enhancement suggestion
 - Do NOT include the nudge if FMP is already configured and providing Tier 1 data
@@ -349,5 +365,6 @@ Data as of: {YYYY-MM-DD} · Sources: {list all sources used} · Tier: {0|1}
 ```
 
 Examples:
+
 - `Data as of: 2026-03-21 · Sources: SEC EDGAR (10-K 2025, 10-Q Q3 2025), web search (Yahoo Finance, Reuters) · Tier: 0`
 - `Data as of: 2026-03-21 · Sources: FMP API, SEC EDGAR (10-K 2025) · Tier: 1`

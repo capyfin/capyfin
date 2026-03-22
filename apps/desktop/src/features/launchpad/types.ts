@@ -1,6 +1,11 @@
 export type ActionCategory = "today" | "research" | "setups" | "portfolio";
 
-export type CardInputMode = "none" | "ticker" | "tickers" | "preferences" | "upload";
+export type CardInputMode =
+  | "none"
+  | "ticker"
+  | "tickers"
+  | "preferences"
+  | "upload";
 
 export interface ActionCard {
   id: string;

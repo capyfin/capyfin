@@ -25,7 +25,10 @@ export function getAgentDisplayName(name: string): string {
   return DEV_AGENT_NAMES.has(name) ? "CapyFin" : name;
 }
 
-import type { ProviderDefinition, ProviderModelCatalog } from "@capyfin/contracts";
+import type {
+  ProviderDefinition,
+  ProviderModelCatalog,
+} from "@capyfin/contracts";
 
 /**
  * Converts a raw provider ID like "github-copilot" into a readable label
@@ -139,8 +142,7 @@ export function formatModelId(modelId: string): string {
     const isNumeric = /^\d+(\.\d+)*$/.test(seg);
     const known = MODEL_BRAND_UPPER[seg.toLowerCase()];
     const formatted =
-      known ??
-      (isNumeric ? seg : seg.charAt(0).toUpperCase() + seg.slice(1));
+      known ?? (isNumeric ? seg : seg.charAt(0).toUpperCase() + seg.slice(1));
 
     const last = result[result.length - 1];
 

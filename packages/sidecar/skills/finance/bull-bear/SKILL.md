@@ -74,6 +74,7 @@ Before constructing any arguments, gather ALL of the following data. Do not begi
 - Search for `"{ticker} valuation metrics historical"` for valuation context
 
 **Important Tier 0 Notes:**
+
 - SEC filings are the gold standard for evidence — they are audited, legally required, and company-specific
 - Analyst reports found via web search may be paywalled — use publicly available summaries
 - Cross-reference web-searched claims with SEC filing data when possible
@@ -102,6 +103,7 @@ Follow these steps in order. Each step builds on the prior one.
 ### Step 1: Gather Fundamental Data
 
 Read the 10-K filing thoroughly. Focus on:
+
 - Business description (what they sell, to whom, how)
 - Revenue segments and growth rates
 - Margin trends (gross, operating, net)
@@ -112,6 +114,7 @@ Read the 10-K filing thoroughly. Focus on:
 ### Step 2: Identify Growth Drivers and Risks from SEC Filings
 
 From the 10-K:
+
 - **Growth drivers**: New products, market expansion, pricing power, secular trends, operational leverage
 - **Risk factors (Item 1A)**: Read the full section. Distinguish company-specific risks from boilerplate. The most important risks are often buried mid-section, not at the top.
 - **MD&A insights**: Management's own view of what's working and what's challenging
@@ -119,6 +122,7 @@ From the 10-K:
 ### Step 3: Review Recent Analyst Opinions and News
 
 From web search:
+
 - Recent analyst upgrades or downgrades (last 90 days)
 - Recent news that shifts the bull/bear balance
 - Short interest trends — rising short interest signals growing bearish conviction
@@ -127,6 +131,7 @@ From web search:
 ### Step 4: Construct 3 Strongest Bull Arguments
 
 Each argument must be:
+
 - **Specific to THIS company** — reject any argument that could apply to any company in the sector
 - **Backed by hard evidence** — cite a specific data point, filing section, or metric
 - **Forward-looking** — explain why this advantage will persist or compound
@@ -135,6 +140,7 @@ Each argument must be:
 ### Step 5: Construct 3 Strongest Bear Arguments
 
 Apply the same rigor as bull arguments:
+
 - Each must be company-specific, evidence-backed, and forward-looking
 - Each must include the condition under which the risk materializes
 - Do NOT include generic risks like "recession could hurt earnings" unless the company is specifically macro-sensitive
@@ -142,6 +148,7 @@ Apply the same rigor as bull arguments:
 ### Step 6: Identify the Key Swing Factor
 
 The single variable, event, or metric that most determines which thesis wins. This should be:
+
 - Observable and measurable (not vague)
 - Time-bound if possible ("next 2 earnings cycles," "FY26 results")
 - Something where the outcome would decisively shift the bull/bear balance
@@ -149,6 +156,7 @@ The single variable, event, or metric that most determines which thesis wins. Th
 ### Step 7: State the Verdict
 
 The verdict is NOT a buy/sell recommendation. It is:
+
 - An explicit statement of which thesis you find more compelling and why
 - The key assumption underlying your leaning
 - A clear-eyed acknowledgment of what would change your mind
@@ -162,12 +170,14 @@ The verdict is NOT a buy/sell recommendation. It is:
 This is the most important quality standard in the Bull / Bear skill. Every argument MUST cite specific evidence.
 
 **BAD (rejected):**
+
 - "Revenue is growing" ← Vague. By how much? For how long? Source?
 - "The company has a strong brand" ← Generic. What pricing premium does the brand command?
 - "There are competitive risks" ← Every company has competitive risks. What specifically?
 - "Management is experienced" ← So what? What have they done?
 
 **GOOD (accepted):**
+
 - "Revenue grew 24% YoY to $35.1B (Q4 2025 10-Q, p.12), accelerating from 18% growth in Q3 and 15% in Q2"
 - "Brand commands a 22% price premium over nearest competitor, reflected in 58% gross margin vs. industry average of 42% (2025 10-K, Financial Statements)"
 - "Three of the top 5 competitors have launched AI-native alternatives in the last 12 months (web search), and the company's win rate in competitive deals dropped from 65% to 52% per management commentary (Q4 2025 earnings call)"
@@ -182,6 +192,7 @@ If yes, the argument is too generic. Rewrite with company-specific evidence.
 ### The Invalidation Requirement
 
 Every argument must include a clear invalidation condition:
+
 - **Bull invalidation**: What specific development or data point would make this bull argument wrong?
 - **Bear invalidation**: What specific development or data point would make this bear argument wrong?
 
@@ -194,6 +205,7 @@ Invalidation conditions should be specific and observable, not vague. "If the ec
 The Bull / Bear skill enforces balanced analysis. If your initial research produces uniformly bullish or bearish arguments, you have NOT done adequate research.
 
 **Rules:**
+
 1. If all 3 bull arguments are overwhelming and you struggle to find bear arguments → you are biased. Dig deeper into the risk factors section of the 10-K, recent short-seller reports, and competitive threats.
 2. If all 3 bear arguments are overwhelming and you struggle to find bull arguments → you are biased. Look harder at growth rates, competitive positioning, and insider buying.
 3. The bull and bear sections must each be roughly equal in length and depth. A 300-word bull case paired with a 50-word bear case is a quality failure.
@@ -302,6 +314,7 @@ Every factual claim in the Bull / Bear analysis must cite a specific source:
 ### Confidence Levels
 
 Rate confidence for the overall analysis:
+
 - **HIGH**: Based primarily on audited SEC filings and structured data. Evidence is specific and verifiable.
 - **MEDIUM**: Mix of SEC filings and web-searched data. Some evidence is approximate or from secondary sources.
 - **LOW**: Limited filing data available (e.g., recent IPO), or analysis relies heavily on projections and estimates.
@@ -315,6 +328,7 @@ When operating at Tier 0 (no FMP configured), include this single line at the ve
 > 💡 Connect FMP in Settings → Providers for structured financial statements and precise metric citations. It's free.
 
 Rules for the nudge:
+
 - Include it once per report, at the bottom — never inline or mid-content
 - This is NOT an error, NOT a locked-feature badge — it is a gentle enhancement suggestion
 - Do NOT include the nudge if FMP is already configured and providing Tier 1 data
@@ -348,5 +362,6 @@ Data as of: {YYYY-MM-DD} · Sources: {list all sources used} · Tier: {0|1}
 ```
 
 Examples:
+
 - `Data as of: 2026-03-21 · Sources: SEC EDGAR (10-K 2025, 10-Q Q4 2025), web search (Seeking Alpha, Yahoo Finance, Reuters) · Tier: 0`
 - `Data as of: 2026-03-21 · Sources: FMP API (financials, ratios, estimates), SEC EDGAR (10-K 2025) · Tier: 1`

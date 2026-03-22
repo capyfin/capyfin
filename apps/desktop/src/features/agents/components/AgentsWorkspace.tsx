@@ -495,7 +495,9 @@ export function AgentsWorkspace({
                       ) : null}
                     </div>
                     <p className="text-[12px] leading-relaxed text-muted-foreground">
-                      {isDevDescription(agent.description) ? FALLBACK_AGENT_DESCRIPTION : agent.description}
+                      {isDevDescription(agent.description)
+                        ? FALLBACK_AGENT_DESCRIPTION
+                        : agent.description}
                     </p>
                   </div>
 

@@ -16,7 +16,8 @@ function createMockRuntime() {
               name: "FMP",
               description: "Structured financials, screener, earnings data",
               tier: "Free — 250 calls/day",
-              signupUrl: "https://site.financialmodelingprep.com/developer/docs",
+              signupUrl:
+                "https://site.financialmodelingprep.com/developer/docs",
               connected: Boolean(stored.fmp),
               connectedAt: stored.fmp?.connectedAt,
             },
@@ -35,13 +36,31 @@ function createMockRuntime() {
       saveKey(providerId: string, apiKey: string) {
         const connectedAt = new Date().toISOString();
         stored[providerId] = { apiKey, connectedAt };
-        const defs: Record<string, { name: string; description: string; tier: string; signupUrl: string }> = {
-          fmp: { name: "FMP", description: "Structured financials, screener, earnings data", tier: "Free — 250 calls/day", signupUrl: "https://site.financialmodelingprep.com/developer/docs" },
-          fred: { name: "FRED", description: "Macro indicators, interest rates, inflation, GDP", tier: "Free", signupUrl: "https://fred.stlouisfed.org/docs/api/api_key.html" },
+        const defs: Record<
+          string,
+          { name: string; description: string; tier: string; signupUrl: string }
+        > = {
+          fmp: {
+            name: "FMP",
+            description: "Structured financials, screener, earnings data",
+            tier: "Free — 250 calls/day",
+            signupUrl: "https://site.financialmodelingprep.com/developer/docs",
+          },
+          fred: {
+            name: "FRED",
+            description: "Macro indicators, interest rates, inflation, GDP",
+            tier: "Free",
+            signupUrl: "https://fred.stlouisfed.org/docs/api/api_key.html",
+          },
         };
         const def = defs[providerId];
         if (!def) throw new Error(`Unknown data provider: "${providerId}".`);
-        return Promise.resolve({ id: providerId, ...def, connected: true, connectedAt });
+        return Promise.resolve({
+          id: providerId,
+          ...def,
+          connected: true,
+          connectedAt,
+        });
       },
       deleteKey(providerId: string) {
         delete stored[providerId];
@@ -65,7 +84,9 @@ void test("GET /data returns all providers", async () => {
   const response = await app.request("/data");
   assert.equal(response.status, 200);
 
-  const body = (await response.json()) as { providers: { id: string; connected: boolean }[] };
+  const body = (await response.json()) as {
+    providers: { id: string; connected: boolean }[];
+  };
   assert.equal(body.providers.length, 2);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const fmp = body.providers[0]!;

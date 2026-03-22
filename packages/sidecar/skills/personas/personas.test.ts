@@ -125,10 +125,7 @@ for (const persona of PERSONAS) {
   void test(`${persona.id}/SKILL.md is 150+ lines`, async () => {
     const content = await readFile(skillPath, "utf8");
     const lineCount = content.split("\n").length;
-    assert.ok(
-      lineCount >= 150,
-      `File should be 150+ lines, got ${lineCount}`,
-    );
+    assert.ok(lineCount >= 150, `File should be 150+ lines, got ${lineCount}`);
   });
 
   void test(`${persona.id}/SKILL.md contains required content sections`, async () => {

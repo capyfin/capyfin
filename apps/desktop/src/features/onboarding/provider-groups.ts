@@ -6,8 +6,20 @@ export interface ProviderGroup {
   providers: ProviderDefinition[];
 }
 
-const POPULAR_IDS = new Set(["openai", "anthropic", "google", "xai", "mistral"]);
-const SELF_HOSTED_IDS = new Set(["ollama", "vllm", "sglang", "custom", "litellm"]);
+const POPULAR_IDS = new Set([
+  "openai",
+  "anthropic",
+  "google",
+  "xai",
+  "mistral",
+]);
+const SELF_HOSTED_IDS = new Set([
+  "ollama",
+  "vllm",
+  "sglang",
+  "custom",
+  "litellm",
+]);
 
 /**
  * Groups providers into "Popular", "More providers", and "Self-hosted" sections.
@@ -41,9 +53,24 @@ export function groupProviders(
     });
 
   const groups: ProviderGroup[] = [];
-  if (popular.length > 0) groups.push({ title: "Popular", isPopular: true, providers: sortConnectedFirst(popular) });
-  if (more.length > 0) groups.push({ title: "More providers", isPopular: false, providers: sortConnectedFirst(more) });
-  if (selfHosted.length > 0) groups.push({ title: "Self-hosted", isPopular: false, providers: sortConnectedFirst(selfHosted) });
+  if (popular.length > 0)
+    groups.push({
+      title: "Popular",
+      isPopular: true,
+      providers: sortConnectedFirst(popular),
+    });
+  if (more.length > 0)
+    groups.push({
+      title: "More providers",
+      isPopular: false,
+      providers: sortConnectedFirst(more),
+    });
+  if (selfHosted.length > 0)
+    groups.push({
+      title: "Self-hosted",
+      isPopular: false,
+      providers: sortConnectedFirst(selfHosted),
+    });
 
   return groups;
 }

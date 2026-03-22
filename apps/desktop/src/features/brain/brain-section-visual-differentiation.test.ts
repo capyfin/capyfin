@@ -42,44 +42,80 @@ function notesAccent(): SectionAccent {
 
 void test("references accent uses blue family background tint", () => {
   const accent = referencesAccent();
-  assert.ok(accent.containerBg.includes("blue"), "container bg should include blue");
+  assert.ok(
+    accent.containerBg.includes("blue"),
+    "container bg should include blue",
+  );
 });
 
 void test("references accent uses blue icon color", () => {
   const accent = referencesAccent();
-  assert.ok(accent.iconColor.includes("blue"), "icon color should include blue");
+  assert.ok(
+    accent.iconColor.includes("blue"),
+    "icon color should include blue",
+  );
 });
 
 void test("notes accent uses amber family background tint", () => {
   const accent = notesAccent();
-  assert.ok(accent.containerBg.includes("amber"), "container bg should include amber");
+  assert.ok(
+    accent.containerBg.includes("amber"),
+    "container bg should include amber",
+  );
 });
 
 void test("notes accent uses amber icon color", () => {
   const accent = notesAccent();
-  assert.ok(accent.iconColor.includes("amber"), "icon color should include amber");
+  assert.ok(
+    accent.iconColor.includes("amber"),
+    "icon color should include amber",
+  );
 });
 
 void test("references and notes use different accent colors", () => {
   const refAccent = referencesAccent();
   const noteAccent = notesAccent();
-  assert.notEqual(refAccent.containerBg, noteAccent.containerBg, "container backgrounds should differ");
-  assert.notEqual(refAccent.iconColor, noteAccent.iconColor, "icon colors should differ");
-  assert.notEqual(refAccent.borderColor, noteAccent.borderColor, "border colors should differ");
+  assert.notEqual(
+    refAccent.containerBg,
+    noteAccent.containerBg,
+    "container backgrounds should differ",
+  );
+  assert.notEqual(
+    refAccent.iconColor,
+    noteAccent.iconColor,
+    "icon colors should differ",
+  );
+  assert.notEqual(
+    refAccent.borderColor,
+    noteAccent.borderColor,
+    "border colors should differ",
+  );
 });
 
 void test("accent backgrounds use low opacity (5%) for subtlety", () => {
   const refAccent = referencesAccent();
   const noteAccent = notesAccent();
-  assert.ok(refAccent.containerBg.includes("/5"), "references bg should use /5 opacity");
-  assert.ok(noteAccent.containerBg.includes("/5"), "notes bg should use /5 opacity");
+  assert.ok(
+    refAccent.containerBg.includes("/5"),
+    "references bg should use /5 opacity",
+  );
+  assert.ok(
+    noteAccent.containerBg.includes("/5"),
+    "notes bg should use /5 opacity",
+  );
 });
 
 void test("accent border colors use low opacity for subtlety", () => {
   const refAccent = referencesAccent();
   const noteAccent = notesAccent();
-  assert.ok(refAccent.borderColor.includes("/20"), "references border should use low opacity");
-  assert.ok(noteAccent.borderColor.includes("/20"), "notes border should use low opacity");
+  assert.ok(
+    refAccent.borderColor.includes("/20"),
+    "references border should use low opacity",
+  );
+  assert.ok(
+    noteAccent.borderColor.includes("/20"),
+    "notes border should use low opacity",
+  );
 });
 
 void test("both sections have all three accent properties defined", () => {

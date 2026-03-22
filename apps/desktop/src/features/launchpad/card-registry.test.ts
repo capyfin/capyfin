@@ -73,7 +73,10 @@ void test("Fair Value card has correct metadata", () => {
 
 void test("cardSections exports sections with cards", () => {
   assert.ok(Array.isArray(cardSections));
-  assert.ok(cardSections.length >= 3, "should have at least Today, Research, and Find Setups");
+  assert.ok(
+    cardSections.length >= 3,
+    "should have at least Today, Research, and Find Setups",
+  );
 });
 
 void test("Today section contains Morning Brief and Market Health", () => {

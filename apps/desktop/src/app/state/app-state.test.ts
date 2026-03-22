@@ -24,7 +24,11 @@ void test("HYDRATE_SUCCESS still sets hasPortfolio from payload", () => {
   const state = makeState();
   const next = appReducer(state, {
     type: "HYDRATE_SUCCESS",
-    authOverview: { providers: [], connections: [], selectedProviderId: "openai" } as never,
+    authOverview: {
+      providers: [],
+      connections: [],
+      selectedProviderId: "openai",
+    } as never,
     client: {} as never,
     sessions: [],
     hasPortfolio: true,
@@ -34,7 +38,10 @@ void test("HYDRATE_SUCCESS still sets hasPortfolio from payload", () => {
 
 void test("SET_HAS_PORTFOLIO action still works for chat-uploaded portfolios", () => {
   const state = makeState({ hasPortfolio: false });
-  const next = appReducer(state, { type: "SET_HAS_PORTFOLIO", hasPortfolio: true });
+  const next = appReducer(state, {
+    type: "SET_HAS_PORTFOLIO",
+    hasPortfolio: true,
+  });
   assert.equal(next.hasPortfolio, true);
 });
 
@@ -83,7 +90,10 @@ void test("SET_PENDING_PROMPT overwrites existing pending prompt", () => {
     prompt: "new",
     displayLabel: "New Label",
   };
-  const next = appReducer(state, { type: "SET_PENDING_PROMPT", pending: newPending });
+  const next = appReducer(state, {
+    type: "SET_PENDING_PROMPT",
+    pending: newPending,
+  });
   assert.deepEqual(next.pendingCardPrompt, newPending);
 });
 
@@ -125,7 +135,10 @@ void test("REQUEST_RETRY is idempotent — each call increments by 1", () => {
 });
 
 void test("HYDRATE_START clears runtimeError for a fresh attempt", () => {
-  const state = makeState({ runtimeError: "Connection refused", isLoading: false });
+  const state = makeState({
+    runtimeError: "Connection refused",
+    isLoading: false,
+  });
   const next = appReducer(state, { type: "HYDRATE_START" });
   assert.equal(next.runtimeError, null);
   assert.equal(next.isLoading, true);
@@ -142,5 +155,9 @@ void test("after failure the retry-button disabled guard resolves correctly", ()
   // client is null after failure, but runtimeError is set — button must NOT be disabled
   assert.equal(state.client, null);
   assert.equal(state.runtimeError, "fail");
-  assert.equal(state.isLoading, false, "isLoading should be false after HYDRATE_COMPLETE");
+  assert.equal(
+    state.isLoading,
+    false,
+    "isLoading should be false after HYDRATE_COMPLETE",
+  );
 });

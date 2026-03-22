@@ -70,7 +70,7 @@ void test("group label has increased top padding (pt-4) for visual separation", 
     "Group labels must use pt-4 for clear visual break between groups",
   );
   assert.ok(
-    !groupLabelLine.includes("pt-3 ") && !groupLabelLine.includes("pt-3\""),
+    !groupLabelLine.includes("pt-3 ") && !groupLabelLine.includes('pt-3"'),
     "Group labels must not use pt-3 — should be pt-4",
   );
 });

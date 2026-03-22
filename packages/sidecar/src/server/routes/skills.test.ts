@@ -50,14 +50,14 @@ void test("GET /skills returns bundled skills from nested structure", async () =
     // With empty category directories, there should be no bundled skills
     // (they'll be added by later tasks)
     const bundled = body.skills.filter((s) => s.source === "bundled");
-    assert.ok(
-      Array.isArray(bundled),
-      "Bundled skills should be an array",
-    );
+    assert.ok(Array.isArray(bundled), "Bundled skills should be an array");
 
     // Each bundled skill should have a category
     for (const skill of bundled) {
-      assert.ok(skill.category, `Bundled skill ${skill.id} should have a category`);
+      assert.ok(
+        skill.category,
+        `Bundled skill ${skill.id} should have a category`,
+      );
     }
   } finally {
     await rm(workspaceDir, { recursive: true, force: true });
@@ -112,17 +112,26 @@ void test("GET /skills returns bundled persona skills", async () => {
     assert.equal(response.status, 200);
 
     const body = (await response.json()) as {
-      skills: { id: string; installed: boolean; source?: string; category?: string }[];
+      skills: {
+        id: string;
+        installed: boolean;
+        source?: string;
+        category?: string;
+      }[];
     };
 
     // Persona skills should be present as bundled
-    const bundled = body.skills.filter(
-      (s) => s.source === "bundled",
+    const bundled = body.skills.filter((s) => s.source === "bundled");
+    assert.ok(
+      bundled.length >= 2,
+      "Should have at least 2 bundled persona skills",
     );
-    assert.ok(bundled.length >= 2, "Should have at least 2 bundled persona skills");
 
     const personaSkills = bundled.filter((s) => s.category === "personas");
-    assert.ok(personaSkills.length >= 2, "Should have at least 2 persona skills");
+    assert.ok(
+      personaSkills.length >= 2,
+      "Should have at least 2 persona skills",
+    );
   } finally {
     await rm(workspaceDir, { recursive: true, force: true });
   }
@@ -160,7 +169,10 @@ void test("DELETE /skills/finance/deep-dive prevents removing bundled skills", a
 
     // Verify it's gone
     const entries = await readdir(join(workspaceDir, "skills"));
-    assert.ok(!entries.includes("custom-skill"), "custom-skill should be removed");
+    assert.ok(
+      !entries.includes("custom-skill"),
+      "custom-skill should be removed",
+    );
   } finally {
     await rm(workspaceDir, { recursive: true, force: true });
   }
@@ -214,7 +226,11 @@ void test("DELETE /skills supports category-prefixed paths", async () => {
     // Create a non-bundled skill inside a category-like path
     const skillDir = join(workspaceDir, "skills", "custom-cat", "my-skill");
     await mkdir(skillDir, { recursive: true });
-    await writeFile(join(skillDir, "SKILL.md"), "---\nname: My Skill\n---\n", "utf8");
+    await writeFile(
+      join(skillDir, "SKILL.md"),
+      "---\nname: My Skill\n---\n",
+      "utf8",
+    );
 
     const app = new Hono();
     app.route("/skills", createSkillRoutes(createMockRuntime(workspaceDir)));

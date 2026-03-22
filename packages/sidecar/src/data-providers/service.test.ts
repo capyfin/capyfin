@@ -49,7 +49,10 @@ void test("saveKey stores a key and marks provider as connected", async () => {
 
     // Verify persisted to disk
     const raw = await readFile(join(stateDir, "data-providers.json"), "utf-8");
-    const store = JSON.parse(raw) as { version: number; providers: Record<string, unknown> };
+    const store = JSON.parse(raw) as {
+      version: number;
+      providers: Record<string, unknown>;
+    };
     assert.equal(store.version, 1);
     assert.ok(store.providers.fmp);
   } finally {
@@ -63,10 +66,9 @@ void test("saveKey rejects unknown provider", async () => {
 
   try {
     const service = new DataProviderService(stateDir);
-    await assert.rejects(
-      () => service.saveKey("unknown-provider", "key"),
-      { message: 'Unknown data provider: "unknown-provider".' },
-    );
+    await assert.rejects(() => service.saveKey("unknown-provider", "key"), {
+      message: 'Unknown data provider: "unknown-provider".',
+    });
   } finally {
     await rm(stateDir, { recursive: true, force: true });
   }

@@ -417,7 +417,9 @@ for (const skill of SKILLS) {
   void test(`${skill.id}/SKILL.md includes tier 0 provider nudge`, async () => {
     const content = await readFile(skillPath, "utf8");
     assert.ok(
-      content.includes("FMP") && content.includes("Settings") && content.includes("Providers"),
+      content.includes("FMP") &&
+        content.includes("Settings") &&
+        content.includes("Providers"),
       "File should include the organic FMP provider nudge referencing Settings → Providers",
     );
   });
@@ -430,7 +432,10 @@ for (const skill of SKILLS) {
       "File should describe Tier 0 web-search-only operation",
     );
     assert.ok(
-      contentLower.includes("no api") || contentLower.includes("no key") || contentLower.includes("zero configuration") || contentLower.includes("always available"),
+      contentLower.includes("no api") ||
+        contentLower.includes("no key") ||
+        contentLower.includes("zero configuration") ||
+        contentLower.includes("always available"),
       "File should indicate Tier 0 requires no API keys",
     );
   });
@@ -438,7 +443,8 @@ for (const skill of SKILLS) {
   void test(`${skill.id}/SKILL.md defines exact output format`, async () => {
     const content = await readFile(skillPath, "utf8");
     assert.ok(
-      content.includes("## Output Template") || content.includes("## Output Format"),
+      content.includes("## Output Template") ||
+        content.includes("## Output Format"),
       "File should have an Output Template or Output Format section",
     );
   });
@@ -476,7 +482,10 @@ for (const ref of REFERENCE_DOCS) {
 
 // Deep-dive specific: references moat-framework.md
 void test("deep-dive/SKILL.md references moat-framework.md", async () => {
-  const content = await readFile(join(moduleDir, "deep-dive", "SKILL.md"), "utf8");
+  const content = await readFile(
+    join(moduleDir, "deep-dive", "SKILL.md"),
+    "utf8",
+  );
   assert.ok(
     content.includes("references/moat-framework.md"),
     "Deep Dive skill should reference references/moat-framework.md",
@@ -485,7 +494,10 @@ void test("deep-dive/SKILL.md references moat-framework.md", async () => {
 
 // Fair-value specific: references dcf-methodology.md
 void test("fair-value/SKILL.md references dcf-methodology.md", async () => {
-  const content = await readFile(join(moduleDir, "fair-value", "SKILL.md"), "utf8");
+  const content = await readFile(
+    join(moduleDir, "fair-value", "SKILL.md"),
+    "utf8",
+  );
   assert.ok(
     content.includes("references/dcf-methodology.md"),
     "Fair Value skill should reference references/dcf-methodology.md",
@@ -494,7 +506,10 @@ void test("fair-value/SKILL.md references dcf-methodology.md", async () => {
 
 // Breakout-setups specific: references vcp-criteria.md
 void test("breakout-setups/SKILL.md references vcp-criteria.md", async () => {
-  const content = await readFile(join(moduleDir, "breakout-setups", "SKILL.md"), "utf8");
+  const content = await readFile(
+    join(moduleDir, "breakout-setups", "SKILL.md"),
+    "utf8",
+  );
   assert.ok(
     content.includes("references/vcp-criteria.md"),
     "Breakout Setups skill should reference references/vcp-criteria.md",
@@ -502,11 +517,18 @@ void test("breakout-setups/SKILL.md references vcp-criteria.md", async () => {
 });
 
 // Data freshness footer test for research skills
-for (const id of ["deep-dive", "fair-value", "earnings-xray", "bull-bear"] as const) {
+for (const id of [
+  "deep-dive",
+  "fair-value",
+  "earnings-xray",
+  "bull-bear",
+] as const) {
   void test(`${id}/SKILL.md includes data freshness footer format`, async () => {
     const content = await readFile(join(moduleDir, id, "SKILL.md"), "utf8");
     assert.ok(
-      content.includes("Data as of:") && content.includes("Sources:") && content.includes("Tier:"),
+      content.includes("Data as of:") &&
+        content.includes("Sources:") &&
+        content.includes("Tier:"),
       "File should include the data freshness footer format",
     );
   });

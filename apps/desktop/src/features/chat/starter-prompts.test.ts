@@ -35,14 +35,22 @@ void test("market starter prompts each have a distinct icon", () => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- lucide-react icon types
   const icons = MARKET_STARTER_PROMPTS.map((p) => p.icon);
   const unique = new Set(icons);
-  assert.equal(unique.size, icons.length, "all market icons should be distinct");
+  assert.equal(
+    unique.size,
+    icons.length,
+    "all market icons should be distinct",
+  );
 });
 
 void test("portfolio starter prompts each have a distinct icon", () => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- lucide-react icon types
   const icons = PORTFOLIO_STARTER_PROMPTS.map((p) => p.icon);
   const unique = new Set(icons);
-  assert.equal(unique.size, icons.length, "all portfolio icons should be distinct");
+  assert.equal(
+    unique.size,
+    icons.length,
+    "all portfolio icons should be distinct",
+  );
 });
 
 // --- Text content preserved ---

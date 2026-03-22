@@ -33,16 +33,19 @@ This skill operates at Tier 0 (web search + public sources, zero configuration, 
 Gather the following data using web search and public sources:
 
 **S&P 500 Daily Performance (last 25 trading days):**
+
 - Search for S&P 500 daily performance history over the past 5 weeks
 - For each day: closing price, daily change %, and volume (if available)
 - This data is needed for distribution day counting
 - Search query pattern: `"S&P 500 daily performance last 25 days"`, `"S&P 500 historical data [month year]"`
 
 **NASDAQ Daily Performance (last 25 trading days):**
+
 - Same data as S&P 500 but for the NASDAQ Composite
 - Search query pattern: `"NASDAQ daily performance history"`, `"NASDAQ composite historical data"`
 
 **Market Breadth Indicators:**
+
 - Advance/decline ratio: number of advancing vs. declining stocks on NYSE
 - Percentage of S&P 500 stocks above their 200-day moving average
 - Percentage of S&P 500 stocks above their 50-day moving average
@@ -50,16 +53,19 @@ Gather the following data using web search and public sources:
 - Search query pattern: `"NYSE advance decline ratio today"`, `"S&P 500 stocks above 200 day moving average"`, `"new highs new lows NYSE"`
 
 **Sector ETF Performance:**
+
 - Performance of all 11 SPDR sector ETFs over 1-day and 1-month windows
 - Needed for sector rotation analysis (offensive vs. defensive)
 - Search query pattern: `"sector ETF performance today"`, `"sector rotation analysis"`
 
 **VIX (CBOE Volatility Index):**
+
 - Current VIX level
 - VIX trend (direction over past week)
 - Search query pattern: `"VIX level today"`, `"VIX index current"`
 
 **Leading Stock Health:**
+
 - Check the performance of high-relative-strength leaders
 - Are stocks with 52-week-high RS ratings breaking out or breaking down?
 - Search query pattern: `"market leading stocks performance"`, `"high relative strength stocks today"`, `"IBD top stocks"`
@@ -86,6 +92,7 @@ This is the core analytical framework. Follow each component precisely.
 A **distribution day** occurs when a major index (S&P 500 or NASDAQ) declines **≥0.2%** on **higher volume** than the previous trading session. Distribution days indicate institutional selling — large funds liquidating positions.
 
 **Counting rules:**
+
 - Track distribution days over a **rolling 25 trading day** window (~5 calendar weeks)
 - Count distribution days separately for S&P 500 and NASDAQ; use the higher count
 - A distribution day "expires" after 25 trading days (it ages out of the window)
@@ -93,6 +100,7 @@ A **distribution day** occurs when a major index (S&P 500 or NASDAQ) declines **
 - Stalling days count: when the index closes up but in the lower half of its daily range on higher volume — this signals distribution disguised as a flat/up day
 
 **Interpretation:**
+
 - **0-2 distribution days:** Normal, healthy market. Institutions are not aggressively selling.
 - **3 distribution days:** Accumulation of selling pressure. Monitor closely.
 - **4-5 distribution days:** Warning zone. Institutions are reducing exposure. The market is under pressure.
@@ -105,21 +113,25 @@ A **distribution day** occurs when a major index (S&P 500 or NASDAQ) declines **
 A **Follow-Through Day** confirms a new uptrend after a meaningful market decline. It is the signal to begin increasing equity exposure.
 
 **Prerequisites for an FTD:**
+
 1. The market must have experienced a meaningful decline — at least 3 consecutive down days or a correction of ≥5% from a recent high
 2. After the decline, a rally attempt begins: the index makes an intraday low and then closes higher for at least 1 day (Day 1 of the rally attempt)
 3. The FTD occurs on **Day 4 or later** of the rally attempt
 
 **FTD criteria:**
+
 - A major index (S&P 500 or NASDAQ) gains **≥1.5%** on **higher volume** than the previous session
 - The gain must be a genuine price surge, not a gap-up that fades
 - An FTD on Day 4-7 of the rally is stronger than one on Day 10+
 
 **What an FTD means:**
+
 - It shifts the regime from Downtrend to Rally Attempt (not Confirmed Uptrend — that requires follow-through after the FTD)
 - Not all FTDs succeed — roughly 25-30% fail. They are necessary but not sufficient.
 - After an FTD, the distribution day count resets
 
 **What invalidates an FTD:**
+
 - The index undercuts the low of the rally attempt within days of the FTD
 - Distribution days accumulate rapidly after the FTD (3+ within 2 weeks)
 
@@ -136,7 +148,7 @@ Breadth measures how many stocks are participating in the market's direction. A 
    - Cumulative A/D line diverging (index new high, A/D not) = warning
 
 2. **Percentage of S&P 500 Above 200-Day Moving Average:**
-   - >70% = broad strength, healthy uptrend
+   - > 70% = broad strength, healthy uptrend
    - 60-70% = adequate, monitor for deterioration
    - 50-60% = narrowing participation, caution
    - 40-50% = significant weakness, many stocks in downtrends
@@ -145,7 +157,7 @@ Breadth measures how many stocks are participating in the market's direction. A 
 3. **Percentage of S&P 500 Above 50-Day Moving Average:**
    - More sensitive than 200-day; captures shorter-term shifts
    - <30% = severely oversold (often a contrarian buy signal near market bottoms)
-   - >80% = overbought (not necessarily bearish — strong trends stay overbought)
+   - > 80% = overbought (not necessarily bearish — strong trends stay overbought)
 
 4. **New Highs vs. New Lows (NYSE):**
    - Healthy market: new highs consistently > new lows (10:1 or better)
@@ -159,12 +171,14 @@ Breadth measures how many stocks are participating in the market's direction. A 
 The market's true health is revealed by what its best stocks are doing. If high-relative-strength leaders are breaking down, the market is sicker than the index suggests.
 
 **Assessment criteria:**
+
 - Are stocks with top RS (relative strength) ratings breaking out to new highs, or failing at resistance?
 - Are recent breakouts holding and advancing, or reversing on volume?
 - Are leaders building constructive bases (tight consolidation, volume dry-up) or showing wide, loose, erratic action?
 - Is the number of stocks making new highs expanding or contracting?
 
 **Scoring guide:**
+
 - **Majority breaking out on volume:** Leaders are healthy. Market has fuel. (20 points)
 - **Holding in bases, not breaking down:** Constructive. Market is consolidating, not topping. (15 points)
 - **Mixed — some breaking out, some failing:** Selectivity required. Market is rotating, not uniformly strong. (10 points)
@@ -182,6 +196,7 @@ Sector rotation reveals institutional risk appetite. Money flows from offensive 
 - **Commodity-linked:** Energy (XLE), Materials (XLB)
 
 **Rotation signals:**
+
 - Offensive leading over both 1-week and 1-month → risk appetite is healthy
 - Defensive leading over 1-month while offensive led 1-week → short-term bounce in a cautious market
 - Defensive leading over both timeframes → institutions are de-risking, caution
@@ -198,6 +213,7 @@ Assign the market to exactly one of these four regimes. Each has specific criter
 ### 🟢 Confirmed Uptrend
 
 **Criteria (most must be met):**
+
 - Major indices above rising 50-day and 200-day moving averages
 - Distribution day count ≤ 3 in the past 25 sessions
 - Breadth expanding: A/D ratio positive, >60% of S&P 500 above 200-day MA
@@ -210,6 +226,7 @@ Assign the market to exactly one of these four regimes. Each has specific criter
 ### 🟡 Uptrend Under Pressure
 
 **Criteria (several must be met):**
+
 - Indices still above 50-day MA but distribution days accumulating (4-5 in 25 sessions)
 - Breadth starting to narrow: fewer stocks participating, A/D line flattening
 - Some leading stocks showing sell signals (breaking support, high-volume reversals)
@@ -221,6 +238,7 @@ Assign the market to exactly one of these four regimes. Each has specific criter
 ### 🟠 Rally Attempt
 
 **Criteria:**
+
 - After a meaningful decline, the market is attempting to rally
 - No confirmed Follow-Through Day yet, OR an FTD occurred but follow-through is weak
 - Distribution day count has reset (or is resetting)
@@ -233,6 +251,7 @@ Assign the market to exactly one of these four regimes. Each has specific criter
 ### 🔴 Downtrend
 
 **Criteria (several must be met):**
+
 - Major indices below declining 50-day MA, possibly below 200-day MA
 - Distribution day count ≥ 6, OR major indices broke below key support levels
 - Breadth contracting: <40% of S&P 500 above 200-day MA
@@ -251,12 +270,12 @@ Calculate a composite health score from 0-100 by summing five components. Each c
 ### Component 1: Distribution Day Count (0-25 points)
 
 | Distribution Days (25-day window) | Score |
-|-----------------------------------|-------|
-| 0 days | 25 |
-| 1-2 days | 20 |
-| 3 days | 15 |
-| 4-5 days | 10 |
-| 6+ days | 0 |
+| --------------------------------- | ----- |
+| 0 days                            | 25    |
+| 1-2 days                          | 20    |
+| 3 days                            | 15    |
+| 4-5 days                          | 10    |
+| 6+ days                           | 0     |
 
 Use the higher count between S&P 500 and NASDAQ.
 
@@ -265,47 +284,47 @@ Use the higher count between S&P 500 and NASDAQ.
 Based on the percentage of S&P 500 stocks above their 200-day moving average:
 
 | % Above 200-Day MA | Score |
-|---------------------|-------|
-| >70% | 25 |
-| 60-70% | 20 |
-| 50-60% | 15 |
-| 40-50% | 10 |
-| <40% | 5 |
+| ------------------ | ----- |
+| >70%               | 25    |
+| 60-70%             | 20    |
+| 50-60%             | 15    |
+| 40-50%             | 10    |
+| <40%               | 5     |
 
 ### Component 3: Leading Stock Health (0-20 points)
 
-| Leading Stock Assessment | Score |
-|--------------------------|-------|
-| Majority breaking out on volume | 20 |
-| Holding in constructive bases | 15 |
-| Mixed — some breakouts, some failures | 10 |
-| Breaking down on volume | 5 |
+| Leading Stock Assessment              | Score |
+| ------------------------------------- | ----- |
+| Majority breaking out on volume       | 20    |
+| Holding in constructive bases         | 15    |
+| Mixed — some breakouts, some failures | 10    |
+| Breaking down on volume               | 5     |
 
 ### Component 4: Sector Rotation (0-15 points)
 
-| Rotation Pattern | Score |
-|------------------|-------|
-| Offensive sectors outperforming (1-week and 1-month) | 15 |
-| Mixed — no clear pattern | 10 |
-| Defensive sectors outperforming (1-week and 1-month) | 5 |
+| Rotation Pattern                                     | Score |
+| ---------------------------------------------------- | ----- |
+| Offensive sectors outperforming (1-week and 1-month) | 15    |
+| Mixed — no clear pattern                             | 10    |
+| Defensive sectors outperforming (1-week and 1-month) | 5     |
 
 ### Component 5: Sentiment / VIX (0-15 points)
 
-| VIX Level | Score | Interpretation |
-|-----------|-------|----------------|
-| <15 | 10 | Complacent — slight warning (low fear often precedes corrections) |
-| 15-20 | 15 | Normal — healthy risk appetite |
-| 20-30 | 12 | Elevated fear — often contrarian bullish, but respect the signal |
-| >30 | 5 | Panic — contrarian bullish long-term but dangerous short-term |
+| VIX Level | Score | Interpretation                                                    |
+| --------- | ----- | ----------------------------------------------------------------- |
+| <15       | 10    | Complacent — slight warning (low fear often precedes corrections) |
+| 15-20     | 15    | Normal — healthy risk appetite                                    |
+| 20-30     | 12    | Elevated fear — often contrarian bullish, but respect the signal  |
+| >30       | 5     | Panic — contrarian bullish long-term but dangerous short-term     |
 
 ### Score Interpretation
 
-| Score Range | Label | Typical Regime |
-|-------------|-------|----------------|
-| 80-100 | **Strong** | Confirmed Uptrend |
-| 60-79 | **Moderate** | Uptrend Under Pressure |
-| 40-59 | **Weak** | Rally Attempt |
-| 0-39 | **Poor** | Downtrend |
+| Score Range | Label        | Typical Regime         |
+| ----------- | ------------ | ---------------------- |
+| 80-100      | **Strong**   | Confirmed Uptrend      |
+| 60-79       | **Moderate** | Uptrend Under Pressure |
+| 40-59       | **Weak**     | Rally Attempt          |
+| 0-39        | **Poor**     | Downtrend              |
 
 **Important:** The composite score and the regime verdict should be consistent. If they diverge (e.g., score says "Moderate" but qualitative signals say "Downtrend"), explain the divergence explicitly and state which you weight more heavily.
 
@@ -365,6 +384,7 @@ Every cell in the "Detail" column must contain a specific data point — not a g
 If this is the first time running Market Health, state: "Initial assessment — no prior data for comparison. Future runs will track changes."
 
 If there is prior data, note specific changes:
+
 - Distribution day count changes (added, expired, removed by rally)
 - Breadth metric changes (% above 200-day MA up or down)
 - Regime transitions (from X to Y)
@@ -383,6 +403,7 @@ If there is prior data, note specific changes:
 **Important framing:** This is educational context, not financial advice. Use language like "Consider..." or "In this environment, a typical range would be..." or "The methodology suggests..."
 
 Always state:
+
 - What would increase exposure (e.g., "If distribution day count drops to ≤2 and breadth improves above 65%, would upgrade to Confirmed Uptrend")
 - What would decrease exposure (e.g., "If 2 more distribution days occur this week, would downgrade to Downtrend")
 
@@ -398,26 +419,34 @@ Data as of: {YYYY-MM-DD HH:MM ET} · Sources: {list sources used} · Tier: {0|1}
 ## Conditional Logic
 
 ### First Run (No Prior Data)
+
 The "What Changed" section requires a previous assessment for comparison. On first run:
+
 - State: "Initial assessment — no prior data for comparison."
 - Provide the full assessment without change tracking
 - Note: "Future runs will track changes in distribution day count, breadth, score, and regime."
 
 ### Tier 0 Limitations
+
 At Tier 0 (web search only), some data may be approximate:
+
 - **Volume data** may not be available for every session, making distribution day counting approximate
 - Note: "Distribution day count is approximate — volume data unavailable for precise confirmation. Count reflects days with ≥0.2% decline."
 - Breadth data (% above 200-day MA) should be findable via web search but may lag by 1 day
 - Leading stock assessment relies on web-searched relative strength data
 
 ### Weekend / Holiday
+
 If the market is closed:
+
 - Use last trading day data for all components
 - Note: "Markets closed — assessment reflects data as of [last trading day, date]."
 - Do not project or estimate — report the most recent actual data
 
 ### Score-Regime Divergence
+
 If the composite score maps to a different regime than the qualitative assessment:
+
 - Present both: "Composite score: 62/100 (Moderate — maps to Uptrend Under Pressure). However, qualitative signals (6 distribution days, leaders breaking down) point to Downtrend."
 - Explain which you weight more heavily and why
 - This divergence itself is a signal — it means the market is at an inflection point
@@ -450,6 +479,7 @@ When operating at Tier 0 (no FMP configured), include this single line at the ve
 > 💡 Connect FMP in Settings → Providers for volume-confirmed distribution day counting and precise breadth data. It's free.
 
 Rules for the nudge:
+
 - Include it once per assessment, at the bottom — never inline or mid-content
 - This is NOT an error, NOT a locked-feature badge — it is a gentle enhancement suggestion
 - Do NOT include the nudge if FMP is already configured and providing Tier 1 data

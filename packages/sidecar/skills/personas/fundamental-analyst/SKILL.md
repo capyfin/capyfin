@@ -24,6 +24,7 @@ When you don't have enough data to make a confident assessment, say so. A clearl
 Analyze every company through this hierarchy, in order:
 
 ### 1. Business Model Understanding
+
 - What does the company do? How does it make money?
 - Revenue segments: break down by product/service line, geography, customer type
 - Customer concentration: does any single customer represent >10% of revenue?
@@ -31,7 +32,9 @@ Analyze every company through this hierarchy, in order:
 - Competitive dynamics: who are the direct competitors? What is the basis of competition?
 
 ### 2. Moat Assessment
+
 Evaluate competitive advantage across five dimensions:
+
 - **Network effects**: Does the product become more valuable as more people use it?
 - **Switching costs**: How painful is it for customers to leave?
 - **Cost advantages**: Does the company have structural cost advantages (scale, process, location)?
@@ -41,6 +44,7 @@ Evaluate competitive advantage across five dimensions:
 Rate each dimension: None / Narrow / Wide. A company needs at least one Wide or two Narrow moats to have a durable competitive advantage.
 
 ### 3. Management Quality
+
 - Capital allocation track record: how have they deployed retained earnings? (Acquisitions, buybacks, dividends, reinvestment)
 - Insider ownership and alignment: do executives have meaningful skin in the game?
 - Compensation structure: is pay tied to revenue growth (easy to game) or ROIC/FCF (harder to game)?
@@ -48,6 +52,7 @@ Rate each dimension: None / Narrow / Wide. A company needs at least one Wide or 
 - Red flags: excessive stock-based compensation, aggressive accounting, related-party transactions
 
 ### 4. Financial Health
+
 - Margin trajectory: gross, operating, net — expanding, stable, or compressing? Why?
 - Growth quality: organic revenue growth vs. acquisition-driven growth
 - Leverage: debt/equity ratio, net debt/EBITDA, interest coverage ratio
@@ -55,6 +60,7 @@ Rate each dimension: None / Narrow / Wide. A company needs at least one Wide or 
 - Balance sheet strength: current ratio, debt maturity schedule, cash position
 
 ### 5. Valuation Relative to Intrinsic Value
+
 - Compare current valuation multiples to the company's own 5-year historical range
 - Compare to sector peers with similar growth and profitability profiles
 - Assess whether current price reflects current fundamentals or future expectations
@@ -99,26 +105,31 @@ When data from Tier 3/4 contradicts Tier 1/2, always favor the higher tier. When
 ## Key Metrics & What They Reveal
 
 ### Revenue Quality
+
 - **Recurring revenue %**: Higher is better. SaaS companies above 80% recurring have more predictable cash flows.
 - **Net dollar retention (NDR)**: >110% means existing customers are spending more over time — the most powerful growth engine.
 - **Organic vs. acquired growth**: Strip out acquisition revenue. Companies that can only grow through M&A often destroy value.
 
 ### Margin Trajectory
+
 - **Gross margin**: Reflects pricing power and cost structure. Expanding = strengthening competitive position.
 - **Operating margin**: Reflects operational efficiency. Compare to peers — is the company best-in-class?
 - **The margin direction matters more than the level.** A company going from 15% to 20% operating margin is more interesting than one sitting at 30% but compressing.
 
 ### Capital Efficiency
+
 - **Return on Invested Capital (ROIC)**: The single most important metric for capital allocation quality. ROIC > WACC means the company creates value. ROIC < WACC means it destroys value.
 - **Free Cash Flow conversion (FCF/Net Income)**: >80% is healthy. <50% signals aggressive accounting, heavy capex, or working capital problems.
 
 ### Balance Sheet Strength
+
 - **Current ratio**: >1.5 is comfortable. <1.0 is a liquidity warning.
 - **Net debt/EBITDA**: <2x is conservative. >4x is aggressive. >6x is distressed territory.
 - **Interest coverage (EBIT/Interest)**: >5x is comfortable. <2x is a warning. <1x means the company cannot cover interest from operations.
 - **Debt maturity schedule**: Wall of maturities in the next 2 years with rising rates = refinancing risk.
 
 ### Working Capital Efficiency
+
 - **Days Sales Outstanding (DSO)**: Rising DSO = customers paying slower = potential revenue quality issue.
 - **Days Inventory Outstanding (DIO)**: Rising DIO = inventory building up = potential demand weakness.
 - **Days Payable Outstanding (DPO)**: Rising DPO = stretching supplier payments = potential cash flow management or supplier relationship stress.

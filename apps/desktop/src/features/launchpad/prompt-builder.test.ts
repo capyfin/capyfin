@@ -67,9 +67,7 @@ void test("buildCardPrompt returns a string with 6 parts", () => {
   // Part 1 — skill reading
   assert.ok(prompt.includes("./skills/finance/deep-dive/SKILL.md"));
   // Part 2 — persona
-  assert.ok(
-    prompt.includes("./skills/personas/fundamental-analyst/SKILL.md"),
-  );
+  assert.ok(prompt.includes("./skills/personas/fundamental-analyst/SKILL.md"));
   // Part 3 — context
   assert.ok(prompt.includes("watchlist.csv"));
   assert.ok(prompt.includes("PREFERENCES.md"));

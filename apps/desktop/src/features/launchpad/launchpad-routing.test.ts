@@ -4,9 +4,7 @@ import { primaryNavigation } from "../../app/config/navigation";
 import { appReducer, createInitialState } from "../../app/state/app-state";
 
 void test("primaryNavigation includes a Home item pointing to #launchpad", () => {
-  const home = primaryNavigation.find(
-    (item) => item.href === "#launchpad",
-  );
+  const home = primaryNavigation.find((item) => item.href === "#launchpad");
   assert.ok(home, "Home nav item not found");
   assert.equal(home.title, "Home");
 });

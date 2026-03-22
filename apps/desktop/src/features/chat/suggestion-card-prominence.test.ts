@@ -29,13 +29,19 @@ void test("each portfolio starter prompt has a color property", () => {
 void test("market starter prompts use distinct accent colors", () => {
   const colors = MARKET_STARTER_PROMPTS.map((p) => p.color);
   const unique = new Set(colors);
-  assert.ok(unique.size >= 2, "should use at least 2 distinct accent colors for visual variety");
+  assert.ok(
+    unique.size >= 2,
+    "should use at least 2 distinct accent colors for visual variety",
+  );
 });
 
 void test("portfolio starter prompts use distinct accent colors", () => {
   const colors = PORTFOLIO_STARTER_PROMPTS.map((p) => p.color);
   const unique = new Set(colors);
-  assert.ok(unique.size >= 2, "should use at least 2 distinct accent colors for visual variety");
+  assert.ok(
+    unique.size >= 2,
+    "should use at least 2 distinct accent colors for visual variety",
+  );
 });
 
 // --- ChatWorkspace card rendering tests ---

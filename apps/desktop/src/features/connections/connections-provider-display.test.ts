@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getConnectionDisplayName, getProviderDisplayName } from "@/features/agents/copy.ts";
+import {
+  getConnectionDisplayName,
+  getProviderDisplayName,
+} from "@/features/agents/copy.ts";
 import type { ProviderDefinition } from "@capyfin/contracts";
 
 const MOCK_PROVIDERS: ProviderDefinition[] = [
@@ -29,11 +32,7 @@ void test("ConnectionsWorkspace provider cell should resolve friendly name from 
 });
 
 void test("ConnectionsWorkspace provider cell should format raw ID when provider list has no match", () => {
-  const result = getProviderDisplayName(
-    "github-copilot",
-    [],
-    "github-copilot",
-  );
+  const result = getProviderDisplayName("github-copilot", [], "github-copilot");
   // Fallback should be formatted when it looks like a raw slug
   assert.equal(result, "Github Copilot");
 });

@@ -23,21 +23,13 @@ void test("ActionCardItem defines a categoryAccent mapping with today, research,
   );
 
   // Must have entries for all three categories
-  assert.match(
-    src,
-    /today/,
-    "categoryAccent must include 'today' category",
-  );
+  assert.match(src, /today/, "categoryAccent must include 'today' category");
   assert.match(
     src,
     /research/,
     "categoryAccent must include 'research' category",
   );
-  assert.match(
-    src,
-    /setups/,
-    "categoryAccent must include 'setups' category",
-  );
+  assert.match(src, /setups/, "categoryAccent must include 'setups' category");
 });
 
 void test("today category uses amber accent color", () => {
@@ -73,7 +65,9 @@ void test("icon container uses category accent instead of static primary color",
   // The icon container div should NOT use the old static primary color classes
   // for the icon background/fill — it should use the accent mapping
   assert.ok(
-    !src.includes('className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary"'),
+    !src.includes(
+      'className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary"',
+    ),
     "Icon container must not use static bg-primary/8 text-primary — should use category accent",
   );
 });

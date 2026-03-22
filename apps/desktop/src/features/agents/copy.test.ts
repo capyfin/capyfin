@@ -12,7 +12,10 @@ import {
   getProviderDisplayName,
   isDevDescription,
 } from "./copy.ts";
-import type { ProviderDefinition, ProviderModelCatalog } from "@capyfin/contracts";
+import type {
+  ProviderDefinition,
+  ProviderModelCatalog,
+} from "@capyfin/contracts";
 
 void test("formatAgentCount returns zero-state message when count is 0", () => {
   assert.equal(formatAgentCount(0), "No custom agents yet.");
@@ -37,11 +40,17 @@ void test("isDevDescription returns true for undefined description", () => {
 });
 
 void test("isDevDescription returns true for description containing 'orchestration'", () => {
-  assert.equal(isDevDescription("Primary CapyFin finance orchestration agent."), true);
+  assert.equal(
+    isDevDescription("Primary CapyFin finance orchestration agent."),
+    true,
+  );
 });
 
 void test("isDevDescription returns true for description containing 'workspace agent'", () => {
-  assert.equal(isDevDescription("Default workspace agent for finance tasks"), true);
+  assert.equal(
+    isDevDescription("Default workspace agent for finance tasks"),
+    true,
+  );
 });
 
 void test("isDevDescription returns true for description containing 'default agent'", () => {
@@ -83,7 +92,12 @@ void test("getAgentDisplayName is case-sensitive for custom names", () => {
 });
 
 void test("FALLBACK_AGENT_DESCRIPTION does not contain developer jargon", () => {
-  const jargonTerms = ["orchestration", "orchestrator", "primary", "default workspace"];
+  const jargonTerms = [
+    "orchestration",
+    "orchestrator",
+    "primary",
+    "default workspace",
+  ];
   for (const term of jargonTerms) {
     assert.ok(
       !FALLBACK_AGENT_DESCRIPTION.toLowerCase().includes(term),
@@ -171,10 +185,7 @@ void test("getProviderDisplayName formats providerId when no match and no fallba
 });
 
 void test("getProviderDisplayName formats raw ID for empty providers array", () => {
-  assert.equal(
-    getProviderDisplayName("github-copilot", []),
-    "Github Copilot",
-  );
+  assert.equal(getProviderDisplayName("github-copilot", []), "Github Copilot");
 });
 
 void test("getProviderDisplayName handles undefined providers", () => {
@@ -213,7 +224,10 @@ void test("formatProviderName preserves single capitalised word", () => {
 });
 
 void test("formatProviderName preserves names with spaces but no hyphens", () => {
-  assert.equal(formatProviderName("Sign in with GitHub"), "Sign in with GitHub");
+  assert.equal(
+    formatProviderName("Sign in with GitHub"),
+    "Sign in with GitHub",
+  );
 });
 
 // --- formatProviderId tests ---
@@ -346,10 +360,7 @@ void test("getModelDisplayName falls back to formatting when model not in catalo
 });
 
 void test("getModelDisplayName falls back to formatting when catalog is undefined", () => {
-  assert.equal(
-    getModelDisplayName("gpt-4-mini", undefined),
-    "GPT-4 Mini",
-  );
+  assert.equal(getModelDisplayName("gpt-4-mini", undefined), "GPT-4 Mini");
 });
 
 void test("getModelDisplayName uses catalog over formatting for matching model", () => {

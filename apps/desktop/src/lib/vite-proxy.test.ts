@@ -11,10 +11,7 @@ void test("vite proxy config includes all sidecar API routes", async () => {
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
 
-  const configPath = path.resolve(
-    import.meta.dirname,
-    "../../vite.config.ts",
-  );
+  const configPath = path.resolve(import.meta.dirname, "../../vite.config.ts");
   const content = await fs.readFile(configPath, "utf-8");
 
   // All sidecar routes that must be proxied in dev mode

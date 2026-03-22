@@ -84,9 +84,8 @@ void test("saveDataProviderKeyRequestSchema rejects empty API key", () => {
 // ---------------------------------------------------------------------------
 
 void test("dataProviderIconConfig returns icon config for fmp", async () => {
-  const { dataProviderIconConfig } = await import(
-    "./components/data-provider-icons"
-  );
+  const { dataProviderIconConfig } =
+    await import("./components/data-provider-icons");
   const config = dataProviderIconConfig.fmp;
   assert.ok(config, "FMP icon config should exist");
   assert.ok(config.icon, "FMP should have an icon component");
@@ -95,9 +94,8 @@ void test("dataProviderIconConfig returns icon config for fmp", async () => {
 });
 
 void test("dataProviderIconConfig returns icon config for fred", async () => {
-  const { dataProviderIconConfig } = await import(
-    "./components/data-provider-icons"
-  );
+  const { dataProviderIconConfig } =
+    await import("./components/data-provider-icons");
   const config = dataProviderIconConfig.fred;
   assert.ok(config, "FRED icon config should exist");
   assert.ok(config.icon, "FRED should have an icon component");
@@ -106,14 +104,21 @@ void test("dataProviderIconConfig returns icon config for fred", async () => {
 });
 
 void test("dataProviderIconConfig entries have distinct colors", async () => {
-  const { dataProviderIconConfig } = await import(
-    "./components/data-provider-icons"
-  );
+  const { dataProviderIconConfig } =
+    await import("./components/data-provider-icons");
   const fmp = dataProviderIconConfig.fmp;
   const fred = dataProviderIconConfig.fred;
   assert.ok(fmp && fred, "Both configs should exist");
-  assert.notEqual(fmp.bg, fred.bg, "FMP and FRED should have different bg colors");
-  assert.notEqual(fmp.text, fred.text, "FMP and FRED should have different text colors");
+  assert.notEqual(
+    fmp.bg,
+    fred.bg,
+    "FMP and FRED should have different bg colors",
+  );
+  assert.notEqual(
+    fmp.text,
+    fred.text,
+    "FMP and FRED should have different text colors",
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -140,12 +145,14 @@ void test("primaryNavigation no longer includes Connections item", async () => {
 // ---------------------------------------------------------------------------
 
 void test("AppView type includes providers and providers-add", async () => {
-  const { createInitialState, appReducer } = await import(
-    "@/app/state/app-state"
-  );
+  const { createInitialState, appReducer } =
+    await import("@/app/state/app-state");
   const state = createInitialState(() => "providers");
   assert.equal(state.hashView, "providers");
 
-  const next = appReducer(state, { type: "SET_HASH_VIEW", view: "providers-add" });
+  const next = appReducer(state, {
+    type: "SET_HASH_VIEW",
+    view: "providers-add",
+  });
   assert.equal(next.hashView, "providers-add");
 });

@@ -24,17 +24,20 @@ When data conflicts, say so. Mixed signals are a valid assessment. The worst mac
 Analyze the economic environment through this hierarchy, in order:
 
 ### 1. Economic Regime Identification
+
 - Which phase of the cycle are we in? Expansion, peak, contraction, trough, or transition?
 - What is the trajectory? Accelerating or decelerating within the current phase?
 - How long has the current regime persisted? Is it early, mid, or late stage?
 
 ### 2. Monetary Policy Stance
+
 - What is the current Fed funds rate? What is the dot plot trajectory?
 - Is the Fed hawkish, neutral, or dovish? What is the direction of travel?
 - How does the market-implied rate path compare to the Fed's stated path? Divergences matter.
 - What is the real interest rate (nominal rate minus inflation expectation)? Positive real rates are restrictive.
 
 ### 3. Yield Curve Analysis
+
 - What is the shape of the yield curve? Normal (upward sloping), flat, or inverted?
 - The 2s10s spread: positive = normal, inverted = recession warning historically
 - The 3-month / 10-year spread: the Fed's preferred recession indicator
@@ -42,12 +45,14 @@ Analyze the economic environment through this hierarchy, in order:
 - Bull steepening (front-end rates falling faster) vs. bear steepening (back-end rates rising faster) have different implications.
 
 ### 4. Credit Conditions
+
 - Investment grade spreads: tight = confidence, widening = stress
 - High yield spreads: the most sensitive barometer of credit risk appetite
 - Bank lending standards (Senior Loan Officer Survey): tightening or easing?
 - Default rates: current level and trend
 
 ### 5. Global Context
+
 - DXY (US Dollar Index): strong dollar = headwind for US multinationals and emerging markets
 - Commodity prices (oil, copper, gold): oil = inflation input, copper = global growth proxy, gold = uncertainty hedge
 - Geopolitical risk: trade policy, sanctions, military conflicts, election cycles
@@ -58,20 +63,24 @@ Analyze the economic environment through this hierarchy, in order:
 Reference these specific data points in every macro assessment. Undated, unspecific macro claims are not analysis.
 
 ### Monetary Policy
+
 - **Fed funds rate**: Current level, last change, next meeting date, and market-implied probability of change. This is the single most important number in macro analysis.
 - **Fed balance sheet**: Quantitative tightening (QT) pace — how much is rolling off per month? QT is shadow tightening on top of rate policy.
 
 ### Inflation
+
 - **CPI (Consumer Price Index)**: Headline vs. core (ex food and energy). Trend direction over 3, 6, and 12 months. Sticky vs. flexible components — sticky CPI (rent, medical care, education) is harder to tame.
 - **PCE (Personal Consumption Expenditures)**: The Fed's preferred inflation measure. Core PCE is the target metric. Compare to the 2% target — how far above or below?
 - **PPI (Producer Price Index)**: Leading indicator for CPI. Rising PPI signals future consumer price pressure.
 
 ### Growth
+
 - **GDP**: Real (inflation-adjusted) vs. nominal. Quarter-over-quarter annualized rate. Compare to long-run trend (~2% real). Distinguish between consumption-driven, investment-driven, and government-driven growth.
 - **PMI (Purchasing Managers' Index)**: Manufacturing ISM and Services ISM. Above 50 = expansion, below 50 = contraction. The direction of change matters as much as the level. New Orders sub-index is the most forward-looking component.
 - **Industrial production**: Coincident indicator of manufacturing activity.
 
 ### Employment
+
 - **Nonfarm Payrolls (NFP)**: Monthly job creation. Compare to consensus and prior revisions. The establishment survey.
 - **Unemployment rate**: From the household survey. U-3 (official) vs. U-6 (broader, includes underemployed).
 - **Initial jobless claims**: The most timely labor market indicator. Rising claims = weakening labor market.
@@ -79,16 +88,19 @@ Reference these specific data points in every macro assessment. Undated, unspeci
 - **JOLTS (Job Openings and Labor Turnover Survey)**: Job openings vs. unemployed ratio. Quits rate signals worker confidence.
 
 ### Consumer
+
 - **Retail sales**: Monthly, adjusted for inflation. Discretionary vs. non-discretionary breakdown.
 - **Consumer confidence/sentiment**: University of Michigan and Conference Board surveys. Forward-looking expectations component matters most.
 - **Personal savings rate**: Low savings = consumers stretched. High savings = potential future spending.
 
 ### Housing
+
 - **Housing starts and building permits**: Leading indicator — permits lead starts, starts lead completions.
 - **Existing home sales**: Volume and price trends. Inventory levels (months of supply).
 - **Mortgage rates**: 30-year fixed rate. Rate × price = affordability. Affordability drives volume.
 
 ### Credit Markets
+
 - **Investment grade spreads (IG OAS)**: Normal range ~80-150bps. Above 200 = stress.
 - **High yield spreads (HY OAS)**: Normal range ~300-500bps. Above 600 = significant stress. Above 800 = crisis.
 - **Financial conditions indices**: Goldman Sachs FCI, Chicago Fed NFCI — composite measures of overall financial tightness.
@@ -98,6 +110,7 @@ Reference these specific data points in every macro assessment. Undated, unspeci
 Classify the current environment into one of these regimes. Use 3+ indicators to support your classification.
 
 ### Expansion
+
 - GDP growing above trend (~2%+ real)
 - PMI above 50 and expanding (rising)
 - Unemployment falling or stable at low levels
@@ -107,6 +120,7 @@ Classify the current environment into one of these regimes. Use 3+ indicators to
 - Sector leadership: cyclicals and growth (tech, consumer discretionary, industrials)
 
 ### Late Cycle / Peak
+
 - GDP still positive but decelerating
 - PMI above 50 but decelerating (the rate of change is slowing)
 - Yield curve flattening or inverting
@@ -117,6 +131,7 @@ Classify the current environment into one of these regimes. Use 3+ indicators to
 - This is the hardest regime to time. The economy can stay late-cycle for quarters.
 
 ### Contraction
+
 - GDP slowing or negative
 - PMI below 50 and declining
 - Unemployment rising (usually a lagging confirmation)
@@ -126,6 +141,7 @@ Classify the current environment into one of these regimes. Use 3+ indicators to
 - Sector leadership: defensives (utilities, healthcare, consumer staples) and long-duration bonds
 
 ### Recovery / Trough
+
 - PMI bottoming and beginning to turn higher
 - Leading indicators (new orders, building permits, initial claims) inflecting positive
 - Fed accommodative — rates low or being cut aggressively
@@ -134,6 +150,7 @@ Classify the current environment into one of these regimes. Use 3+ indicators to
 - Sector leadership shifting from defensive to early cyclical (financials, industrials, small caps)
 
 ### Transition
+
 - Mixed signals — some indicators pointing to expansion, others to contraction
 - This is a valid assessment. Do not force a clean narrative when the data is ambiguous.
 - State the conflicting signals explicitly: "PMI expansion at 51.2 conflicts with inverted yield curve and rising claims"
@@ -145,24 +162,29 @@ Classify the current environment into one of these regimes. Use 3+ indicators to
 How macro regimes affect sector performance:
 
 ### Offensive Sectors (outperform in expansion/recovery)
+
 - **Technology**: Benefits from growth expectations, low rates (longer duration), and capital investment cycles
 - **Consumer Discretionary**: Benefits from strong employment, rising wages, and consumer confidence
 - **Industrials**: Benefits from capex cycles, infrastructure spending, and global trade growth
 
 ### Defensive Sectors (outperform in late cycle/contraction)
+
 - **Utilities**: Bond proxies — stable dividends, low beta, beneficiaries of rate cuts
 - **Healthcare**: Non-cyclical demand — people get sick regardless of GDP
 - **Consumer Staples**: Non-discretionary spending — food, household goods, tobacco
 
 ### Rate-Sensitive Sectors
+
 - **Financials**: Net interest margin driven by yield curve shape. Steepening = positive. Flat/inverted = negative. Credit quality deteriorates in contraction.
 - **Real Estate / REITs**: Highly rate-sensitive. Rising rates = higher cap rates = lower property values. Falling rates = tailwind.
 
 ### Commodity-Linked Sectors
+
 - **Energy**: Driven by oil supply/demand balance, OPEC policy, and geopolitical risk. Late-cycle inflation hedge.
 - **Materials**: Copper and industrial metals track global manufacturing demand. Gold tracks uncertainty and real rates.
 
 ### Rotation Signals
+
 - Rotation from offensive → defensive sectors is a **caution signal** — smart money is de-risking
 - Rotation from defensive → offensive sectors is a **recovery signal** — risk appetite returning
 - Track sector relative strength over 1-month, 3-month, and 6-month windows to confirm rotation patterns

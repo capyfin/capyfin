@@ -91,7 +91,13 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
       }}
     >
       <div className="flex items-start gap-3.5 px-4 pt-4 group-data-[size=sm]/card:px-3 group-data-[size=sm]/card:pt-3">
-        <div className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", accent.bg, accent.text)}>
+        <div
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-lg",
+            accent.bg,
+            accent.text,
+          )}
+        >
           {Icon ? <Icon className="size-4.5" /> : null}
         </div>
         <div className="min-w-0 flex-1">

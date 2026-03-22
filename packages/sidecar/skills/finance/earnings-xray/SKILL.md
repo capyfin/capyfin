@@ -36,6 +36,7 @@ Output must be self-contained with full source citations.
 Before writing any analysis, determine the earnings mode and gather ALL relevant data. Do not begin writing until you have assembled the raw inputs.
 
 **For Reported Earnings:**
+
 1. **Earnings date and time**: When were results released (pre-market or after-hours)?
 2. **Revenue**: Actual vs. consensus estimate, beat/miss magnitude, year-over-year growth
 3. **EPS**: GAAP and non-GAAP actual vs. consensus estimate, beat/miss magnitude
@@ -46,6 +47,7 @@ Before writing any analysis, determine the earnings mode and gather ALL relevant
 8. **Technical context**: Position relative to 200-day MA and 50-day MA before earnings
 
 **For Upcoming Earnings:**
+
 1. **Expected earnings date**: When is the company expected to report?
 2. **Consensus estimates**: Revenue and EPS expectations for the quarter
 3. **Estimate revisions**: Have analysts revised estimates up or down in the last 30/60/90 days?
@@ -75,6 +77,7 @@ Before writing any analysis, determine the earnings mode and gather ALL relevant
 - Search for `"{ticker} stock price earnings reaction"` for post-earnings price action
 
 **Important Tier 0 Notes:**
+
 - Web-searched earnings data is typically available within hours of the release
 - SEC EDGAR 8-K filings may lag by 1-2 business days after the press release
 - Cross-reference web-searched numbers against the 8-K filing when possible
@@ -116,6 +119,7 @@ Before starting the analysis, determine which mode to use:
 ### Revenue & EPS Analysis
 
 **Revenue:**
+
 - State actual revenue vs. consensus estimate with beat/miss amount and percentage
 - Year-over-year revenue growth rate
 - Sequential (quarter-over-quarter) growth rate
@@ -123,6 +127,7 @@ Before starting the analysis, determine which mode to use:
 - Compare to the company's own guidance (if provided last quarter)
 
 **EPS:**
+
 - State GAAP EPS vs. consensus estimate with beat/miss amount
 - State non-GAAP (adjusted) EPS if different, noting the reconciliation items
 - Year-over-year EPS growth rate
@@ -159,6 +164,7 @@ Extract exactly **3 key quotes** from the earnings call that reveal management's
 3. **Most revealing statement** — something that signals a strategic shift or unexpected development
 
 For each quote:
+
 - Include the exact quote (or close paraphrase with attribution)
 - Note who said it (CEO, CFO, etc.)
 - Assess the signal: what does this tell us that the numbers don't?
@@ -182,38 +188,43 @@ The Post-Earnings Announcement Drift (PEAD) is one of the most well-documented a
 **Five Factors — each scored Yes (1) or No (0):**
 
 ### Factor 1: Earnings Surprise Magnitude
+
 - **Yes (1 point):** EPS surprise > 10% (beat by more than 10% of the estimate)
 - **No (0 points):** EPS surprise ≤ 10% or a miss
 - **Why it matters:** Larger surprises produce stronger and more persistent drift. Small beats often get absorbed quickly.
 
 ### Factor 2: Pre-Earnings Trend Quality
+
 - **Yes (1 point):** Stock was in a Stage 2 uptrend before earnings (price above rising 50-day and 200-day MA)
 - **No (0 points):** Stock was in a downtrend, base, or Stage 4 decline before earnings
 - **Why it matters:** Earnings beats in uptrending stocks get reinforced by existing momentum. Beats in downtrending stocks often produce only a short-term bounce.
 
 ### Factor 3: Volume Confirmation
+
 - **Yes (1 point):** Volume on the earnings gap day was >1.5x the 50-day average volume
 - **No (0 points):** Volume on the gap day was below 1.5x average
 - **Why it matters:** High volume gaps indicate institutional participation, not just retail reaction. Institutions drive sustained moves.
 
 ### Factor 4: Position Relative to 200-Day MA
+
 - **Yes (1 point):** Stock is trading above its 200-day moving average after the earnings gap
 - **No (0 points):** Stock is below its 200-day MA
 - **Why it matters:** Stocks above the 200-day MA are in long-term uptrends. PEAD is strongest in stocks with positive long-term momentum.
 
 ### Factor 5: Position Relative to 50-Day MA
+
 - **Yes (1 point):** Stock is trading above its 50-day moving average after the earnings gap
 - **No (0 points):** Stock is below its 50-day MA
 - **Why it matters:** The 50-day MA confirms intermediate-term trend health. Being above both MAs = strongest drift signal.
 
 ### Grading Scale
 
-| Grade | Score | Interpretation |
-|-------|-------|----------------|
-| **A** | 5/5 | All factors aligned — strongest drift setup. Historically, A-grade setups show the most persistent post-earnings drift. |
-| **B** | 4/5 | Strong setup with one minor weakness. Still a high-quality drift candidate. |
-| **C** | 3/5 | Mixed signals. Drift may occur but is less reliable. Proceed with caution. |
-| **D** | 2/5 | Weak setup. Most drift factors are absent. Not a compelling post-earnings play. |
+| Grade | Score | Interpretation                                                                                                                 |
+| ----- | ----- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **A** | 5/5   | All factors aligned — strongest drift setup. Historically, A-grade setups show the most persistent post-earnings drift.        |
+| **B** | 4/5   | Strong setup with one minor weakness. Still a high-quality drift candidate.                                                    |
+| **C** | 3/5   | Mixed signals. Drift may occur but is less reliable. Proceed with caution.                                                     |
+| **D** | 2/5   | Weak setup. Most drift factors are absent. Not a compelling post-earnings play.                                                |
 | **F** | 0-1/5 | Poor setup. Avoid trading based on post-earnings drift. The earnings event does not set up for sustained directional movement. |
 
 **Important:** The Drift Score applies only to Reported Earnings Mode. It is NOT generated for Upcoming Earnings Mode.
@@ -234,9 +245,9 @@ The Post-Earnings Announcement Drift (PEAD) is one of the most well-documented a
 
 Show the last 4 quarters in a table:
 
-| Quarter | Revenue Est | Revenue Act | Surprise % | EPS Est | EPS Act | Surprise % |
-|---------|-------------|-------------|------------|---------|---------|------------|
-| Q{N} {YEAR} | | | | | | |
+| Quarter     | Revenue Est | Revenue Act | Surprise % | EPS Est | EPS Act | Surprise % |
+| ----------- | ----------- | ----------- | ---------- | ------- | ------- | ---------- |
+| Q{N} {YEAR} |             |             |            |         |         |            |
 
 - Calculate the average surprise percentage over the 4 quarters
 - Note any trend: is the company consistently beating, consistently missing, or mixed?
@@ -382,6 +393,7 @@ Structure your output in exactly this order, with these exact section headers:
 ### Company Doesn't Report Quarterly
 
 Some non-US companies report semi-annually. In this case:
+
 - State the reporting cadence clearly
 - Use the most recent reporting period (H1/H2 instead of Q1-Q4)
 - Adjust the historical beat/miss table to show the last 4 reporting periods
@@ -389,12 +401,14 @@ Some non-US companies report semi-annually. In this case:
 ### Pre-Market vs. After-Hours Reporting
 
 Note the timing of the earnings release — it affects how to interpret the immediate price reaction:
+
 - **Pre-market**: The opening gap IS the reaction. After-hours trading is thin and unreliable.
 - **After-hours**: The after-hours move is initial reaction. The opening gap the next day is the more reliable signal.
 
 ### Earnings Not Yet Reported (Edge Case)
 
 If the user provides a ticker and no earnings have been reported in the last 6 months, and no upcoming earnings date is within 3 weeks:
+
 - Default to Reported mode for the most recent earnings
 - Note that the data may be stale
 - Include the expected next earnings date if available
@@ -402,6 +416,7 @@ If the user provides a ticker and no earnings have been reported in the last 6 m
 ### Recent IPO or SPAC
 
 If the company has fewer than 4 quarters of public earnings history:
+
 - Show only the available quarters in the historical table
 - Note the limited history and reduce confidence level accordingly
 - Still produce the full analysis for the most recent quarter
@@ -422,6 +437,7 @@ Every factual claim in the Earnings X-Ray must cite a specific source:
 ### Confidence Levels
 
 Rate confidence per major section:
+
 - **HIGH**: Based on official filings (8-K, 10-Q) or structured API data
 - **MEDIUM**: Based on web-searched financial data from reputable sources
 - **LOW**: Based on limited data, estimates, or incomplete information
@@ -435,6 +451,7 @@ When operating at Tier 0 (no FMP configured), include this single line at the ve
 > 💡 Connect FMP in Settings → Providers for structured earnings data, historical surprises, and estimate revisions. It's free.
 
 Rules for the nudge:
+
 - Include it once per report, at the bottom — never inline or mid-content
 - This is NOT an error, NOT a locked-feature badge — it is a gentle enhancement suggestion
 - Do NOT include the nudge if FMP is already configured and providing Tier 1 data
@@ -469,5 +486,6 @@ Data as of: {YYYY-MM-DD} · Sources: {list all sources used} · Tier: {0|1}
 ```
 
 Examples:
+
 - `Data as of: 2026-03-21 · Sources: SEC EDGAR (8-K, 10-Q Q4 2025), earnings call transcript (Seeking Alpha), web search (Yahoo Finance) · Tier: 0`
 - `Data as of: 2026-03-21 · Sources: FMP API (earnings surprises, estimates), SEC EDGAR (10-Q) · Tier: 1`

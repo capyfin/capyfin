@@ -351,7 +351,9 @@ export function ConnectionCenter({
         setSelectedModelRef(nextCatalog.currentModelRef ?? selectedModelRef);
         setSecret("");
       });
-      setFeedback(`Connected ${formatProviderNameStr(connection.providerName)}.`);
+      setFeedback(
+        `Connected ${formatProviderNameStr(connection.providerName)}.`,
+      );
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {

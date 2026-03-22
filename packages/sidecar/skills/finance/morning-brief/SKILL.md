@@ -32,26 +32,31 @@ This skill operates at Tier 0 (web search + public sources, zero configuration, 
 Gather the following data using web search and public sources:
 
 **Major Index Performance:**
+
 - Search for current/last-close data on: S&P 500, NASDAQ Composite, Dow Jones Industrial Average, Russell 2000
 - For each index: price level, day change (points and %), YTD performance
 - Search query pattern: `"S&P 500 today"`, `"NASDAQ performance today"`, `"Russell 2000 today"`
 
 **Sector ETF Performance:**
+
 - Search for performance of the 11 SPDR sector ETFs: XLK (Technology), XLF (Financials), XLE (Energy), XLV (Healthcare), XLU (Utilities), XLY (Consumer Discretionary), XLP (Consumer Staples), XLI (Industrials), XLB (Materials), XLRE (Real Estate), XLC (Communication Services)
 - For each: day % change and week % change
 - Search query pattern: `"sector ETF performance today"`, `"XLK XLF XLE XLV performance"`
 
 **Earnings Calendar:**
+
 - Search for upcoming earnings reports this week
 - Focus on mega-cap, bellwether, and sector-leading companies
 - Search query pattern: `"earnings reports this week"`, `"earnings calendar [current date]"`
 
 **Market News:**
+
 - Search for the 5-10 most significant market-moving headlines from the past 24 hours
 - Prioritize: Fed/central bank actions, economic data releases, geopolitical events, major corporate news
 - Search query pattern: `"stock market news today"`, `"market moving news [current date]"`
 
 **Pre-Market Indicators (if before market open):**
+
 - S&P 500 futures, NASDAQ futures, Dow futures
 - VIX level
 - 10-year Treasury yield
@@ -97,6 +102,7 @@ Assess the current market regime using a combination of:
 4. **Sentiment indicators:** VIX level, put/call ratios, fear/greed signals
 
 Classify the regime as one of:
+
 - 🟢 **Risk-On** — Indices trending up, broad participation, offensive sectors leading, VIX low/stable
 - 🟡 **Mixed** — Conflicting signals, narrow leadership, rotation in progress
 - 🔴 **Risk-Off** — Indices declining, defensive sectors leading, VIX elevated, breadth deteriorating
@@ -104,6 +110,7 @@ Classify the regime as one of:
 ### Sector Rotation Analysis
 
 Compare offensive vs. defensive sector performance over day and week timeframes:
+
 - **Offensive → Defensive rotation** = increasing caution in the market
 - **Defensive → Offensive rotation** = increasing risk appetite
 - **Mixed / No clear pattern** = transition or directionless market
@@ -113,6 +120,7 @@ Identify the 3 strongest and 3 weakest sectors. Note any divergences from the ov
 ### News Impact Assessment
 
 Rate each news item's market significance:
+
 - **HIGH:** Fed policy decisions, major economic data surprises (NFP, CPI, GDP), geopolitical escalations, mega-cap earnings surprises, systemic financial events
 - **MEDIUM:** Economic data in-line with expectations, notable corporate events (M&A, guidance changes), sector-specific developments, regulatory actions
 - **LOW:** Analyst upgrades/downgrades, minor corporate news, opinion pieces, previously priced-in events
@@ -122,6 +130,7 @@ For each item, provide a 1-line market implication — not just "this happened" 
 ### Earnings Relevance Filter
 
 Flag upcoming earnings that are market-moving:
+
 - **Must-watch:** Mega-cap ($200B+ market cap), index heavyweights (top 10 S&P 500 by weight)
 - **Important:** Sector bellwethers (first major reporter in a sector), companies with outsized options activity
 - **Notable:** Companies on the user's watchlist, companies with recent guidance changes
@@ -210,6 +219,7 @@ Add 1-2 sentences on the most important reports and what to watch for (key metri
 ```
 
 Sort by day performance (strongest to weakest). After the table, add a 1-line rotation interpretation:
+
 - Example: "Offensive sectors (Tech +1.8%, Discretionary +1.2%) outperforming defensives (Utilities -0.5%, Staples -0.3%) — consistent with risk-on environment."
 - Example: "Defensive rotation accelerating — Utilities +2.1% and Healthcare +1.5% vs. Tech -1.8% — caution warranted."
 
@@ -232,6 +242,7 @@ Impact: HIGH | MEDIUM | LOW
 ```
 
 Include 3-5 items. Every item must have:
+
 - A specific headline (not a generic topic)
 - A named source
 - An impact rating with the criteria defined above
@@ -251,30 +262,39 @@ Data as of: {YYYY-MM-DD HH:MM ET} · Sources: {list sources used} · Tier: {0|1}
 Adapt the briefing based on these conditions:
 
 ### Watchlist Absent
+
 If `watchlist.csv` does not exist: skip the "Watchlist Moves" section entirely. Instead, include a "Notable Movers" section covering the top 3-5 market movers by absolute percentage change.
 
 ### No Earnings This Week
+
 If no significant earnings are scheduled this week: replace "Earnings This Week" with "Notable Upcoming Earnings (Next 2 Weeks)" and list upcoming reporters.
 
 ### Market Closed (Weekend / Holiday)
+
 If the market is closed (Saturday, Sunday, or US market holiday):
+
 - Note: "Markets closed — data reflects last trading session (Friday, [date])."
 - Replace "Day Change" columns with "Last Session Change"
 - Add a "Week Ahead" subsection with upcoming catalysts: scheduled economic releases, earnings, Fed speeches, options expiration, etc.
 
 ### Weekend Mode
+
 If Saturday or Sunday:
+
 - Lead with a "Weekly Recap" summarizing the week's key moves
 - Follow with "Week Ahead Outlook" covering upcoming catalysts
 - Index performance shows weekly changes instead of daily
 
 ### Tier 0 Operation
+
 When operating without FMP (Tier 0 only):
+
 - Note data freshness limitations: "Data sourced via web search — timestamps may lag real-time by 15-20 minutes."
 - Cite the specific web search results used
 - Earnings estimates may be less precise — note when estimates are approximate
 
 ### Pre-Market vs. Post-Close
+
 - **Pre-market (before 9:30 AM ET):** Include futures data, overnight developments, Asian/European market performance
 - **Post-close (after 4:00 PM ET):** Focus on closing data, after-hours earnings releases, next-day catalysts
 
@@ -318,6 +338,7 @@ When operating at Tier 0 (no FMP configured), include this single line at the ve
 > 💡 Connect FMP in Settings → Providers for structured financial data, earnings estimates, and faster results. It's free.
 
 Rules for the nudge:
+
 - Include it once per briefing, at the bottom — never inline or mid-content
 - This is NOT an error, NOT a locked-feature badge — it is a gentle enhancement suggestion
 - Do NOT include the nudge if FMP is already configured and providing Tier 1 data

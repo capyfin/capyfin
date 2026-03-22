@@ -22,6 +22,7 @@ The Breakout Setups answers: **"Which stocks are setting up for potential breako
 This skill scans for four pattern types: **VCP (Volatility Contraction Pattern)**, **cup-and-handle**, **flat base**, and **ascending base**. Each candidate is scored 0-100 using the methodology in `references/vcp-criteria.md`.
 
 **Input behavior varies by data tier:**
+
 - **Tier 1 (FMP configured):** No input required — the skill scans the market using screener APIs. Optional sector or market cap filters.
 - **Tier 0 (no API keys):** The skill cannot scan the market. Input changes to **"Enter tickers to scan"** — the user provides specific tickers for pattern analysis.
 
@@ -61,6 +62,7 @@ Before evaluating any setup, gather ALL of the following data for each candidate
 - Search for `"stock breakout setups {sector}"` for sector-level pattern scanning context
 
 **Important Tier 0 Notes:**
+
 - Web-searched technical data may be delayed by 15-20 minutes during market hours
 - Chart pattern identification from web search descriptions is less reliable than direct price data analysis
 - RS line data from web search is approximate — note the data quality limitation
@@ -148,6 +150,7 @@ Score each candidate 0-100 using the methodology in `references/vcp-criteria.md`
 The VCP is a base pattern where price contractions get progressively tighter, signaling that selling pressure is drying up and institutional accumulation is occurring.
 
 **Characteristics:**
+
 - **Successive contractions**: T1 (first pullback) is the deepest, T2 is tighter, T3 is tightest
 - **Ideal depth progression**: T1: 25-35%, T2: 15-25%, T3: 8-15%
 - **Minimum 2 contractions**, ideal 3-4 contractions
@@ -156,6 +159,7 @@ The VCP is a base pattern where price contractions get progressively tighter, si
 - **Pivot point**: The high of the last contraction — breakout above this level on increased volume confirms the pattern
 
 **What to watch for:**
+
 - Tight closes near the highs within the consolidation = bullish
 - Wide and loose price swings within the base = bearish (not a valid VCP)
 
@@ -164,6 +168,7 @@ The VCP is a base pattern where price contractions get progressively tighter, si
 A U-shaped base followed by a smaller pullback (the handle) before a breakout attempt.
 
 **Characteristics:**
+
 - **Cup**: U-shaped correction of 15-35% depth, lasting 6-65 weeks
 - **Handle**: Small pullback of 5-15% on the right side of the cup, lasting 1-4 weeks
 - **Volume**: Should dry up during the handle formation — this is the key confirmation signal
@@ -171,6 +176,7 @@ A U-shaped base followed by a smaller pullback (the handle) before a breakout at
 - **Lip line**: The prior high (left side of the cup) — price approaching this level is the setup zone
 
 **What disqualifies a cup-and-handle:**
+
 - V-shaped recovery (not a cup — too sharp, indicates instability)
 - Handle that declines more than 15% or lasts more than 4 weeks
 - Handle forming in the lower half of the cup (weak)
@@ -180,6 +186,7 @@ A U-shaped base followed by a smaller pullback (the handle) before a breakout at
 A tight consolidation pattern after a prior advance, indicating accumulation in a narrow price range.
 
 **Characteristics:**
+
 - **Duration**: Minimum 5 weeks of consolidation
 - **Depth**: Less than 15% correction from high to low within the base
 - **Tight price range**: Weekly closes cluster within a narrow band
@@ -188,6 +195,7 @@ A tight consolidation pattern after a prior advance, indicating accumulation in 
 - **Pivot point**: The high of the flat base — breakout above on volume confirms
 
 **Why flat bases are powerful:**
+
 - A stock that refuses to correct more than 15% after a significant advance is showing exceptional relative strength
 - Institutions are holding (not selling), and new accumulation is occurring within the tight range
 
@@ -196,6 +204,7 @@ A tight consolidation pattern after a prior advance, indicating accumulation in 
 Three or more pullbacks to rising support during a broader market correction. The stock refuses to break down even as the market falls.
 
 **Characteristics:**
+
 - **3+ pullbacks** of 10-20% each
 - **Each pullback low is higher than the prior** — creating a rising support trendline
 - **Typically occurs during market corrections** — the stock shows relative strength by holding up
@@ -204,6 +213,7 @@ Three or more pullbacks to rising support during a broader market correction. Th
 - **Pivot point**: The high of the pattern — breakout above this level after the market correction ends
 
 **What makes ascending bases special:**
+
 - They identify stocks with the strongest institutional support — holders refuse to sell even during market weakness
 - When the market turns, these stocks often lead the new advance
 
@@ -216,37 +226,41 @@ Three or more pullbacks to rising support during a broader market correction. Th
 ### Four Scoring Dimensions (25 points each, 100 total)
 
 **1. Stage 2 Confirmation (25 points)**
+
 - Price above rising 200-day MA: 10 points
 - Price above rising 50-day MA (or 10-week MA): 10 points
 - 200-day MA slope positive for 1+ month: 5 points
 - All 3 met = 25 points. 2 of 3 = 15 points. 1 of 3 = 5 points. 0 = 0 points.
 
 **2. Contraction Tightness (25 points)**
+
 - Each successive contraction tighter than the prior: 10 points
 - 3+ contractions with clear tightening: 10 points
 - Deepest contraction ≤35%: 5 points
 - Full marks for 3+ contractions with clear tightening progression. Partial for 2 contractions.
 
 **3. Volume Dry-Up (25 points)**
+
 - Volume declining on right side of base: 10 points
 - Below-average volume during consolidation: 10 points
 - Volume at multi-week low near pivot point: 5 points
 - Full marks if volume at the pivot area is at its lowest point in the base.
 
 **4. Relative Strength (RS) Line (25 points)**
+
 - RS line at or near 52-week high: 15 points
 - RS line trending up (not flat or declining): 10 points
 - Full marks if RS line is at a new high even while price is still in the base (leading strength).
 
 ### Score Interpretation
 
-| Score | Rating | Description |
-|-------|--------|-------------|
-| 90-100 | Textbook | All criteria strongly met. This is a textbook setup with the highest probability of success. |
-| 80-89 | Strong | One minor weakness but otherwise an excellent setup. High probability. |
-| 70-79 | Good | Developing pattern with clear positive traits. Needs monitoring for confirmation. |
-| 60-69 | Developing | Needs more time or has a notable weakness. Watch but don't act yet. |
-| <60 | Not Ready | Missing key criteria. Premature to consider as a breakout candidate. |
+| Score  | Rating     | Description                                                                                  |
+| ------ | ---------- | -------------------------------------------------------------------------------------------- |
+| 90-100 | Textbook   | All criteria strongly met. This is a textbook setup with the highest probability of success. |
+| 80-89  | Strong     | One minor weakness but otherwise an excellent setup. High probability.                       |
+| 70-79  | Good       | Developing pattern with clear positive traits. Needs monitoring for confirmation.            |
+| 60-69  | Developing | Needs more time or has a notable weakness. Watch but don't act yet.                          |
+| <60    | Not Ready  | Missing key criteria. Premature to consider as a breakout candidate.                         |
 
 ---
 
@@ -306,12 +320,14 @@ Structure your output in exactly this order, with these exact section headers:
 Every setup MUST include a specific invalidation level — the price where the pattern fails. This is non-negotiable.
 
 **How to determine invalidation:**
+
 - **VCP**: The low of the most recent (tightest) contraction
 - **Cup-and-Handle**: The low of the handle
 - **Flat Base**: The low of the flat base
 - **Ascending Base**: The most recent pullback low (the last higher low)
 
 **Rules:**
+
 - State the exact price level, not a vague range
 - Calculate the risk as a percentage from the pivot point to the invalidation level
 - If the risk (pivot to invalidation) exceeds 10%, note this as elevated risk
@@ -340,6 +356,7 @@ If market regime data is available (from a prior Market Health analysis or web s
 ### No Qualifying Setups
 
 If no stocks score 70+ after screening:
+
 - State clearly: "No high-quality setups found in the current scan."
 - Show the 2-3 highest-scoring candidates as "Developing" setups to watch
 - Note whether this is due to market conditions (few breakouts in a correction) or filter criteria
@@ -360,6 +377,7 @@ Every technical claim must reference specific data:
 ### Confidence Levels
 
 Rate confidence for each setup:
+
 - **HIGH**: Based on daily price/volume data from structured API (Tier 1)
 - **MEDIUM**: Based on web-searched price data with possible delays
 - **LOW**: Limited data available — pattern identification is approximate
@@ -373,6 +391,7 @@ When operating at Tier 0 (no FMP configured), include this nudge at the end of t
 > 💡 Connect FMP in Settings → Providers to unlock market-wide scanning. FMP's free tier provides screener API access for systematic pattern detection across thousands of stocks. Currently limited to analyzing individual tickers.
 
 Rules for the nudge:
+
 - Include it once per report, at the bottom — never inline or mid-content
 - This is NOT an error, NOT a locked-feature badge — it is an enhancement suggestion
 - Do NOT include the nudge if FMP is already configured and providing Tier 1 data
@@ -406,5 +425,6 @@ Data as of: {YYYY-MM-DD} · Sources: {list all sources used} · Tier: {0|1}
 ```
 
 Examples:
+
 - `Data as of: 2026-03-21 · Sources: web search (Yahoo Finance, TradingView, MarketSmith), manual ticker analysis · Tier: 0`
 - `Data as of: 2026-03-21 · Sources: FMP API (screener, historical prices, technical indicators), web search (TradingView) · Tier: 1`

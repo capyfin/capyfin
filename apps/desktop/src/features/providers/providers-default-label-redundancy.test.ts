@@ -34,7 +34,9 @@ void test("default button conditionally hides 'Default' text when connection.isD
   // The button should NOT have a bare static "Default" text (it should be conditional)
   const hasConditionalDefault =
     buttonCode.includes("isDefault") &&
-    (buttonCode.includes('? null') || buttonCode.includes("? undefined") || buttonCode.includes("{!connection.isDefault"));
+    (buttonCode.includes("? null") ||
+      buttonCode.includes("? undefined") ||
+      buttonCode.includes("{!connection.isDefault"));
 
   assert.ok(
     hasConditionalDefault,
@@ -60,7 +62,8 @@ void test("non-default providers still show actionable 'Default' text", () => {
 void test("connection badge in CONNECTION column still shows Default", () => {
   // The Badge with "Default" in the CONNECTION column should remain
   // The badge content and closing tag may be on separate lines
-  const hasBadge = workspaceSrc.includes('variant="secondary"') &&
+  const hasBadge =
+    workspaceSrc.includes('variant="secondary"') &&
     workspaceSrc.includes("</Badge>");
   const badgeRegion = workspaceSrc.slice(
     workspaceSrc.indexOf('variant="secondary"'),

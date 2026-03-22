@@ -56,8 +56,7 @@ export const actionCards: ActionCard[] = [
   {
     id: "earnings-xray",
     title: "Earnings X-Ray",
-    promise:
-      "Beat or miss? Guidance quality? Post-earnings drift score?",
+    promise: "Beat or miss? Guidance quality? Post-earnings drift score?",
     icon: "FileBarChart",
     category: "research",
     input: "ticker",

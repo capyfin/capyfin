@@ -21,6 +21,7 @@ This framework evaluates moats across 5 dimensions. Each dimension is scored **N
 - **None:** The product's value is independent of user count. One user gets the same value whether 100 or 100 million others use it. Examples: most consumer hardware, traditional retail, commodity services.
 
 **Diagnostic Questions:**
+
 1. Does each additional user make the product more valuable for existing users?
 2. Is there a critical mass threshold below which the product would lose its core value?
 3. Are the network effects local (geographic, industry) or global?
@@ -40,6 +41,7 @@ This framework evaluates moats across 5 dimensions. Each dimension is scored **N
 - **None:** Customers can switch with minimal friction — days or less. No significant data lock-in, contractual barriers, or retraining required. Examples: most consumer apps, commodity services, retail purchases.
 
 **Diagnostic Questions:**
+
 1. How long would it take a customer to fully migrate to a competitor?
 2. What data, integrations, or customizations would be lost in a switch?
 3. Are there contractual lock-in periods (multi-year agreements)?
@@ -59,6 +61,7 @@ This framework evaluates moats across 5 dimensions. Each dimension is scored **N
 - **None:** The company operates at similar cost levels to competitors. No structural advantage in production, distribution, or procurement. Examples: most service businesses, companies competing primarily on features or brand.
 
 **Diagnostic Questions:**
+
 1. What is the company's cost position relative to its closest competitors?
 2. Are the cost advantages driven by scale (volume), process (proprietary technology), or location (geography, resource access)?
 3. Can a competitor with sufficient capital replicate the cost advantage within 5 years?
@@ -78,6 +81,7 @@ This framework evaluates moats across 5 dimensions. Each dimension is scored **N
 - **None:** No meaningful intangible asset advantage. Brand is not a purchase driver. No significant patent protection. Regulatory environment is open to new entrants. Examples: commodity businesses, generic manufacturers, undifferentiated service providers.
 
 **Diagnostic Questions:**
+
 1. Does the brand allow the company to charge a price premium over unbranded/generic alternatives?
 2. How many years of patent protection remain for key products?
 3. Are there regulatory licenses, certifications, or approvals that take years to obtain?
@@ -97,6 +101,7 @@ This framework evaluates moats across 5 dimensions. Each dimension is scored **N
 - **None:** The market is large enough to support many profitable competitors. Entry barriers from market size are low. Examples: restaurants, retail, most consumer goods, fragmented service industries.
 
 **Diagnostic Questions:**
+
 1. How many profitable competitors exist in this market?
 2. Would a new entrant's investment in capacity or infrastructure cause returns for all players to fall below cost of capital?
 3. Is the market niche enough that it naturally limits the number of viable competitors?
@@ -122,6 +127,7 @@ When the scores are ambiguous (e.g., 1 Narrow and 1 borderline Narrow), lean tow
 The moat trend is as important as the current rating. A narrow moat that is strengthening may be more attractive than a wide moat that is eroding.
 
 **Strengthening indicators:**
+
 - Market share gains for 3+ consecutive years
 - Expanding margins while competitors' margins compress
 - Increasing switching costs (more integrations, deeper embedding)
@@ -129,12 +135,14 @@ The moat trend is as important as the current rating. A narrow moat that is stre
 - Patent portfolio expanding in core areas
 
 **Stable indicators:**
+
 - Consistent market share over 3+ years
 - Margins in line with historical range
 - Competitive landscape unchanged
 - No major technological disruptions on the horizon
 
 **Eroding indicators:**
+
 - Market share losses for 2+ consecutive years
 - Margin compression without clear strategic rationale (investment phase)
 - Key patents expiring without replacement pipeline

@@ -24,10 +24,7 @@ void test("listBundledSkills returns structured entries with category and path",
 
   // With empty categories (no skills yet), list should be empty
   // Future tasks will add actual skills, making this length > 0
-  assert.ok(
-    Array.isArray(skills),
-    "listBundledSkills should return an array",
-  );
+  assert.ok(Array.isArray(skills), "listBundledSkills should return an array");
 
   // Each entry should have the correct shape
   for (const skill of skills) {
@@ -53,8 +50,14 @@ void test("installBundledSkills creates category directories in workspace", asyn
     const skillsDir = join(workspaceDir, "skills");
     const entries = await readdir(skillsDir);
 
-    assert.ok(entries.includes("finance"), "finance/ directory should exist in workspace");
-    assert.ok(entries.includes("personas"), "personas/ directory should exist in workspace");
+    assert.ok(
+      entries.includes("finance"),
+      "finance/ directory should exist in workspace",
+    );
+    assert.ok(
+      entries.includes("personas"),
+      "personas/ directory should exist in workspace",
+    );
   } finally {
     await rm(workspaceDir, { recursive: true, force: true });
   }
@@ -110,12 +113,20 @@ void test("listInstalledSkills discovers flat (ClawHub) skills alongside nested 
     // Create a nested skill
     const nestedDir = join(workspaceDir, "skills", "finance", "fair-value");
     await mkdir(nestedDir, { recursive: true });
-    await writeFile(join(nestedDir, "SKILL.md"), "---\nname: Fair Value\n---\n", "utf8");
+    await writeFile(
+      join(nestedDir, "SKILL.md"),
+      "---\nname: Fair Value\n---\n",
+      "utf8",
+    );
 
     // Create a flat (ClawHub) skill
     const flatDir = join(workspaceDir, "skills", "custom-tool");
     await mkdir(flatDir, { recursive: true });
-    await writeFile(join(flatDir, "SKILL.md"), "---\nname: Custom Tool\n---\n", "utf8");
+    await writeFile(
+      join(flatDir, "SKILL.md"),
+      "---\nname: Custom Tool\n---\n",
+      "utf8",
+    );
 
     const installed = await listInstalledSkills(workspaceDir);
 
@@ -126,7 +137,11 @@ void test("listInstalledSkills discovers flat (ClawHub) skills alongside nested 
 
     const custom = installed.find((s) => s.id === "custom-tool");
     assert.ok(custom, "Flat skill should be found");
-    assert.equal(custom.category, undefined, "Flat skill should not have a category");
+    assert.equal(
+      custom.category,
+      undefined,
+      "Flat skill should not have a category",
+    );
     assert.equal(custom.path, "custom-tool");
   } finally {
     await rm(workspaceDir, { recursive: true, force: true });
@@ -150,7 +165,11 @@ void test("removeSkill works with category-prefixed paths", async () => {
   try {
     const skillDir = join(workspaceDir, "skills", "finance", "deep-dive");
     await mkdir(skillDir, { recursive: true });
-    await writeFile(join(skillDir, "SKILL.md"), "---\nname: Deep Dive\n---\n", "utf8");
+    await writeFile(
+      join(skillDir, "SKILL.md"),
+      "---\nname: Deep Dive\n---\n",
+      "utf8",
+    );
 
     const removed = await removeSkill(workspaceDir, "finance/deep-dive");
     assert.equal(removed, true, "Should return true when skill is removed");
@@ -172,7 +191,11 @@ void test("removeSkill works with flat skill paths", async () => {
   try {
     const skillDir = join(workspaceDir, "skills", "custom-skill");
     await mkdir(skillDir, { recursive: true });
-    await writeFile(join(skillDir, "SKILL.md"), "---\nname: Custom\n---\n", "utf8");
+    await writeFile(
+      join(skillDir, "SKILL.md"),
+      "---\nname: Custom\n---\n",
+      "utf8",
+    );
 
     const removed = await removeSkill(workspaceDir, "custom-skill");
     assert.equal(removed, true);
@@ -197,7 +220,11 @@ void test("installRemoteSkill installs flat (no category prefix)", async () => {
 
   try {
     const content = "---\nname: Remote Skill\n---\n\n# Remote\n";
-    const skillDir = await installRemoteSkill(workspaceDir, "remote-skill", content);
+    const skillDir = await installRemoteSkill(
+      workspaceDir,
+      "remote-skill",
+      content,
+    );
 
     const skillMd = await readFile(join(skillDir, "SKILL.md"), "utf8");
     assert.ok(skillMd.includes("Remote Skill"));
@@ -206,7 +233,11 @@ void test("installRemoteSkill installs flat (no category prefix)", async () => {
     const installed = await listInstalledSkills(workspaceDir);
     const remote = installed.find((s) => s.id === "remote-skill");
     assert.ok(remote, "Remote skill should be discovered");
-    assert.equal(remote.category, undefined, "Remote skill should not have a category");
+    assert.equal(
+      remote.category,
+      undefined,
+      "Remote skill should not have a category",
+    );
     assert.equal(remote.path, "remote-skill");
   } finally {
     await rm(workspaceDir, { recursive: true, force: true });

@@ -325,23 +325,19 @@ export class SidecarClient {
     apiKey: string,
   ): Promise<DataProviderStatus> {
     return dataProviderStatusSchema.parse(
-      await this.request(
-        `/providers/data/${encodeURIComponent(providerId)}`,
-        {
-          body: JSON.stringify(
-            saveDataProviderKeyRequestSchema.parse({ apiKey }),
-          ),
-          method: "PUT",
-        },
-      ),
+      await this.request(`/providers/data/${encodeURIComponent(providerId)}`, {
+        body: JSON.stringify(
+          saveDataProviderKeyRequestSchema.parse({ apiKey }),
+        ),
+        method: "PUT",
+      }),
     );
   }
 
   async deleteDataProviderKey(providerId: string): Promise<void> {
-    await this.request(
-      `/providers/data/${encodeURIComponent(providerId)}`,
-      { method: "DELETE" },
-    );
+    await this.request(`/providers/data/${encodeURIComponent(providerId)}`, {
+      method: "DELETE",
+    });
   }
 
   createApiUrl(path: string): string {

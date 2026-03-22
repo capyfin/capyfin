@@ -1,7 +1,10 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
-import type { DataProviderOverview, DataProviderStatus } from "@capyfin/contracts";
+import type {
+  DataProviderOverview,
+  DataProviderStatus,
+} from "@capyfin/contracts";
 import {
   DATA_PROVIDER_REGISTRY,
   getDataProviderDefinition,
@@ -9,10 +12,7 @@ import {
 
 interface DataProviderStore {
   version: 1;
-  providers: Record<
-    string,
-    { apiKey: string; connectedAt: string }
-  >;
+  providers: Record<string, { apiKey: string; connectedAt: string }>;
 }
 
 export class DataProviderService {

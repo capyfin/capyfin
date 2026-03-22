@@ -128,5 +128,11 @@ void test("groups are returned in chronological order (Today first, Older last)"
   ];
   const groups = groupSessionsByDate(sessions, NOW);
   const labels = groups.map((g) => g.label);
-  assert.deepEqual(labels, ["Today", "Yesterday", "This week", "This month", "Older"]);
+  assert.deepEqual(labels, [
+    "Today",
+    "Yesterday",
+    "This week",
+    "This month",
+    "Older",
+  ]);
 });

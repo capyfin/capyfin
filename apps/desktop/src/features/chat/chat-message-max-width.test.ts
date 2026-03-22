@@ -38,7 +38,10 @@ void test("messages area has a centering wrapper with max-w-3xl", () => {
 void test("messages centering wrapper uses mx-auto for horizontal centering", () => {
   // Find the messages wrapper section (between the messages area div and the messages mapping)
   const messagesAreaIdx = chatWorkspaceSrc.indexOf("Messages area");
-  const relevantSection = chatWorkspaceSrc.slice(messagesAreaIdx, messagesAreaIdx + 600);
+  const relevantSection = chatWorkspaceSrc.slice(
+    messagesAreaIdx,
+    messagesAreaIdx + 600,
+  );
   assert.ok(
     relevantSection.includes("mx-auto"),
     "Messages wrapper must use mx-auto to center within the full-width scroll area",

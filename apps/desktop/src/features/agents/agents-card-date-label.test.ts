@@ -36,7 +36,10 @@ void test("agent card date label uses the same styling as Provider/Model labels"
 void test("agent card date value uses text-[12px] for consistency", () => {
   // Find the date rendering section (near formatDate)
   const dateIdx = workspaceSrc.indexOf("formatDate(agent.updatedAt)");
-  assert.ok(dateIdx !== -1, "Agent card must render formatDate(agent.updatedAt)");
+  assert.ok(
+    dateIdx !== -1,
+    "Agent card must render formatDate(agent.updatedAt)",
+  );
 
   // Check the surrounding context (200 chars before) for the expected value styling
   const context = workspaceSrc.slice(Math.max(0, dateIdx - 200), dateIdx + 40);
@@ -49,7 +52,10 @@ void test("agent card date value uses text-[12px] for consistency", () => {
 void test("agent card date section uses grid gap-1 layout like Provider/Model", () => {
   // The Provider and Model sections use "grid gap-1" layout
   const dateIdx = workspaceSrc.indexOf("formatDate(agent.updatedAt)");
-  assert.ok(dateIdx !== -1, "Agent card must render formatDate(agent.updatedAt)");
+  assert.ok(
+    dateIdx !== -1,
+    "Agent card must render formatDate(agent.updatedAt)",
+  );
 
   // Check surrounding context for grid gap-1 layout
   const context = workspaceSrc.slice(Math.max(0, dateIdx - 300), dateIdx + 40);

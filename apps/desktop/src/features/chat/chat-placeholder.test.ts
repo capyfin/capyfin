@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CHAT_INPUT_PLACEHOLDER, CHAT_EMPTY_STATE_SUBTITLE } from "./chat-placeholder";
+import {
+  CHAT_INPUT_PLACEHOLDER,
+  CHAT_EMPTY_STATE_SUBTITLE,
+} from "./chat-placeholder";
 
 void test("CHAT_INPUT_PLACEHOLDER does not contain internal agent name 'Main'", () => {
   assert.ok(!CHAT_INPUT_PLACEHOLDER.includes("Main"));

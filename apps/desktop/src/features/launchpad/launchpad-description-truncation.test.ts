@@ -42,11 +42,18 @@ void test("line-clamp-2 is applied to the description paragraph, not the card co
   // The line-clamp class must be on the <p> element that renders card.promise,
   // not on the outer Card or wrapper div
   const pMatch = /<p[\s\S]*?card\.promise[\s\S]*?<\/p>/.exec(src);
-  assert.ok(pMatch, "ActionCardItem must have a <p> element rendering card.promise");
+  assert.ok(
+    pMatch,
+    "ActionCardItem must have a <p> element rendering card.promise",
+  );
 
   // Find the <p> tag opening that contains card.promise
-  const pTagOpening = /<p\s+className="[^"]*"[^>]*>[\s\S]*?\{card\.promise\}/.exec(src);
-  assert.ok(pTagOpening, "card.promise must be rendered inside a <p> with className");
+  const pTagOpening =
+    /<p\s+className="[^"]*"[^>]*>[\s\S]*?\{card\.promise\}/.exec(src);
+  assert.ok(
+    pTagOpening,
+    "card.promise must be rendered inside a <p> with className",
+  );
   assert.ok(
     pTagOpening[0].includes("line-clamp-2"),
     "line-clamp-2 must be on the <p> element that renders card.promise",

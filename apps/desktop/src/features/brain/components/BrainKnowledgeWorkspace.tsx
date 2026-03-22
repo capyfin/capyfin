@@ -32,10 +32,7 @@ export function BrainKnowledgeWorkspace({
           ) : (
             <ul className="space-y-2">
               {references.map((ref, index) => (
-                <li
-                  key={index}
-                  className="text-[13px] text-foreground"
-                >
+                <li key={index} className="text-[13px] text-foreground">
                   {String(ref)}
                 </li>
               ))}
@@ -58,10 +55,7 @@ export function BrainKnowledgeWorkspace({
           ) : (
             <ul className="space-y-2">
               {notes.map((note, index) => (
-                <li
-                  key={index}
-                  className="text-[13px] text-foreground"
-                >
+                <li key={index} className="text-[13px] text-foreground">
                   {String(note)}
                 </li>
               ))}

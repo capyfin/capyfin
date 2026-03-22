@@ -68,6 +68,7 @@ Before writing any analysis, gather ALL of the following inputs. Do not begin th
 - Search for `"{ticker} WACC"` for discount rate benchmarks
 
 **Important Tier 0 Notes:**
+
 - SEC filing financials are authoritative — prefer them over web-searched numbers
 - Web-searched estimates may be stale — note the data date
 - At Tier 0, some data points (exact analyst consensus, peer multiples) may be approximate — flag this clearly
@@ -371,6 +372,7 @@ When operating at Tier 0 (no FMP configured), include this single line at the ve
 > 💡 Connect FMP in Settings → Providers for structured financial statements and faster results. It's free.
 
 Rules for the nudge:
+
 - Include it once per report, at the bottom — never inline or mid-content
 - This is NOT an error, NOT a locked-feature badge — it is a gentle enhancement suggestion
 - Do NOT include the nudge if FMP is already configured and providing Tier 1 data
@@ -388,5 +390,6 @@ Data as of: {YYYY-MM-DD} · Sources: {list all sources used} · Tier: {0|1}
 ```
 
 Examples:
+
 - `Data as of: 2026-03-21 · Sources: SEC EDGAR (10-K 2025), web search (Yahoo Finance, MarketWatch) · Tier: 0`
 - `Data as of: 2026-03-21 · Sources: FMP API, SEC EDGAR (10-K 2025), analyst consensus (FactSet) · Tier: 1`

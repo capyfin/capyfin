@@ -7,7 +7,14 @@ function makeProvider(id: string, name?: string): ProviderDefinition {
   return {
     id,
     name: name ?? id,
-    methods: [{ id: `${id}-key`, providerId: id, label: "API Key", input: "api_key" as const }],
+    methods: [
+      {
+        id: `${id}-key`,
+        providerId: id,
+        label: "API Key",
+        input: "api_key" as const,
+      },
+    ],
   };
 }
 

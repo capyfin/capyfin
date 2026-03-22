@@ -5,7 +5,13 @@ export interface SessionGroup {
   sessions: AgentSession[];
 }
 
-const GROUP_LABELS = ["Today", "Yesterday", "This week", "This month", "Older"] as const;
+const GROUP_LABELS = [
+  "Today",
+  "Yesterday",
+  "This week",
+  "This month",
+  "Older",
+] as const;
 
 /**
  * Categorize sessions into temporal groups based on `updatedAt`.
@@ -31,8 +37,13 @@ export function groupSessionsByDate(
 
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const buckets: [AgentSession[], AgentSession[], AgentSession[], AgentSession[], AgentSession[]] =
-    [[], [], [], [], []];
+  const buckets: [
+    AgentSession[],
+    AgentSession[],
+    AgentSession[],
+    AgentSession[],
+    AgentSession[],
+  ] = [[], [], [], [], []];
 
   for (const session of sessions) {
     const ts = new Date(session.updatedAt);
@@ -53,7 +64,10 @@ export function groupSessionsByDate(
   for (let i = 0; i < GROUP_LABELS.length; i++) {
     const bucket = buckets[i as 0 | 1 | 2 | 3 | 4];
     if (bucket.length > 0) {
-      groups.push({ label: GROUP_LABELS[i as 0 | 1 | 2 | 3 | 4], sessions: bucket });
+      groups.push({
+        label: GROUP_LABELS[i as 0 | 1 | 2 | 3 | 4],
+        sessions: bucket,
+      });
     }
   }
   return groups;

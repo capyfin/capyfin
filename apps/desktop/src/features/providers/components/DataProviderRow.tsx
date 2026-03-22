@@ -83,30 +83,28 @@ export function DataProviderRow({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-start gap-3">
-          {iconEntry ? (
-            <DataProviderIcon entry={iconEntry} />
-          ) : null}
+          {iconEntry ? <DataProviderIcon entry={iconEntry} /> : null}
           <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-[13px] font-semibold text-foreground">
-              {provider.name}
-            </h3>
-            <Badge
-              variant="secondary"
-              className="rounded-md px-1.5 text-[9px] font-medium"
-            >
-              {provider.tier}
-            </Badge>
-            {provider.connected ? (
-              <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2Icon className="size-3" />
-                Connected
-              </span>
-            ) : null}
-          </div>
-          <p className="mt-0.5 text-[12px] text-muted-foreground">
-            {provider.description}
-          </p>
+            <div className="flex items-center gap-2">
+              <h3 className="text-[13px] font-semibold text-foreground">
+                {provider.name}
+              </h3>
+              <Badge
+                variant="secondary"
+                className="rounded-md px-1.5 text-[9px] font-medium"
+              >
+                {provider.tier}
+              </Badge>
+              {provider.connected ? (
+                <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2Icon className="size-3" />
+                  Connected
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-0.5 text-[12px] text-muted-foreground">
+              {provider.description}
+            </p>
           </div>
         </div>
 
@@ -207,9 +205,7 @@ export function DataProviderRow({
         </div>
       ) : null}
 
-      {error ? (
-        <p className="text-[11px] text-destructive">{error}</p>
-      ) : null}
+      {error ? <p className="text-[11px] text-destructive">{error}</p> : null}
     </div>
   );
 }

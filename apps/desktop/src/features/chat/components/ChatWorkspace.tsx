@@ -9,8 +9,15 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AuthOverview, ChatBootstrap } from "@/app/types";
-import { formatModelId, getAgentDisplayName, getProviderDisplayName } from "@/features/agents/copy";
-import { CHAT_EMPTY_STATE_SUBTITLE, CHAT_INPUT_PLACEHOLDER } from "@/features/chat/chat-placeholder";
+import {
+  formatModelId,
+  getAgentDisplayName,
+  getProviderDisplayName,
+} from "@/features/agents/copy";
+import {
+  CHAT_EMPTY_STATE_SUBTITLE,
+  CHAT_INPUT_PLACEHOLDER,
+} from "@/features/chat/chat-placeholder";
 import {
   MARKET_STARTER_PROMPTS,
   PORTFOLIO_STARTER_PROMPTS,
@@ -64,30 +71,41 @@ import { SidecarClient } from "@/lib/sidecar/client";
 import { deriveSessionLabel } from "@/features/chat/session-label";
 import type { PendingCardPrompt } from "@/app/state/app-state";
 
-import { trimChatCache, chatCache, cardPromptLabels } from "@/features/chat/chat-cache";
+import {
+  trimChatCache,
+  chatCache,
+  cardPromptLabels,
+} from "@/features/chat/chat-cache";
 
-const suggestionAccent: Record<string, { card: string; hover: string; iconBg: string; iconText: string }> = {
+const suggestionAccent: Record<
+  string,
+  { card: string; hover: string; iconBg: string; iconText: string }
+> = {
   amber: {
     card: "border-amber-500/15 bg-amber-500/[0.04] dark:bg-amber-500/[0.06]",
-    hover: "hover:border-amber-500/30 hover:bg-amber-500/[0.08] dark:hover:bg-amber-500/[0.10]",
+    hover:
+      "hover:border-amber-500/30 hover:bg-amber-500/[0.08] dark:hover:bg-amber-500/[0.10]",
     iconBg: "bg-amber-500/10",
     iconText: "text-amber-500",
   },
   blue: {
     card: "border-blue-500/15 bg-blue-500/[0.04] dark:bg-blue-500/[0.06]",
-    hover: "hover:border-blue-500/30 hover:bg-blue-500/[0.08] dark:hover:bg-blue-500/[0.10]",
+    hover:
+      "hover:border-blue-500/30 hover:bg-blue-500/[0.08] dark:hover:bg-blue-500/[0.10]",
     iconBg: "bg-blue-500/10",
     iconText: "text-blue-500",
   },
   emerald: {
     card: "border-emerald-500/15 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.06]",
-    hover: "hover:border-emerald-500/30 hover:bg-emerald-500/[0.08] dark:hover:bg-emerald-500/[0.10]",
+    hover:
+      "hover:border-emerald-500/30 hover:bg-emerald-500/[0.08] dark:hover:bg-emerald-500/[0.10]",
     iconBg: "bg-emerald-500/10",
     iconText: "text-emerald-500",
   },
   rose: {
     card: "border-rose-500/15 bg-rose-500/[0.04] dark:bg-rose-500/[0.06]",
-    hover: "hover:border-rose-500/30 hover:bg-rose-500/[0.08] dark:hover:bg-rose-500/[0.10]",
+    hover:
+      "hover:border-rose-500/30 hover:bg-rose-500/[0.08] dark:hover:bg-rose-500/[0.10]",
     iconBg: "bg-rose-500/10",
     iconText: "text-rose-500",
   },
@@ -105,7 +123,6 @@ interface ChatWorkspaceProps {
   pendingCardPrompt?: PendingCardPrompt | null | undefined;
   sessionId?: string | undefined;
 }
-
 
 export function ChatWorkspace({
   authOverview,
@@ -290,7 +307,10 @@ function ChatSessionView({
       !pendingSentRef.current
     ) {
       pendingSentRef.current = true;
-      cardPromptLabels.set(bootstrap.session.id, pendingCardPrompt.displayLabel);
+      cardPromptLabels.set(
+        bootstrap.session.id,
+        pendingCardPrompt.displayLabel,
+      );
       hasCustomLabelRef.current = true;
       void sendMessage({ text: pendingCardPrompt.prompt });
       onClearPendingPrompt?.();
@@ -374,72 +394,77 @@ function ChatSessionView({
         className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 lg:px-6"
       >
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6">
-        {messages.length === 0 ? (
-          <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
-            <div className="space-y-3">
-              <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <SparklesIcon className="size-5" />
+          {messages.length === 0 ? (
+            <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
+              <div className="space-y-3">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <SparklesIcon className="size-5" />
+                </div>
+                <div className="space-y-1.5">
+                  <h1 className="text-lg font-semibold tracking-tight text-foreground">
+                    Start a conversation
+                  </h1>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {CHAT_EMPTY_STATE_SUBTITLE}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <h1 className="text-lg font-semibold tracking-tight text-foreground">
-                  Start a conversation
-                </h1>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {CHAT_EMPTY_STATE_SUBTITLE}
-                </p>
+
+              <div className="grid w-full gap-2 sm:grid-cols-3">
+                {starterPrompts.map((prompt) => {
+                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- fallback guaranteed
+                  const accent = (suggestionAccent[prompt.color] ??
+                    suggestionAccent.amber)!;
+                  return (
+                    <button
+                      key={prompt.text}
+                      type="button"
+                      className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 text-left text-sm font-medium leading-relaxed transition-all duration-150 ${accent.card} ${accent.hover}`}
+                      onClick={() => {
+                        handleSubmit({ text: prompt.text });
+                      }}
+                    >
+                      <div
+                        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md ${accent.iconBg}`}
+                      >
+                        <prompt.icon className={`size-4 ${accent.iconText}`} />
+                      </div>
+                      <span className="text-muted-foreground">
+                        {prompt.text}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+          ) : (
+            messages.map((message, index) => (
+              <ChatMessage
+                key={message.id}
+                displayLabel={
+                  index === 0 && message.role === "user"
+                    ? cardPromptLabels.get(bootstrap.session.id)
+                    : undefined
+                }
+                isStreaming={isStreaming && latestMessage?.id === message.id}
+                message={message}
+              />
+            ))
+          )}
 
-            <div className="grid w-full gap-2 sm:grid-cols-3">
-              {starterPrompts.map((prompt) => {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- fallback guaranteed
-                const accent = (suggestionAccent[prompt.color] ?? suggestionAccent.amber)!;
-                return (
-                  <button
-                    key={prompt.text}
-                    type="button"
-                    className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 text-left text-sm font-medium leading-relaxed transition-all duration-150 ${accent.card} ${accent.hover}`}
-                    onClick={() => {
-                      handleSubmit({ text: prompt.text });
-                    }}
-                  >
-                    <div className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md ${accent.iconBg}`}>
-                      <prompt.icon className={`size-4 ${accent.iconText}`} />
-                    </div>
-                    <span className="text-muted-foreground">{prompt.text}</span>
-                  </button>
-                );
-              })}
+          {isStreaming && latestMessage?.role === "user" ? (
+            <Message from="assistant">
+              <Reasoning isStreaming>
+                <ReasoningTrigger />
+              </Reasoning>
+            </Message>
+          ) : null}
+
+          {error ? (
+            <div className="rounded-lg border border-destructive/20 bg-destructive/8 px-3.5 py-2.5 text-sm text-destructive">
+              {error.message}
             </div>
-          </div>
-        ) : (
-          messages.map((message, index) => (
-            <ChatMessage
-              key={message.id}
-              displayLabel={
-                index === 0 && message.role === "user"
-                  ? cardPromptLabels.get(bootstrap.session.id)
-                  : undefined
-              }
-              isStreaming={isStreaming && latestMessage?.id === message.id}
-              message={message}
-            />
-          ))
-        )}
-
-        {isStreaming && latestMessage?.role === "user" ? (
-          <Message from="assistant">
-            <Reasoning isStreaming>
-              <ReasoningTrigger />
-            </Reasoning>
-          </Message>
-        ) : null}
-
-        {error ? (
-          <div className="rounded-lg border border-destructive/20 bg-destructive/8 px-3.5 py-2.5 text-sm text-destructive">
-            {error.message}
-          </div>
-        ) : null}
+          ) : null}
         </div>
       </div>
 
@@ -455,9 +480,7 @@ function ChatSessionView({
           <PromptInputHeader>
             <AttachmentPreviews />
           </PromptInputHeader>
-          <PromptInputTextarea
-            placeholder={CHAT_INPUT_PLACEHOLDER}
-          />
+          <PromptInputTextarea placeholder={CHAT_INPUT_PLACEHOLDER} />
           <PromptInputFooter>
             <PromptInputActionMenu>
               <PromptInputActionMenuTrigger />

@@ -23,9 +23,7 @@ export function LaunchpadWorkspace({
       cardSections
         .map((section) => ({
           ...section,
-          cards: section.cards.map((card) =>
-            resolveCard(card, isFmpConnected),
-          ),
+          cards: section.cards.map((card) => resolveCard(card, isFmpConnected)),
         }))
         .filter((s) => s.cards.length > 0),
     [isFmpConnected],

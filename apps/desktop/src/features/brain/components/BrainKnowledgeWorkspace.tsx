@@ -1,9 +1,9 @@
 import { BookOpenIcon, StickyNoteIcon } from "lucide-react";
 
 export const REFERENCES_EMPTY_TEXT =
-  "No references added yet. Import files or paste documentation to add context.";
+  "No references yet. Files and documentation shared in chat will appear here.";
 export const NOTES_EMPTY_TEXT =
-  "No notes yet. Add observations or domain knowledge here.";
+  "No notes yet. Observations and insights from your research will appear here.";
 
 interface BrainKnowledgeWorkspaceProps {
   references?: unknown[];

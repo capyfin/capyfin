@@ -12,9 +12,9 @@ import test from "node:test";
  */
 
 const REFERENCES_EMPTY_TEXT =
-  "No references added yet. Import files or paste documentation to add context.";
+  "No references yet. Files and documentation shared in chat will appear here.";
 const NOTES_EMPTY_TEXT =
-  "No notes yet. Add observations or domain knowledge here.";
+  "No notes yet. Observations and insights from your research will appear here.";
 
 // We re-use a pure helper that decides what to render for each section.
 // This keeps the logic testable without React.
@@ -81,11 +81,11 @@ void test("helper text disappears when content is present (notes)", () => {
 void test("empty state text is muted and descriptive (references)", () => {
   const result = referencesEmptyState([]);
   assert.ok(result.text.includes("No references"));
-  assert.ok(result.text.includes("Import files"));
+  assert.ok(result.text.includes("will appear here"));
 });
 
 void test("empty state text is muted and descriptive (notes)", () => {
   const result = notesEmptyState([]);
   assert.ok(result.text.includes("No notes"));
-  assert.ok(result.text.includes("domain knowledge"));
+  assert.ok(result.text.includes("will appear here"));
 });

@@ -46,6 +46,7 @@ import type {
   ProviderDefinition,
   ProviderModelCatalog,
 } from "@/app/types";
+import { groupProviders } from "@/features/onboarding/provider-groups";
 import { Button } from "@/components/ui/button";
 import { FeedbackBanner } from "@/components/FeedbackBanner";
 import { Input } from "@/components/ui/input";
@@ -143,6 +144,10 @@ export function ConnectionCenter({
         ),
       ),
     [authOverview],
+  );
+  const providerGroups = useMemo(
+    () => groupProviders(providers, connectedProviderIds),
+    [providers, connectedProviderIds],
   );
   const canContinue = Boolean(authOverview?.selectedProviderId);
 
@@ -535,55 +540,64 @@ export function ConnectionCenter({
               </div>
             </div>
           ) : step === "providers" ? (
-            <section className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
-              {providers.map((provider) => (
-                <button
-                  key={provider.id}
-                  type="button"
-                  className={cn(
-                    "group rounded-lg border bg-card p-4 text-left transition-all duration-150 hover:bg-accent",
-                    connectedProviderIds.has(
-                      resolveProviderConnectionId(provider),
-                    )
-                      ? "border-success/30"
-                      : "border-border/60 hover:border-primary/30",
-                  )}
-                  onClick={() => {
-                    selectProvider(provider);
-                  }}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <ProviderMark provider={provider} />
-                      <div>
-                        <div className="text-[15px] font-semibold tracking-tight text-foreground">
-                          {formatProviderName(provider)}
+            <div className="space-y-6">
+              {providerGroups.map((group) => (
+                <section key={group.title} className="space-y-3">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/60">
+                    {group.title}
+                  </h3>
+                  <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
+                    {group.providers.map((provider) => (
+                      <button
+                        key={provider.id}
+                        type="button"
+                        className={cn(
+                          "group rounded-lg border bg-card p-4 text-left transition-all duration-150 hover:bg-accent",
+                          connectedProviderIds.has(
+                            resolveProviderConnectionId(provider),
+                          )
+                            ? "border-success/30"
+                            : "border-border/60 hover:border-primary/30",
+                        )}
+                        onClick={() => {
+                          selectProvider(provider);
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <ProviderMark provider={provider} />
+                            <div>
+                              <div className="text-[15px] font-semibold tracking-tight text-foreground">
+                                {formatProviderName(provider)}
+                              </div>
+                              {provider.description ? (
+                                <p className="mt-0.5 text-[12px] leading-5 text-muted-foreground">
+                                  {provider.description}
+                                </p>
+                              ) : null}
+                            </div>
+                          </div>
+                          {connectedProviderIds.has(
+                            resolveProviderConnectionId(provider),
+                          ) ? (
+                            <span className="inline-flex items-center gap-0.5 rounded-md bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+                              <CheckIcon className="size-3" />
+                              Connected
+                            </span>
+                          ) : null}
                         </div>
-                        {provider.description ? (
-                          <p className="mt-0.5 text-[12px] leading-5 text-muted-foreground">
-                            {provider.description}
+
+                        {provider.methods.length > 1 ? (
+                          <p className="mt-3 text-[11px] text-muted-foreground/50">
+                            {provider.methods.length} connection methods
                           </p>
                         ) : null}
-                      </div>
-                    </div>
-                    {connectedProviderIds.has(
-                      resolveProviderConnectionId(provider),
-                    ) ? (
-                      <span className="inline-flex items-center gap-0.5 rounded-md bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
-                        <CheckIcon className="size-3" />
-                        Connected
-                      </span>
-                    ) : null}
+                      </button>
+                    ))}
                   </div>
-
-                  {provider.methods.length > 1 ? (
-                    <p className="mt-3 text-[11px] text-muted-foreground/50">
-                      {provider.methods.length} connection methods
-                    </p>
-                  ) : null}
-                </button>
+                </section>
               ))}
-            </section>
+            </div>
           ) : selectedProvider && selectedMethod ? (
             <section className="flex flex-1 flex-col">
               <div className="flex flex-col gap-4">

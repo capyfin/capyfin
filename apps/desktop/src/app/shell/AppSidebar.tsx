@@ -13,6 +13,7 @@ import { primaryNavigation } from "@/app/config/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { groupSessionsByDate } from "@/features/chat/session-grouping";
 import { formatSessionLabel } from "@/features/chat/session-label";
+import { formatSessionTimestamp } from "@/features/chat/session-timestamp";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -252,12 +253,18 @@ function SessionItem({
       <SidebarMenuButton
         tooltip={label}
         isActive={isActive}
+        className="h-auto py-1.5"
         onClick={() => {
           onSelect?.(session.id);
         }}
       >
-        <MessageSquareIcon />
-        <span className="truncate">{label}</span>
+        <MessageSquareIcon className="mt-0.5 self-start" />
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <span className="truncate text-sm">{label}</span>
+          <span className="text-[11px] leading-tight text-sidebar-foreground/45">
+            {formatSessionTimestamp(session.updatedAt)}
+          </span>
+        </div>
       </SidebarMenuButton>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

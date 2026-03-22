@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import {
   FALLBACK_AGENT_DESCRIPTION,
   formatAgentCount,
+  formatProviderId,
   getProviderDisplayName,
   isDevDescription,
 } from "@/features/agents/copy";
@@ -576,6 +577,6 @@ function providerLabel(
 
   return (
     connectedProviders.find((provider) => provider.providerId === providerId)
-      ?.providerName ?? providerId
+      ?.providerName ?? formatProviderId(providerId)
   );
 }

@@ -9,8 +9,12 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AuthOverview, ChatBootstrap } from "@/app/types";
-import { getAgentDisplayName } from "@/features/agents/copy";
+import { getAgentDisplayName, getProviderDisplayName } from "@/features/agents/copy";
 import { CHAT_EMPTY_STATE_SUBTITLE, CHAT_INPUT_PLACEHOLDER } from "@/features/chat/chat-placeholder";
+import {
+  MARKET_STARTER_PROMPTS,
+  PORTFOLIO_STARTER_PROMPTS,
+} from "@/features/chat/starter-prompts";
 import {
   Attachment,
   AttachmentPreview,
@@ -109,17 +113,6 @@ interface ChatWorkspaceProps {
   sessionId?: string | undefined;
 }
 
-const PORTFOLIO_STARTER_PROMPTS = [
-  "Review my current portfolio risk and call out the biggest concerns.",
-  "Analyze my portfolio allocation and flag any concentration risks.",
-  "How is my portfolio performing? Show me the winners and losers.",
-];
-
-const MARKET_STARTER_PROMPTS = [
-  "Give me a market overview for today.",
-  "Screen for high-dividend stocks with low P/E ratios.",
-  "What should I prepare before harvesting tax losses?",
-];
 
 export function ChatWorkspace({
   authOverview,
@@ -321,12 +314,12 @@ function ChatSessionView({
   const starterPrompts = hasPortfolio
     ? PORTFOLIO_STARTER_PROMPTS
     : MARKET_STARTER_PROMPTS;
-  const providerName =
-    authOverview?.providers.find((provider) =>
-      provider.methods.some(
-        (method) => method.providerId === bootstrap.resolvedProviderId,
-      ),
-    )?.name ?? bootstrap.resolvedProviderId;
+  const providerName = bootstrap.resolvedProviderId
+    ? getProviderDisplayName(
+        bootstrap.resolvedProviderId,
+        authOverview?.providers,
+      )
+    : undefined;
 
   const handleSubmit = useCallback(
     (prompt: { text: string; files?: import("ai").FileUIPart[] }) => {
@@ -406,14 +399,15 @@ function ChatSessionView({
             <div className="grid w-full gap-2 sm:grid-cols-3">
               {starterPrompts.map((prompt) => (
                 <button
-                  key={prompt}
+                  key={prompt.text}
                   type="button"
-                  className="rounded-lg border border-border/60 bg-card px-3.5 py-3 text-left text-sm leading-relaxed text-muted-foreground transition-all duration-150 hover:border-primary/30 hover:bg-accent hover:text-foreground"
+                  className="flex items-start gap-2.5 rounded-lg border border-border/60 bg-card px-3.5 py-3 text-left text-sm leading-relaxed text-muted-foreground transition-all duration-150 hover:border-primary/30 hover:bg-accent hover:text-foreground"
                   onClick={() => {
-                    handleSubmit({ text: prompt });
+                    handleSubmit({ text: prompt.text });
                   }}
                 >
-                  {prompt}
+                  <prompt.icon className="mt-0.5 size-4 shrink-0 text-primary/60" />
+                  <span>{prompt.text}</span>
                 </button>
               ))}
             </div>

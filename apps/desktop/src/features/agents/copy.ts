@@ -28,10 +28,22 @@ export function getAgentDisplayName(name: string): string {
 import type { ProviderDefinition } from "@capyfin/contracts";
 
 /**
+ * Converts a raw provider ID like "github-copilot" into a readable label
+ * like "GitHub Copilot" by splitting on hyphens/underscores and capitalising
+ * each word.
+ */
+export function formatProviderId(providerId: string): string {
+  return providerId
+    .split(/[-_]/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/**
  * Resolves a user-friendly provider display name from the parent provider definition.
  * Matches the connection's `providerId` against each provider's `methods[].providerId`
  * and returns the parent provider's `name` field.
- * Falls back to `fallback` (or `providerId`) if no match is found.
+ * Falls back to `fallback`, then to a formatted version of the raw `providerId`.
  */
 export function getProviderDisplayName(
   providerId: string,
@@ -39,14 +51,14 @@ export function getProviderDisplayName(
   fallback?: string,
 ): string {
   if (!providers) {
-    return fallback ?? providerId;
+    return fallback ?? formatProviderId(providerId);
   }
 
   const parent = providers.find((provider) =>
     provider.methods.some((method) => method.providerId === providerId),
   );
 
-  return parent?.name ?? fallback ?? providerId;
+  return parent?.name ?? fallback ?? formatProviderId(providerId);
 }
 
 const DEV_PATTERNS = [/orchestration/i, /workspace agent/i, /default agent/i];

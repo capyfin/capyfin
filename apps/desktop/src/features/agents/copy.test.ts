@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   FALLBACK_AGENT_DESCRIPTION,
   formatAgentCount,
+  formatProviderId,
   getAgentDisplayName,
   getProviderDisplayName,
   isDevDescription,
@@ -144,17 +145,17 @@ void test("getProviderDisplayName falls back to providerName when no match found
   );
 });
 
-void test("getProviderDisplayName falls back to providerId when no match and no fallback", () => {
+void test("getProviderDisplayName formats providerId when no match and no fallback", () => {
   assert.equal(
     getProviderDisplayName("unknown-provider", MOCK_PROVIDERS),
-    "unknown-provider",
+    "Unknown Provider",
   );
 });
 
-void test("getProviderDisplayName handles empty providers array", () => {
+void test("getProviderDisplayName formats raw ID for empty providers array", () => {
   assert.equal(
     getProviderDisplayName("github-copilot", []),
-    "github-copilot",
+    "Github Copilot",
   );
 });
 
@@ -163,4 +164,33 @@ void test("getProviderDisplayName handles undefined providers", () => {
     getProviderDisplayName("github-copilot", undefined, "Fallback Name"),
     "Fallback Name",
   );
+});
+
+void test("getProviderDisplayName formats raw ID when providers undefined and no fallback", () => {
+  assert.equal(
+    getProviderDisplayName("github-copilot", undefined),
+    "Github Copilot",
+  );
+});
+
+// --- formatProviderId tests ---
+
+void test("formatProviderId converts hyphenated ID to title case", () => {
+  assert.equal(formatProviderId("github-copilot"), "Github Copilot");
+});
+
+void test("formatProviderId capitalizes single-word ID", () => {
+  assert.equal(formatProviderId("anthropic"), "Anthropic");
+});
+
+void test("formatProviderId handles multi-segment ID", () => {
+  assert.equal(formatProviderId("anthropic-api-key"), "Anthropic Api Key");
+});
+
+void test("formatProviderId preserves already-capitalized words", () => {
+  assert.equal(formatProviderId("openai"), "Openai");
+});
+
+void test("formatProviderId handles underscore separators", () => {
+  assert.equal(formatProviderId("open_ai"), "Open Ai");
 });

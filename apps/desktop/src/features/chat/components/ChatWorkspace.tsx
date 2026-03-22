@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AuthOverview, ChatBootstrap } from "@/app/types";
-import { getAgentDisplayName, getProviderDisplayName } from "@/features/agents/copy";
+import { formatModelId, getAgentDisplayName, getProviderDisplayName } from "@/features/agents/copy";
 import { CHAT_EMPTY_STATE_SUBTITLE, CHAT_INPUT_PLACEHOLDER } from "@/features/chat/chat-placeholder";
 import {
   MARKET_STARTER_PROMPTS,
@@ -389,7 +389,7 @@ function ChatSessionView({
             <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
               {providerName}
               {bootstrap.resolvedModelId
-                ? ` / ${bootstrap.resolvedModelId}`
+                ? ` / ${formatModelId(bootstrap.resolvedModelId)}`
                 : ""}
             </span>
           ) : null}

@@ -2,7 +2,7 @@
  * Format a session timestamp for display in the sidebar.
  *
  * - Today: time only (e.g., "8:15 AM")
- * - Yesterday: "Yesterday"
+ * - Yesterday: "Yesterday HH:MM AM/PM" (e.g., "Yesterday 3:15 PM")
  * - This week (but not yesterday/today): day name (e.g., "Wednesday")
  * - Older: short date (e.g., "Mar 10")
  */
@@ -24,7 +24,12 @@ export function formatSessionTimestamp(
   const yesterdayStart = new Date(todayStart);
   yesterdayStart.setDate(yesterdayStart.getDate() - 1);
   if (ts >= yesterdayStart) {
-    return "Yesterday";
+    const time = ts.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    return `Yesterday ${time}`;
   }
 
   // Start of this week (Monday)

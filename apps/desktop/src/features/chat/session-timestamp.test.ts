@@ -22,16 +22,25 @@ void test("shows AM/PM time for a morning session today", () => {
   assert.ok(/\d{1,2}:\d{2}\s*(AM|PM)/i.test(result), `expected time with AM/PM, got "${result}"`);
 });
 
-// --- Yesterday ---
+// --- Yesterday: show "Yesterday HH:MM AM/PM" ---
 
-void test("shows 'Yesterday' for a session updated yesterday", () => {
+void test("shows 'Yesterday' with time for a session updated yesterday evening", () => {
   const result = formatSessionTimestamp("2026-03-20T22:00:00Z", NOW);
-  assert.equal(result, "Yesterday");
+  assert.ok(result.startsWith("Yesterday"), `should start with Yesterday, got "${result}"`);
+  // Must include a time portion after "Yesterday"
+  assert.ok(/Yesterday\s+\d{1,2}:\d{2}\s*(AM|PM)/i.test(result), `expected 'Yesterday HH:MM AM/PM', got "${result}"`);
 });
 
-void test("shows 'Yesterday' for a session updated early yesterday", () => {
+void test("shows 'Yesterday' with time for a session updated early yesterday", () => {
   const result = formatSessionTimestamp("2026-03-20T01:00:00Z", NOW);
-  assert.equal(result, "Yesterday");
+  assert.ok(result.startsWith("Yesterday"), `should start with Yesterday, got "${result}"`);
+  assert.ok(/Yesterday\s+\d{1,2}:\d{2}\s*(AM|PM)/i.test(result), `expected 'Yesterday HH:MM AM/PM', got "${result}"`);
+});
+
+void test("yesterday sessions with different times are distinguishable", () => {
+  const morning = formatSessionTimestamp("2026-03-20T08:00:00Z", NOW);
+  const evening = formatSessionTimestamp("2026-03-20T20:00:00Z", NOW);
+  assert.notEqual(morning, evening, `morning and evening yesterday sessions should differ: "${morning}" vs "${evening}"`);
 });
 
 // --- This week: show day name ---
@@ -80,5 +89,6 @@ void test("handles end of yesterday", () => {
   yesterdayEnd.setHours(0, 0, 0, 0);
   yesterdayEnd.setMilliseconds(-1); // 23:59:59.999 the day before
   const result = formatSessionTimestamp(yesterdayEnd.toISOString(), NOW);
-  assert.equal(result, "Yesterday");
+  assert.ok(result.startsWith("Yesterday"), `should start with Yesterday, got "${result}"`);
+  assert.ok(/Yesterday\s+\d{1,2}:\d{2}\s*(AM|PM)/i.test(result), `expected 'Yesterday HH:MM AM/PM', got "${result}"`);
 });

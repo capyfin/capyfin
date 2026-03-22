@@ -39,7 +39,7 @@ import type { AuthOverview } from "@/app/types";
 
 interface AppSidebarProps {
   activeSessionId?: string | undefined;
-  activeView: "providers" | "chat" | "agents" | "launchpad";
+  activeView: "providers" | "chat" | "agents" | "launchpad" | "brain";
   authOverview: AuthOverview | null;
   onNewChat?: (() => void) | undefined;
   onSessionDelete?: ((sessionId: string) => void) | undefined;
@@ -105,7 +105,8 @@ export function AppSidebar({
                       (item.href === "#chat" && activeView === "chat") ||
                       (item.href === "#agents" && activeView === "agents") ||
                       (item.href === "#launchpad" &&
-                        activeView === "launchpad")
+                        activeView === "launchpad") ||
+                      (item.href === "#brain" && activeView === "brain")
                     }
                   >
                     <a href={item.href}>
@@ -131,7 +132,7 @@ export function AppSidebar({
             <SidebarGroupContent>
               {sessionGroups.map((group) => (
                 <div key={group.label}>
-                  <p className="px-2 pb-1 pt-3 text-[11px] font-medium uppercase tracking-[0.12em] text-sidebar-foreground/50 first:pt-1">
+                  <p className="px-2 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/65 first:pt-1">
                     {group.label}
                   </p>
                   <SidebarMenu>

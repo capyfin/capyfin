@@ -7,7 +7,7 @@ import { useTheme, type Theme } from "@/hooks/theme-context";
 import { cn } from "@/lib/utils";
 
 interface AppHeaderProps {
-  currentView: "providers" | "chat" | "agents" | "launchpad";
+  currentView: "providers" | "chat" | "agents" | "launchpad" | "brain";
   onAddConnection: () => void;
   onCreateAgent: () => void;
 }
@@ -24,7 +24,9 @@ export function AppHeader({
         ? "Providers"
         : currentView === "agents"
           ? "Agents"
-          : "Chat";
+          : currentView === "brain"
+            ? "Brain"
+            : "Chat";
 
   return (
     <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur-xl">

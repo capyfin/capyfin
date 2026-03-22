@@ -1,5 +1,6 @@
 import {
   BotIcon,
+  BrainIcon,
   HomeIcon,
   MessageSquareIcon,
   SlidersHorizontalIcon,
@@ -21,6 +22,11 @@ export const primaryNavigation = [
     title: "Agents",
     href: "#agents",
     icon: BotIcon,
+  },
+  {
+    title: "Brain",
+    href: "#brain",
+    icon: BrainIcon,
   },
   {
     title: "Providers",

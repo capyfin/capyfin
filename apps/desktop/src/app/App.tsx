@@ -9,6 +9,7 @@ import {
 } from "@/features/chat/components/ChatWorkspace";
 import { ProvidersWorkspace } from "@/features/providers/components/ProvidersWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
+import { BrainKnowledgeWorkspace } from "@/features/brain/components/BrainKnowledgeWorkspace";
 import { LaunchpadWorkspace } from "@/features/launchpad/components/LaunchpadWorkspace";
 import {
   buildCardPrompt,
@@ -285,6 +286,8 @@ export function App() {
                 dispatch({ type: "SET_AUTH_OVERVIEW", authOverview: overview });
               }}
             />
+          ) : currentView === "brain" ? (
+            <BrainKnowledgeWorkspace />
           ) : (
             <AgentsWorkspace
               authOverview={state.authOverview}
@@ -315,6 +318,10 @@ function readViewFromHash(): AppView {
 
   if (window.location.hash === "#agents") {
     return "agents";
+  }
+
+  if (window.location.hash === "#brain") {
+    return "brain";
   }
 
   if (window.location.hash === "#chat") {

@@ -405,8 +405,9 @@ function ChatSessionView({
       {/* Messages area */}
       <div
         ref={listRef}
-        className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 lg:px-6"
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 lg:px-6"
       >
+        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6">
         {messages.length === 0 ? (
           <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
             <div className="space-y-3">
@@ -473,6 +474,7 @@ function ChatSessionView({
             {error.message}
           </div>
         ) : null}
+        </div>
       </div>
 
       {/* Chat input */}

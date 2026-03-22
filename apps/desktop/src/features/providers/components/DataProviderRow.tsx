@@ -8,7 +8,28 @@ import {
 import type { DataProviderStatus } from "@/app/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getErrorMessage } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
+import {
+  dataProviderIconConfig,
+  type DataProviderIconEntry,
+} from "./data-provider-icons";
+
+function DataProviderIcon({ entry }: { entry: DataProviderIconEntry }) {
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon type */
+  const Icon = entry.icon;
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+  return (
+    <div
+      className={cn(
+        "flex size-8 shrink-0 items-center justify-center rounded-lg",
+        entry.bg,
+        entry.text,
+      )}
+    >
+      <Icon className="size-4" />
+    </div>
+  );
+}
 
 interface DataProviderRowProps {
   provider: DataProviderStatus;
@@ -25,6 +46,8 @@ export function DataProviderRow({
   const [apiKey, setApiKey] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const iconEntry = dataProviderIconConfig[provider.id];
 
   async function handleSave(): Promise<void> {
     if (!apiKey.trim()) return;
@@ -59,7 +82,11 @@ export function DataProviderRow({
       className="flex flex-col gap-2 rounded-lg border border-border/60 bg-card px-4 py-3"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          {iconEntry ? (
+            <DataProviderIcon entry={iconEntry} />
+          ) : null}
+          <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3 className="text-[13px] font-semibold text-foreground">
               {provider.name}
@@ -80,6 +107,7 @@ export function DataProviderRow({
           <p className="mt-0.5 text-[12px] text-muted-foreground">
             {provider.description}
           </p>
+          </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">

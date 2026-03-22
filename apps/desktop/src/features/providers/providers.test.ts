@@ -80,6 +80,43 @@ void test("saveDataProviderKeyRequestSchema rejects empty API key", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Data provider icon configuration
+// ---------------------------------------------------------------------------
+
+void test("dataProviderIconConfig returns icon config for fmp", async () => {
+  const { dataProviderIconConfig } = await import(
+    "./components/data-provider-icons"
+  );
+  const config = dataProviderIconConfig.fmp;
+  assert.ok(config, "FMP icon config should exist");
+  assert.ok(config.icon, "FMP should have an icon component");
+  assert.ok(config.bg.includes("blue"), "FMP bg should be blue-tinted");
+  assert.ok(config.text.includes("blue"), "FMP text should be blue");
+});
+
+void test("dataProviderIconConfig returns icon config for fred", async () => {
+  const { dataProviderIconConfig } = await import(
+    "./components/data-provider-icons"
+  );
+  const config = dataProviderIconConfig.fred;
+  assert.ok(config, "FRED icon config should exist");
+  assert.ok(config.icon, "FRED should have an icon component");
+  assert.ok(config.bg.includes("violet"), "FRED bg should be violet-tinted");
+  assert.ok(config.text.includes("violet"), "FRED text should be violet");
+});
+
+void test("dataProviderIconConfig entries have distinct colors", async () => {
+  const { dataProviderIconConfig } = await import(
+    "./components/data-provider-icons"
+  );
+  const fmp = dataProviderIconConfig.fmp;
+  const fred = dataProviderIconConfig.fred;
+  assert.ok(fmp && fred, "Both configs should exist");
+  assert.notEqual(fmp.bg, fred.bg, "FMP and FRED should have different bg colors");
+  assert.notEqual(fmp.text, fred.text, "FMP and FRED should have different text colors");
+});
+
+// ---------------------------------------------------------------------------
 // Navigation config
 // ---------------------------------------------------------------------------
 

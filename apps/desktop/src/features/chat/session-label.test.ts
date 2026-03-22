@@ -36,6 +36,11 @@ void test("formatSessionLabel replaces uppercase UUID-prefix label", () => {
   assert.equal(formatSessionLabel(session), "New conversation");
 });
 
+void test("formatSessionLabel replaces bare 8-char hex ID without date suffix", () => {
+  const session = makeSession({ label: "f1a26b39" });
+  assert.equal(formatSessionLabel(session), "New conversation");
+});
+
 void test("formatSessionLabel does not replace labels starting with hex-like words", () => {
   const session = makeSession({ label: "Feedback on Q1 report" });
   assert.equal(formatSessionLabel(session), "Feedback on Q1 report");

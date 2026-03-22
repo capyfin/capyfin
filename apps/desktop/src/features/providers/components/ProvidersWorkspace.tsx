@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getProviderDisplayName } from "@/features/agents/copy";
+import { getConnectionDisplayName, getProviderDisplayName } from "@/features/agents/copy";
 import { formatDate, getErrorMessage } from "@/lib/utils";
 import { SidecarClient } from "@/lib/sidecar/client";
 import { FinancialDataSection } from "./FinancialDataSection";
@@ -279,7 +279,7 @@ function ConnectionRow({
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1.5">
-          <span className="text-[12px]">{connection.label}</span>
+          <span className="text-[12px]">{getConnectionDisplayName(connection.label)}</span>
           {connection.isDefault ? (
             <Badge
               variant="secondary"

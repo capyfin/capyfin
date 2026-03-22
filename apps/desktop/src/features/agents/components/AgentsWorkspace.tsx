@@ -547,8 +547,13 @@ export function AgentsWorkspace({
                     </label>
                   </div>
 
-                  <div className="text-[11px] text-muted-foreground/60">
-                    {formatDate(agent.updatedAt)}
+                  <div className="grid gap-1 text-right">
+                    <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+                      Updated
+                    </span>
+                    <span className="text-[12px] text-muted-foreground/60">
+                      {formatDate(agent.updatedAt)}
+                    </span>
                   </div>
                 </article>
               );

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getProviderDisplayName } from "@/features/agents/copy.ts";
+import { getConnectionDisplayName, getProviderDisplayName } from "@/features/agents/copy.ts";
 import type { ProviderDefinition } from "@capyfin/contracts";
 
 const MOCK_PROVIDERS: ProviderDefinition[] = [
@@ -55,4 +55,14 @@ void test("ConnectionsWorkspace provider cell should prefer parent provider name
   );
   assert.notEqual(result, "Sign in with GitHub");
   assert.equal(result, "GitHub Copilot");
+});
+
+// --- Connection display name in CONNECTION column ---
+
+void test("ConnectionsWorkspace connection cell should display 'GitHub' for raw 'github' label", () => {
+  assert.equal(getConnectionDisplayName("github"), "GitHub");
+});
+
+void test("ConnectionsWorkspace connection cell should capitalize unknown single-word labels", () => {
+  assert.equal(getConnectionDisplayName("anthropic"), "Anthropic");
 });

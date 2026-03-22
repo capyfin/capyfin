@@ -14,7 +14,7 @@ import type {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FeedbackBanner } from "@/components/FeedbackBanner";
-import { getProviderDisplayName } from "@/features/agents/copy";
+import { getConnectionDisplayName, getProviderDisplayName } from "@/features/agents/copy";
 import {
   Table,
   TableBody,
@@ -288,7 +288,7 @@ function ConnectionRow({
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1.5">
-          <span className="text-[12px]">{connection.label}</span>
+          <span className="text-[12px]">{getConnectionDisplayName(connection.label)}</span>
           {connection.isDefault ? (
             <Badge
               variant="secondary"

@@ -21,6 +21,31 @@ void test("formatSessionLabel preserves existing labels unchanged", () => {
   assert.equal(formatSessionLabel(session), "Morning Brief");
 });
 
+void test("formatSessionLabel replaces UUID-prefix label with 'New conversation'", () => {
+  const session = makeSession({ label: "d789933d (2026-03-22)" });
+  assert.equal(formatSessionLabel(session), "New conversation");
+});
+
+void test("formatSessionLabel replaces UUID-prefix label without space before paren", () => {
+  const session = makeSession({ label: "f043f4e7(2026-03-22)" });
+  assert.equal(formatSessionLabel(session), "New conversation");
+});
+
+void test("formatSessionLabel replaces uppercase UUID-prefix label", () => {
+  const session = makeSession({ label: "D789933D (2026-03-22)" });
+  assert.equal(formatSessionLabel(session), "New conversation");
+});
+
+void test("formatSessionLabel does not replace labels starting with hex-like words", () => {
+  const session = makeSession({ label: "Feedback on Q1 report" });
+  assert.equal(formatSessionLabel(session), "Feedback on Q1 report");
+});
+
+void test("formatSessionLabel preserves labels that look like hex but are too short", () => {
+  const session = makeSession({ label: "abcdef (note)" });
+  assert.equal(formatSessionLabel(session), "abcdef (note)");
+});
+
 // ---------------------------------------------------------------------------
 // deriveSessionLabel
 // ---------------------------------------------------------------------------

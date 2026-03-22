@@ -7,7 +7,9 @@
 export function formatSessionLabel(session: {
   label?: string | undefined;
 }): string {
-  return session.label ?? "New conversation";
+  const label = session.label;
+  if (!label || /^[0-9a-f]{8}\s*\(/i.test(label)) return "New conversation";
+  return label;
 }
 
 /**

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import type {
   AuthOverview,
+  ProviderDefinition,
   ProviderModelCatalog,
   SavedConnection,
 } from "@/app/types";
@@ -22,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getProviderDisplayName } from "@/features/agents/copy";
 import { formatDate, getErrorMessage } from "@/lib/utils";
 import { SidecarClient } from "@/lib/sidecar/client";
 import { FinancialDataSection } from "./FinancialDataSection";
@@ -227,6 +229,7 @@ export function ProvidersWorkspace({
                     onDelete={handleDelete}
                     onSelectDefault={handleSelectDefault}
                     onSetModel={handleSetModel}
+                    providers={authOverview?.providers}
                   />
                 ))}
               </TableBody>
@@ -251,6 +254,7 @@ function ConnectionRow({
   onDelete,
   onSelectDefault,
   onSetModel,
+  providers,
 }: {
   connection: SavedConnection;
   isBusy: boolean;
@@ -259,6 +263,7 @@ function ConnectionRow({
   onDelete: (profileId: string) => Promise<void>;
   onSelectDefault: (profileId: string) => Promise<void>;
   onSetModel: (providerId: string, modelRef: string) => Promise<void>;
+  providers: ProviderDefinition[] | undefined;
 }) {
   const selectedModelRef =
     modelCatalog?.currentModelRef ??
@@ -270,7 +275,7 @@ function ConnectionRow({
   return (
     <TableRow className="border-border/60 transition-colors hover:bg-muted/20">
       <TableCell className="text-[12px] font-medium">
-        {connection.providerName}
+        {getProviderDisplayName(connection.providerId, providers, connection.providerName)}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1.5">

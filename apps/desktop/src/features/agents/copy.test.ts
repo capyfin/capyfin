@@ -4,8 +4,10 @@ import {
   FALLBACK_AGENT_DESCRIPTION,
   formatAgentCount,
   getAgentDisplayName,
+  getProviderDisplayName,
   isDevDescription,
 } from "./copy.ts";
+import type { ProviderDefinition } from "@capyfin/contracts";
 
 void test("formatAgentCount returns zero-state message when count is 0", () => {
   assert.equal(formatAgentCount(0), "No custom agents yet.");
@@ -89,5 +91,76 @@ void test("FALLBACK_AGENT_DESCRIPTION describes user value", () => {
   assert.ok(
     FALLBACK_AGENT_DESCRIPTION.length > 20,
     "Fallback description should be a meaningful sentence",
+  );
+});
+
+// --- getProviderDisplayName tests ---
+
+const MOCK_PROVIDERS: ProviderDefinition[] = [
+  {
+    id: "copilot",
+    name: "Copilot",
+    methods: [
+      {
+        id: "github-oauth",
+        input: "oauth",
+        label: "Sign in with GitHub",
+        providerId: "github-copilot",
+      },
+    ],
+  },
+  {
+    id: "anthropic",
+    name: "Anthropic",
+    methods: [
+      {
+        id: "anthropic-token",
+        input: "token",
+        label: "Anthropic token (paste setup-token)",
+        providerId: "anthropic-api",
+      },
+    ],
+  },
+];
+
+void test("getProviderDisplayName returns parent provider name for matching providerId", () => {
+  assert.equal(
+    getProviderDisplayName("github-copilot", MOCK_PROVIDERS),
+    "Copilot",
+  );
+});
+
+void test("getProviderDisplayName resolves Anthropic provider correctly", () => {
+  assert.equal(
+    getProviderDisplayName("anthropic-api", MOCK_PROVIDERS),
+    "Anthropic",
+  );
+});
+
+void test("getProviderDisplayName falls back to providerName when no match found", () => {
+  assert.equal(
+    getProviderDisplayName("unknown-provider", MOCK_PROVIDERS, "Some Fallback"),
+    "Some Fallback",
+  );
+});
+
+void test("getProviderDisplayName falls back to providerId when no match and no fallback", () => {
+  assert.equal(
+    getProviderDisplayName("unknown-provider", MOCK_PROVIDERS),
+    "unknown-provider",
+  );
+});
+
+void test("getProviderDisplayName handles empty providers array", () => {
+  assert.equal(
+    getProviderDisplayName("github-copilot", []),
+    "github-copilot",
+  );
+});
+
+void test("getProviderDisplayName handles undefined providers", () => {
+  assert.equal(
+    getProviderDisplayName("github-copilot", undefined, "Fallback Name"),
+    "Fallback Name",
   );
 });

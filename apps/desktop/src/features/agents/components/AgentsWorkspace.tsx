@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import {
   FALLBACK_AGENT_DESCRIPTION,
   formatAgentCount,
+  getProviderDisplayName,
   isDevDescription,
 } from "@/features/agents/copy";
 import { buildAgentModelUpdatePayload } from "@/features/agents/model-selection";
@@ -61,7 +62,11 @@ export function AgentsWorkspace({
           connection.providerId,
           {
             providerId: connection.providerId,
-            providerName: connection.providerName,
+            providerName: getProviderDisplayName(
+              connection.providerId,
+              authOverview?.providers,
+              connection.providerName,
+            ),
           },
         ]),
       ).values(),

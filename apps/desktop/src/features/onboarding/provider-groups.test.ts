@@ -120,3 +120,30 @@ void test("ProviderGroup has expected shape", () => {
   assert.equal(typeof group.title, "string");
   assert.ok(Array.isArray(group.providers));
 });
+
+void test("Popular group has isPopular flag set to true", () => {
+  const providers = [
+    makeProvider("openai", "OpenAI"),
+    makeProvider("together", "Together AI"),
+    makeProvider("ollama", "Ollama"),
+  ];
+  const groups = groupProviders(providers, new Set());
+  const popular = groups.find((g) => g.title === "Popular");
+  assert.ok(popular, "Popular group should exist");
+  assert.equal(popular.isPopular, true);
+});
+
+void test("Non-popular groups have isPopular flag set to false", () => {
+  const providers = [
+    makeProvider("openai", "OpenAI"),
+    makeProvider("together", "Together AI"),
+    makeProvider("ollama", "Ollama"),
+  ];
+  const groups = groupProviders(providers, new Set());
+  const more = groups.find((g) => g.title === "More providers");
+  assert.ok(more, "More providers group should exist");
+  assert.equal(more.isPopular, false);
+  const selfHosted = groups.find((g) => g.title === "Self-hosted");
+  assert.ok(selfHosted, "Self-hosted group should exist");
+  assert.equal(selfHosted.isPopular, false);
+});

@@ -557,7 +557,9 @@ export function ConnectionCenter({
                             resolveProviderConnectionId(provider),
                           )
                             ? "border-success/30"
-                            : "border-border/60 hover:border-primary/30",
+                            : group.isPopular
+                              ? "border-primary/20 bg-primary/[0.03] hover:border-primary/30"
+                              : "border-border/60 hover:border-primary/30",
                         )}
                         onClick={() => {
                           selectProvider(provider);

@@ -2,6 +2,7 @@ import type { ProviderDefinition } from "@/app/types";
 
 export interface ProviderGroup {
   title: string;
+  isPopular: boolean;
   providers: ProviderDefinition[];
 }
 
@@ -40,9 +41,9 @@ export function groupProviders(
     });
 
   const groups: ProviderGroup[] = [];
-  if (popular.length > 0) groups.push({ title: "Popular", providers: sortConnectedFirst(popular) });
-  if (more.length > 0) groups.push({ title: "More providers", providers: sortConnectedFirst(more) });
-  if (selfHosted.length > 0) groups.push({ title: "Self-hosted", providers: sortConnectedFirst(selfHosted) });
+  if (popular.length > 0) groups.push({ title: "Popular", isPopular: true, providers: sortConnectedFirst(popular) });
+  if (more.length > 0) groups.push({ title: "More providers", isPopular: false, providers: sortConnectedFirst(more) });
+  if (selfHosted.length > 0) groups.push({ title: "Self-hosted", isPopular: false, providers: sortConnectedFirst(selfHosted) });
 
   return groups;
 }

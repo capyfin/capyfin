@@ -34,8 +34,8 @@ void test("ConnectionsWorkspace provider cell should format raw ID when provider
     [],
     "github-copilot",
   );
-  // Falls back to the fallback param, which is the raw providerName
-  assert.equal(result, "github-copilot");
+  // Fallback should be formatted when it looks like a raw slug
+  assert.equal(result, "Github Copilot");
 });
 
 void test("ConnectionsWorkspace provider cell should use formatProviderId as ultimate fallback", () => {

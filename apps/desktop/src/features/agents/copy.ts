@@ -40,10 +40,28 @@ export function formatProviderId(providerId: string): string {
 }
 
 /**
+ * Returns true when a string looks like a raw slug identifier
+ * (all lowercase with hyphens or underscores) rather than a display name.
+ */
+function isRawSlug(value: string): boolean {
+  return /^[a-z]/.test(value) && /[-_]/.test(value);
+}
+
+/**
+ * Formats a provider name for display.  If the value looks like a raw slug
+ * (e.g. "github-copilot"), converts it to title case ("Github Copilot").
+ * Already-capitalised names are returned as-is.
+ */
+export function formatProviderName(name: string): string {
+  return isRawSlug(name) ? formatProviderId(name) : name;
+}
+
+/**
  * Resolves a user-friendly provider display name from the parent provider definition.
  * Matches the connection's `providerId` against each provider's `methods[].providerId`
  * and returns the parent provider's `name` field.
- * Falls back to `fallback`, then to a formatted version of the raw `providerId`.
+ * Falls back to `fallback` (formatted if it looks like a raw slug),
+ * then to a formatted version of the raw `providerId`.
  */
 export function getProviderDisplayName(
   providerId: string,
@@ -51,14 +69,23 @@ export function getProviderDisplayName(
   fallback?: string,
 ): string {
   if (!providers) {
-    return fallback ?? formatProviderId(providerId);
+    if (fallback) {
+      return isRawSlug(fallback) ? formatProviderId(fallback) : fallback;
+    }
+    return formatProviderId(providerId);
   }
 
   const parent = providers.find((provider) =>
     provider.methods.some((method) => method.providerId === providerId),
   );
 
-  return parent?.name ?? fallback ?? formatProviderId(providerId);
+  if (parent) return parent.name;
+
+  if (fallback) {
+    return isRawSlug(fallback) ? formatProviderId(fallback) : fallback;
+  }
+
+  return formatProviderId(providerId);
 }
 
 /**

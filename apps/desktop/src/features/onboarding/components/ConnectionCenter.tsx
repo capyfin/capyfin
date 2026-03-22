@@ -46,6 +46,7 @@ import type {
   ProviderDefinition,
   ProviderModelCatalog,
 } from "@/app/types";
+import { formatProviderName as formatProviderNameStr } from "@/features/agents/copy";
 import { groupProviders } from "@/features/onboarding/provider-groups";
 import { Button } from "@/components/ui/button";
 import { FeedbackBanner } from "@/components/FeedbackBanner";
@@ -285,8 +286,8 @@ export function ConnectionCenter({
           setSelectedModelRef(nextCatalog?.currentModelRef ?? selectedModelRef);
           setFeedback(
             nextSession.connection
-              ? `Connected ${nextSession.connection.providerName}.`
-              : `${nextSession.providerName} is ready.`,
+              ? `Connected ${formatProviderNameStr(nextSession.connection.providerName)}.`
+              : `${formatProviderNameStr(nextSession.providerName)} is ready.`,
           );
           setSessionInputValue("");
           setSessionSelections([]);
@@ -350,7 +351,7 @@ export function ConnectionCenter({
         setSelectedModelRef(nextCatalog.currentModelRef ?? selectedModelRef);
         setSecret("");
       });
-      setFeedback(`Connected ${connection.providerName}.`);
+      setFeedback(`Connected ${formatProviderNameStr(connection.providerName)}.`);
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {

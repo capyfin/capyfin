@@ -5,6 +5,7 @@ import {
   formatAgentCount,
   formatModelId,
   formatProviderId,
+  formatProviderName,
   getAgentDisplayName,
   getConnectionDisplayName,
   getModelDisplayName,
@@ -148,6 +149,20 @@ void test("getProviderDisplayName falls back to providerName when no match found
   );
 });
 
+void test("getProviderDisplayName formats raw-slug fallback instead of returning it raw", () => {
+  assert.equal(
+    getProviderDisplayName("github-copilot", [], "github-copilot"),
+    "Github Copilot",
+  );
+});
+
+void test("getProviderDisplayName preserves capitalised fallback names", () => {
+  assert.equal(
+    getProviderDisplayName("unknown", MOCK_PROVIDERS, "My Custom Provider"),
+    "My Custom Provider",
+  );
+});
+
 void test("getProviderDisplayName formats providerId when no match and no fallback", () => {
   assert.equal(
     getProviderDisplayName("unknown-provider", MOCK_PROVIDERS),
@@ -174,6 +189,31 @@ void test("getProviderDisplayName formats raw ID when providers undefined and no
     getProviderDisplayName("github-copilot", undefined),
     "Github Copilot",
   );
+});
+
+void test("getProviderDisplayName formats raw-slug fallback when providers undefined", () => {
+  assert.equal(
+    getProviderDisplayName("github-copilot", undefined, "github-copilot"),
+    "Github Copilot",
+  );
+});
+
+// --- formatProviderName tests ---
+
+void test("formatProviderName formats raw slug to title case", () => {
+  assert.equal(formatProviderName("github-copilot"), "Github Copilot");
+});
+
+void test("formatProviderName preserves already-capitalised names", () => {
+  assert.equal(formatProviderName("GitHub Copilot"), "GitHub Copilot");
+});
+
+void test("formatProviderName preserves single capitalised word", () => {
+  assert.equal(formatProviderName("Anthropic"), "Anthropic");
+});
+
+void test("formatProviderName preserves names with spaces but no hyphens", () => {
+  assert.equal(formatProviderName("Sign in with GitHub"), "Sign in with GitHub");
 });
 
 // --- formatProviderId tests ---

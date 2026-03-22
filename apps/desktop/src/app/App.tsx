@@ -3,10 +3,8 @@ import { toast, Toaster } from "sonner";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
 import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
-import {
-  ChatWorkspace,
-  evictChatSession,
-} from "@/features/chat/components/ChatWorkspace";
+import { ChatWorkspace } from "@/features/chat/components/ChatWorkspace";
+import { evictChatSession } from "@/features/chat/chat-cache";
 import { ProvidersWorkspace } from "@/features/providers/components/ProvidersWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { BrainKnowledgeWorkspace } from "@/features/brain/components/BrainKnowledgeWorkspace";

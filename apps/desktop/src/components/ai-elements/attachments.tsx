@@ -57,7 +57,7 @@ const mediaCategoryIcons: Record<AttachmentMediaCategory, typeof ImageIcon> = {
 // Utility Functions
 // ============================================================================
 
-export const getMediaCategory = (
+const getMediaCategory = (
   data: AttachmentData,
 ): AttachmentMediaCategory => {
   if (data.type === "source-document") {
@@ -82,7 +82,7 @@ export const getMediaCategory = (
   return "unknown";
 };
 
-export const getAttachmentLabel = (data: AttachmentData): string => {
+const getAttachmentLabel = (data: AttachmentData): string => {
   if (data.type === "source-document") {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback
     return data.title ?? data.filename ?? "Source";
@@ -138,10 +138,10 @@ const AttachmentContext = createContext<AttachmentContextValue | null>(null);
 // Hooks
 // ============================================================================
 
-export const useAttachmentsContext = () =>
+const useAttachmentsContext = () =>
   useContext(AttachmentsContext) ?? { variant: "grid" as const };
 
-export const useAttachmentContext = () => {
+const useAttachmentContext = () => {
   const ctx = useContext(AttachmentContext);
   if (!ctx) {
     throw new Error("Attachment components must be used within <Attachment>");

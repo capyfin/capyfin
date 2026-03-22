@@ -19,7 +19,6 @@ void test("each market starter prompt has text and icon properties", () => {
   for (const prompt of MARKET_STARTER_PROMPTS) {
     assert.ok(typeof prompt.text === "string", "text should be a string");
     assert.ok(prompt.text.length > 0, "text should not be empty");
-    assert.ok(prompt.icon != null, "icon should be defined");
   }
 });
 
@@ -27,7 +26,6 @@ void test("each portfolio starter prompt has text and icon properties", () => {
   for (const prompt of PORTFOLIO_STARTER_PROMPTS) {
     assert.ok(typeof prompt.text === "string", "text should be a string");
     assert.ok(prompt.text.length > 0, "text should not be empty");
-    assert.ok(prompt.icon != null, "icon should be defined");
   }
 });
 

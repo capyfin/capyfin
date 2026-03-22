@@ -16,15 +16,15 @@ export function BrainKnowledgeWorkspace({
 }: BrainKnowledgeWorkspaceProps) {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4">
-      <section className="rounded-lg border border-border/60 bg-card">
+      <section className="rounded-lg border border-blue-400/20 bg-blue-500/5">
         <div className="flex items-center gap-2.5 px-4 py-3 lg:px-5">
-          <BookOpenIcon className="size-4 text-muted-foreground/60" />
+          <BookOpenIcon className="size-4 text-blue-400" />
           <h2 className="text-[14px] font-semibold text-foreground">
             References
           </h2>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-5 lg:px-5">
+        <div className="border-t border-blue-400/20 px-4 py-5 lg:px-5">
           {references.length === 0 ? (
             <p className="text-sm italic text-muted-foreground">
               {REFERENCES_EMPTY_TEXT}
@@ -44,13 +44,13 @@ export function BrainKnowledgeWorkspace({
         </div>
       </section>
 
-      <section className="rounded-lg border border-border/60 bg-card">
+      <section className="rounded-lg border border-amber-400/20 bg-amber-500/5">
         <div className="flex items-center gap-2.5 px-4 py-3 lg:px-5">
-          <StickyNoteIcon className="size-4 text-muted-foreground/60" />
+          <StickyNoteIcon className="size-4 text-amber-400" />
           <h2 className="text-[14px] font-semibold text-foreground">Notes</h2>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-5 lg:px-5">
+        <div className="border-t border-amber-400/20 px-4 py-5 lg:px-5">
           {notes.length === 0 ? (
             <p className="text-sm italic text-muted-foreground">
               {NOTES_EMPTY_TEXT}

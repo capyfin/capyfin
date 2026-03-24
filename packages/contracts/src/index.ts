@@ -397,6 +397,32 @@ export type UpdateWatchlistItemRequest = z.infer<
 export type DeleteWatchlistItemResponse = z.infer<
   typeof deleteWatchlistItemResponseSchema
 >;
+export type AutomationSchedule = z.infer<typeof automationScheduleSchema>;
+export type AutomationFilters = z.infer<typeof automationFiltersSchema>;
+export type AutomationDestination = z.infer<typeof automationDestinationSchema>;
+export type AutomationRunStatus = z.infer<typeof automationRunStatusSchema>;
+export type Automation = z.infer<typeof automationSchema>;
+export type AutomationList = z.infer<typeof automationListSchema>;
+export type CreateAutomationRequest = z.infer<
+  typeof createAutomationRequestSchema
+>;
+export type UpdateAutomationRequest = z.infer<
+  typeof updateAutomationRequestSchema
+>;
+export type DeleteAutomationResponse = z.infer<
+  typeof deleteAutomationResponseSchema
+>;
+export type AutomationRun = z.infer<typeof automationRunSchema>;
+export type AutomationRunList = z.infer<typeof automationRunListSchema>;
+export type DeliveryChannelType = z.infer<typeof deliveryChannelTypeSchema>;
+export type DeliveryChannelStatus = z.infer<typeof deliveryChannelStatusSchema>;
+export type DeliveryChannel = z.infer<typeof deliveryChannelSchema>;
+export type DeliveryChannelList = z.infer<typeof deliveryChannelListSchema>;
+export type ConnectChannelRequest = z.infer<typeof connectChannelRequestSchema>;
+export type DisconnectChannelResponse = z.infer<
+  typeof disconnectChannelResponseSchema
+>;
+export type TestChannelResponse = z.infer<typeof testChannelResponseSchema>;
 
 export const skillManifestSchema = z.object({
   id: z.string().min(1),
@@ -650,6 +676,143 @@ export const updateWatchlistItemRequestSchema = z.object({
 
 export const deleteWatchlistItemResponseSchema = z.object({
   deleted: z.literal(true),
+});
+
+// ---------------------------------------------------------------------------
+// Automations
+// ---------------------------------------------------------------------------
+
+export const automationScheduleSchema = z.object({
+  time: z.string().regex(/^\d{2}:\d{2}$/),
+  days: z.array(
+    z.enum([
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday",
+    ]),
+  ),
+  timezone: z.string().min(1),
+});
+
+export const automationFiltersSchema = z.object({
+  watchlistOnly: z.boolean().optional(),
+  sectorFocus: z.array(z.string().min(1)).optional(),
+});
+
+export const automationDestinationSchema = z.enum([
+  "library",
+  "telegram",
+  "discord",
+  "slack",
+  "email",
+]);
+
+export const automationRunStatusSchema = z.enum([
+  "success",
+  "failure",
+  "running",
+]);
+
+export const automationSchema = z.object({
+  id: z.string().min(1),
+  cardId: z.string().min(1),
+  cardTitle: z.string().min(1),
+  schedule: automationScheduleSchema,
+  destination: automationDestinationSchema,
+  filters: automationFiltersSchema.nullable().optional(),
+  enabled: z.boolean(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  lastRunAt: z.string().nullable(),
+  lastRunStatus: automationRunStatusSchema.nullable(),
+});
+
+export const automationListSchema = z.object({
+  automations: z.array(automationSchema),
+});
+
+export const createAutomationRequestSchema = z.object({
+  cardId: z.string().min(1),
+  cardTitle: z.string().min(1),
+  schedule: automationScheduleSchema,
+  destination: automationDestinationSchema,
+  filters: automationFiltersSchema.nullable().optional(),
+  enabled: z.boolean().default(true),
+});
+
+export const updateAutomationRequestSchema = z.object({
+  cardTitle: z.string().min(1).optional(),
+  schedule: automationScheduleSchema.optional(),
+  destination: automationDestinationSchema.optional(),
+  filters: automationFiltersSchema.nullable().optional(),
+  enabled: z.boolean().optional(),
+});
+
+export const deleteAutomationResponseSchema = z.object({
+  deleted: z.literal(true),
+});
+
+export const automationRunSchema = z.object({
+  id: z.string().min(1),
+  automationId: z.string().min(1),
+  startedAt: z.string().min(1),
+  completedAt: z.string().nullable(),
+  status: automationRunStatusSchema,
+  duration: z.number().nullable(),
+  outputReportId: z.string().nullable(),
+});
+
+export const automationRunListSchema = z.object({
+  runs: z.array(automationRunSchema),
+});
+
+// ---------------------------------------------------------------------------
+// Delivery Channels
+// ---------------------------------------------------------------------------
+
+export const deliveryChannelTypeSchema = z.enum([
+  "telegram",
+  "discord",
+  "slack",
+  "email",
+]);
+
+export const deliveryChannelStatusSchema = z.enum([
+  "connected",
+  "disconnected",
+  "error",
+]);
+
+export const deliveryChannelSchema = z.object({
+  id: z.string().min(1),
+  type: deliveryChannelTypeSchema,
+  label: z.string().min(1),
+  config: z.record(z.string(), z.unknown()),
+  connectedAt: z.string().min(1),
+  status: deliveryChannelStatusSchema,
+});
+
+export const deliveryChannelListSchema = z.object({
+  channels: z.array(deliveryChannelSchema),
+});
+
+export const connectChannelRequestSchema = z.object({
+  type: deliveryChannelTypeSchema,
+  label: z.string().min(1),
+  config: z.record(z.string(), z.unknown()),
+});
+
+export const disconnectChannelResponseSchema = z.object({
+  deleted: z.literal(true),
+});
+
+export const testChannelResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string().min(1),
 });
 
 export const appManifest = appManifestSchema.parse(appManifestJson);

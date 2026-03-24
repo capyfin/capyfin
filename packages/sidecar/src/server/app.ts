@@ -4,8 +4,10 @@ import { cors } from "hono/cors";
 import { Hono } from "hono";
 import { createAgentRoutes } from "./routes/agents.ts";
 import { createAuthRoutes } from "./routes/auth.ts";
+import { createAutomationRoutes } from "./routes/automations.ts";
 import { createChatRoutes } from "./routes/chat.ts";
 import { createDataProviderRoutes } from "./routes/data-providers.ts";
+import { createDeliveryChannelRoutes } from "./routes/delivery-channels.ts";
 import { createGlobalRoutes } from "./routes/global.ts";
 import { createLibraryRoutes } from "./routes/library.ts";
 import { createPortfolioRoutes } from "./routes/portfolio.ts";
@@ -75,7 +77,9 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
 
   app.route("/agents", createAgentRoutes(runtime));
   app.route("/agents", createPortfolioRoutes(runtime));
+  app.route("/automations", createAutomationRoutes(runtime));
   app.route("/chat", createChatRoutes(runtime));
+  app.route("/delivery-channels", createDeliveryChannelRoutes(runtime));
   app.route("/global", createGlobalRoutes(runtime));
   app.route("/auth", createAuthRoutes(runtime));
   app.route("/library", createLibraryRoutes(runtime));

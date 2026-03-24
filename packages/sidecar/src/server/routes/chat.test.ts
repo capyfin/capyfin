@@ -6,9 +6,11 @@ void test("chat routes expose bootstrap and stream endpoints", async () => {
   let streamed = false;
   const app = createChatRoutes(
     {
+      automationService: {} as never,
       authSessions: {} as never,
       authService: {} as never,
       dataProviderService: {} as never,
+      deliveryChannelService: {} as never,
       config: {
         hostname: "127.0.0.1",
         password: "password",
@@ -105,9 +107,11 @@ void test("chat routes normalize plain string messages from the transport", asyn
   let streamed = false;
   const app = createChatRoutes(
     {
+      automationService: {} as never,
       authSessions: {} as never,
       authService: {} as never,
       dataProviderService: {} as never,
+      deliveryChannelService: {} as never,
       config: {
         hostname: "127.0.0.1",
         password: "password",

@@ -76,11 +76,33 @@ import {
   type AddWatchlistItemRequest,
   type UpdateWatchlistItemRequest,
   type DeleteWatchlistItemResponse,
+  type Automation,
+  type AutomationList,
+  type CreateAutomationRequest,
+  type UpdateAutomationRequest,
+  type DeleteAutomationResponse,
+  type AutomationRunList,
+  type DeliveryChannel,
+  type DeliveryChannelList,
+  type ConnectChannelRequest,
+  type DisconnectChannelResponse,
+  type TestChannelResponse,
   watchlistListSchema,
   watchlistItemSchema,
   addWatchlistItemRequestSchema,
   updateWatchlistItemRequestSchema,
   deleteWatchlistItemResponseSchema,
+  automationListSchema,
+  automationSchema,
+  createAutomationRequestSchema,
+  updateAutomationRequestSchema,
+  deleteAutomationResponseSchema,
+  automationRunListSchema,
+  deliveryChannelListSchema,
+  deliveryChannelSchema,
+  connectChannelRequestSchema,
+  disconnectChannelResponseSchema,
+  testChannelResponseSchema,
 } from "@capyfin/contracts";
 
 export class SidecarClient {
@@ -487,6 +509,82 @@ export class SidecarClient {
     return deleteWatchlistItemResponseSchema.parse(
       await this.request(`/watchlist/${encodeURIComponent(ticker)}`, {
         method: "DELETE",
+      }),
+    );
+  }
+
+  async listAutomations(): Promise<AutomationList> {
+    return automationListSchema.parse(await this.request("/automations"));
+  }
+
+  async createAutomation(input: CreateAutomationRequest): Promise<Automation> {
+    return automationSchema.parse(
+      await this.request("/automations", {
+        body: JSON.stringify(createAutomationRequestSchema.parse(input)),
+        method: "POST",
+      }),
+    );
+  }
+
+  async updateAutomation(
+    id: string,
+    input: UpdateAutomationRequest,
+  ): Promise<Automation> {
+    return automationSchema.parse(
+      await this.request(`/automations/${encodeURIComponent(id)}`, {
+        body: JSON.stringify(updateAutomationRequestSchema.parse(input)),
+        method: "PUT",
+      }),
+    );
+  }
+
+  async deleteAutomation(id: string): Promise<DeleteAutomationResponse> {
+    return deleteAutomationResponseSchema.parse(
+      await this.request(`/automations/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      }),
+    );
+  }
+
+  async listAutomationRuns(automationId: string): Promise<AutomationRunList> {
+    return automationRunListSchema.parse(
+      await this.request(
+        `/automations/${encodeURIComponent(automationId)}/runs`,
+      ),
+    );
+  }
+
+  async listDeliveryChannels(): Promise<DeliveryChannelList> {
+    return deliveryChannelListSchema.parse(
+      await this.request("/delivery-channels"),
+    );
+  }
+
+  async connectDeliveryChannel(
+    input: ConnectChannelRequest,
+  ): Promise<DeliveryChannel> {
+    return deliveryChannelSchema.parse(
+      await this.request("/delivery-channels", {
+        body: JSON.stringify(connectChannelRequestSchema.parse(input)),
+        method: "POST",
+      }),
+    );
+  }
+
+  async disconnectDeliveryChannel(
+    id: string,
+  ): Promise<DisconnectChannelResponse> {
+    return disconnectChannelResponseSchema.parse(
+      await this.request(`/delivery-channels/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      }),
+    );
+  }
+
+  async testDeliveryChannel(id: string): Promise<TestChannelResponse> {
+    return testChannelResponseSchema.parse(
+      await this.request(`/delivery-channels/${encodeURIComponent(id)}/test`, {
+        method: "POST",
       }),
     );
   }

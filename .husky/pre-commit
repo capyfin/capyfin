@@ -9,4 +9,5 @@ fi
 
 pnpm run lint
 pnpm run typecheck
-pnpm run format:check
+pnpm run format
+git add -u

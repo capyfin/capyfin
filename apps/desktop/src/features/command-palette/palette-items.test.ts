@@ -74,6 +74,17 @@ void test("action items include Deep Dive and Fair Value", () => {
   assert.ok(labels.includes("Fair Value"), "Should include Fair Value");
 });
 
+void test("action items include Earnings Momentum, Smart Money, and Income Finder", () => {
+  const items = getActionItems();
+  const labels = items.map((i) => i.label);
+  assert.ok(
+    labels.includes("Earnings Momentum"),
+    "Should include Earnings Momentum",
+  );
+  assert.ok(labels.includes("Smart Money"), "Should include Smart Money");
+  assert.ok(labels.includes("Income Finder"), "Should include Income Finder");
+});
+
 void test("action items have unique ids", () => {
   const items = getActionItems();
   const ids = items.map((i) => i.id);

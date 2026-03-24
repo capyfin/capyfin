@@ -96,6 +96,41 @@ export const actionCards: ActionCard[] = [
         "Analyze the following tickers for breakout setups: {tickers}. For each ticker evaluate VCP patterns, cup-and-handle formations, flat bases, and ascending bases. Score each candidate 0-100 using the VCP criteria framework. Present a table with ticker, pattern type, score, current price vs. pivot point, volume profile, sector, and stage. Include invalidation levels for each setup.\n\n💡 Connect FMP in Settings → Providers to unlock full market scanning with the screener API. It's free.",
     },
   },
+  {
+    id: "earnings-momentum",
+    title: "Earnings Momentum",
+    promise: "Post-earnings drift candidates showing accumulation after a beat",
+    icon: "Zap",
+    category: "setups",
+    input: "none",
+    skills: ["earnings-momentum"],
+    persona: "technical-analyst",
+    prompt:
+      "Scan for post-earnings drift candidates: stocks that beat earnings estimates and are showing accumulation (rising volume, institutional buying) in the days/weeks following the report. Rank by drift potential using earnings surprise magnitude, volume confirmation, relative strength, and institutional activity. Present a table of 5-10 candidates with ticker, earnings date, EPS surprise %, revenue surprise %, post-earnings volume ratio, price change since report, RS rating, and drift score (0-100). Include entry zones and stop levels.",
+    tier0Override: {
+      input: "tickers",
+      prompt:
+        "Analyze the following tickers for post-earnings drift potential: {tickers}. For each ticker evaluate earnings surprise magnitude, post-earnings volume confirmation, relative strength, and institutional accumulation patterns. Rank by drift potential and present a table with ticker, earnings date, EPS surprise %, revenue surprise %, post-earnings volume ratio, price change since report, RS rating, and drift score (0-100). Include entry zones and stop levels.\n\n💡 Connect FMP in Settings → Providers to unlock full market scanning with the screener API. It's free.",
+    },
+  },
+  {
+    id: "smart-money",
+    title: "Smart Money",
+    promise:
+      "Insider buying clusters, institutional changes, and unusual accumulation",
+    icon: "Eye",
+    category: "setups",
+    input: "none",
+    skills: ["smart-money"],
+    persona: "fundamental-analyst",
+    prompt:
+      "Scan for smart money signals: insider buying clusters (multiple insiders buying within 30 days), significant institutional ownership changes (13F filings), and unusual accumulation patterns (volume spikes with price stability). Present an ownership flow report with 5-10 candidates showing ticker, insider transaction summary, institutional ownership change, unusual volume signals, sector, market cap, and a conviction score (0-100). Highlight cluster buys where 3+ insiders purchased within the same window.",
+    tier0Override: {
+      input: "ticker",
+      prompt:
+        "Analyze smart money activity for {ticker}. Cover insider buying/selling activity (last 90 days), institutional ownership changes (recent 13F filings), and unusual accumulation or distribution patterns. Present an ownership flow report with insider transaction details, institutional holder changes, volume analysis, and a conviction score (0-100). Highlight any cluster buys or significant position changes.\n\n💡 Connect FMP in Settings → Providers to unlock full market scanning with the screener API. It's free.",
+    },
+  },
 ];
 
 export const portfolioCards: ActionCard[] = [
@@ -140,6 +175,27 @@ export const portfolioCards: ActionCard[] = [
   },
 ];
 
+export const incomeCards: ActionCard[] = [
+  {
+    id: "income-finder",
+    title: "Income Finder",
+    promise:
+      "Dividend growers on pullback, ranked by yield, safety, and growth",
+    icon: "DollarSign",
+    category: "income",
+    input: "none",
+    skills: ["income-finder"],
+    persona: "income-analyst",
+    prompt:
+      "Scan for high-quality dividend income opportunities: dividend growers currently on pullback or trading near support. Rank candidates by a composite score combining dividend yield, payout safety (payout ratio, free cash flow coverage), dividend growth rate (5-year CAGR), and current technical setup (proximity to support, RSI). Present a table of 5-10 candidates with ticker, dividend yield, 5-year dividend growth rate, payout ratio, FCF coverage, years of consecutive increases, current price vs. 52-week range, and income score (0-100). Include ex-dividend dates where upcoming.",
+    tier0Override: {
+      input: "tickers",
+      prompt:
+        "Analyze the following tickers as income/dividend opportunities: {tickers}. For each ticker evaluate dividend yield, payout safety (payout ratio, free cash flow coverage), dividend growth rate (5-year CAGR), and current technical setup. Present a table with ticker, dividend yield, 5-year dividend growth rate, payout ratio, FCF coverage, years of consecutive increases, current price vs. 52-week range, and income score (0-100). Include ex-dividend dates where upcoming.\n\n💡 Connect FMP in Settings → Providers to unlock full market scanning with the screener API. It's free.",
+    },
+  },
+];
+
 export const cardSections: CardSection[] = [
   {
     id: "today",
@@ -155,6 +211,11 @@ export const cardSections: CardSection[] = [
     id: "setups",
     title: "Find Setups",
     cards: actionCards.filter((c) => c.category === "setups"),
+  },
+  {
+    id: "income",
+    title: "Income",
+    cards: incomeCards,
   },
   {
     id: "portfolio",

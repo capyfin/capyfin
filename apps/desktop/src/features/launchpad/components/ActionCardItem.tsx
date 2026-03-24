@@ -3,11 +3,14 @@ import {
   Activity,
   ArrowRight,
   Calculator,
+  DollarSign,
+  Eye,
   FileBarChart,
   Newspaper,
   Scale,
   Search,
   TrendingUp,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -25,6 +28,9 @@ const iconMap: Record<string, LucideIcon> = {
   FileBarChart,
   Scale,
   TrendingUp,
+  Zap,
+  Eye,
+  DollarSign,
 };
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
@@ -32,6 +38,7 @@ const categoryAccent: Record<ActionCategory, { bg: string; text: string }> = {
   today: { bg: "bg-amber-500/8", text: "text-amber-500" },
   research: { bg: "bg-blue-500/8", text: "text-blue-500" },
   setups: { bg: "bg-emerald-500/8", text: "text-emerald-500" },
+  income: { bg: "bg-violet-500/8", text: "text-violet-500" },
   portfolio: { bg: "bg-amber-500/8", text: "text-amber-500" },
 };
 

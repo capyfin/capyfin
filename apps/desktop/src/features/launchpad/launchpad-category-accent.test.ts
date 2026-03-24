@@ -14,7 +14,7 @@ function readComponent(filename: string): string {
 // Category-specific accent colors for icon containers
 // ---------------------------------------------------------------------------
 
-void test("ActionCardItem defines a categoryAccent mapping with today, research, and setups", () => {
+void test("ActionCardItem defines a categoryAccent mapping with today, research, setups, and income", () => {
   const src = readComponent("ActionCardItem.tsx");
 
   assert.ok(
@@ -22,7 +22,7 @@ void test("ActionCardItem defines a categoryAccent mapping with today, research,
     "ActionCardItem must define a categoryAccent mapping",
   );
 
-  // Must have entries for all three categories
+  // Must have entries for all categories
   assert.match(src, /today/, "categoryAccent must include 'today' category");
   assert.match(
     src,
@@ -30,6 +30,7 @@ void test("ActionCardItem defines a categoryAccent mapping with today, research,
     "categoryAccent must include 'research' category",
   );
   assert.match(src, /setups/, "categoryAccent must include 'setups' category");
+  assert.match(src, /income/, "categoryAccent must include 'income' category");
 });
 
 void test("today category uses amber accent color", () => {
@@ -69,6 +70,15 @@ void test("icon container uses category accent instead of static primary color",
       'className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary"',
     ),
     "Icon container must not use static bg-primary/8 text-primary — should use category accent",
+  );
+});
+
+void test("income category uses violet accent color", () => {
+  const src = readComponent("ActionCardItem.tsx");
+
+  assert.ok(
+    src.includes("violet"),
+    "income category must use violet color for icons",
   );
 });
 

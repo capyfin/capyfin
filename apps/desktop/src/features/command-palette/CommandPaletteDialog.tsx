@@ -10,6 +10,8 @@ import {
   NewspaperIcon,
   ActivityIcon,
   CalculatorIcon,
+  DollarSignIcon,
+  EyeIcon,
   FileBarChart2Icon,
   ScaleIcon,
   TrendingUpIcon,
@@ -35,6 +37,7 @@ import {
 import type { ActionCard } from "@/features/launchpad/types";
 import {
   actionCards,
+  incomeCards,
   portfolioCards,
 } from "@/features/launchpad/card-registry";
 
@@ -62,6 +65,9 @@ const CARD_ICON_MAP: Record<
   FileBarChart: FileBarChart2Icon,
   Scale: ScaleIcon,
   TrendingUp: TrendingUpIcon,
+  Zap: ZapIcon,
+  Eye: EyeIcon,
+  DollarSign: DollarSignIcon,
   BarChart3: BarChart3Icon,
   GitCompareArrows: GitCompareArrowsIcon,
 };
@@ -88,7 +94,10 @@ export function CommandPaletteDialog({
   const actionItems = useMemo(() => getActionItems(), []);
   const sessionItems = useMemo(() => getSessionItems(sessions), [sessions]);
 
-  const allCards = useMemo(() => [...actionCards, ...portfolioCards], []);
+  const allCards = useMemo(
+    () => [...actionCards, ...incomeCards, ...portfolioCards],
+    [],
+  );
 
   const handleSelect = useCallback(
     (value: string) => {

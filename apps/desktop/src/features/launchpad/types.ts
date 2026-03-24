@@ -1,4 +1,9 @@
-export type ActionCategory = "today" | "research" | "setups" | "portfolio";
+export type ActionCategory =
+  | "today"
+  | "research"
+  | "setups"
+  | "income"
+  | "portfolio";
 
 export type CardInputMode =
   | "none"

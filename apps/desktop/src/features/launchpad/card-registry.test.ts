@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { actionCards, cardSections } from "./card-registry";
+import { actionCards, incomeCards, cardSections } from "./card-registry";
 
 // ---------------------------------------------------------------------------
 // Card registry — shape & completeness
 // ---------------------------------------------------------------------------
 
-void test("actionCards exports exactly 7 cards", () => {
-  assert.equal(actionCards.length, 7);
+void test("actionCards exports exactly 9 cards", () => {
+  assert.equal(actionCards.length, 9);
 });
 
 void test("every card has a unique id", () => {
@@ -134,8 +134,73 @@ void test("Find Setups section contains Breakout Setups", () => {
   assert.ok(ids.includes("breakout-setups"));
 });
 
+void test("Earnings Momentum card has correct metadata", () => {
+  const card = actionCards.find((c) => c.id === "earnings-momentum");
+  assert.ok(card, "earnings-momentum card not found");
+  assert.equal(card.category, "setups");
+  assert.equal(card.input, "none");
+  assert.deepEqual(card.skills, ["earnings-momentum"]);
+  assert.equal(card.persona, "technical-analyst");
+});
+
+void test("Smart Money card has correct metadata", () => {
+  const card = actionCards.find((c) => c.id === "smart-money");
+  assert.ok(card, "smart-money card not found");
+  assert.equal(card.category, "setups");
+  assert.equal(card.input, "none");
+  assert.deepEqual(card.skills, ["smart-money"]);
+  assert.equal(card.persona, "fundamental-analyst");
+});
+
+void test("Find Setups section contains Earnings Momentum and Smart Money", () => {
+  const setups = cardSections.find((s) => s.id === "setups");
+  assert.ok(setups, "setups section not found");
+  const ids = setups.cards.map((c) => c.id);
+  assert.ok(ids.includes("earnings-momentum"), "Missing earnings-momentum");
+  assert.ok(ids.includes("smart-money"), "Missing smart-money");
+});
+
+// ---------------------------------------------------------------------------
+// Income cards
+// ---------------------------------------------------------------------------
+
+void test("incomeCards exports exactly 1 card", () => {
+  assert.equal(incomeCards.length, 1);
+});
+
+void test("Income Finder card has correct metadata", () => {
+  const card = incomeCards.find((c) => c.id === "income-finder");
+  assert.ok(card, "income-finder card not found");
+  assert.equal(card.category, "income");
+  assert.equal(card.input, "none");
+  assert.deepEqual(card.skills, ["income-finder"]);
+  assert.equal(card.persona, "income-analyst");
+});
+
+void test("Income section exists between Find Setups and Portfolio", () => {
+  const sectionIds = cardSections.map((s) => s.id);
+  const setupsIdx = sectionIds.indexOf("setups");
+  const incomeIdx = sectionIds.indexOf("income");
+  const portfolioIdx = sectionIds.indexOf("portfolio");
+  assert.ok(incomeIdx > setupsIdx, "Income should come after Find Setups");
+  assert.ok(incomeIdx < portfolioIdx, "Income should come before Portfolio");
+});
+
+void test("Income section contains Income Finder", () => {
+  const income = cardSections.find((s) => s.id === "income");
+  assert.ok(income, "income section not found");
+  assert.equal(income.title, "Income");
+  const ids = income.cards.map((c) => c.id);
+  assert.ok(ids.includes("income-finder"));
+});
+
+void test("cardSections exports 5 sections", () => {
+  assert.equal(cardSections.length, 5);
+});
+
 void test("no card exposes skill IDs, persona names, or prompt text to the user-facing fields", () => {
-  for (const card of actionCards) {
+  const allCards = [...actionCards, ...incomeCards];
+  for (const card of allCards) {
     assert.ok(
       !card.title.includes("SKILL"),
       `card ${card.id} title exposes internals`,

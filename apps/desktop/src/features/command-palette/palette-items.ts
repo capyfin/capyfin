@@ -2,6 +2,7 @@ import type { AgentSession } from "@capyfin/contracts";
 import { primaryNavigation } from "@/app/config/navigation";
 import {
   actionCards,
+  incomeCards,
   portfolioCards,
 } from "@/features/launchpad/card-registry";
 
@@ -28,7 +29,7 @@ export function getNavigationItems(): PaletteItem[] {
 }
 
 export function getActionItems(): PaletteItem[] {
-  return [...actionCards, ...portfolioCards].map((card) => ({
+  return [...actionCards, ...incomeCards, ...portfolioCards].map((card) => ({
     id: `action-${card.id}`,
     label: card.title,
     category: "Actions" as const,

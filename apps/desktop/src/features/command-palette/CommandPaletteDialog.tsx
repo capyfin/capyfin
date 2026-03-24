@@ -153,7 +153,9 @@ export function CommandPaletteDialog({
                   onSelect={handleSelect}
                 >
                   {Icon ? (
-                    <Icon className="size-4 text-muted-foreground" />
+                    <div className="flex size-6 items-center justify-center rounded-md bg-muted/80">
+                      <Icon className="size-3.5 text-muted-foreground" />
+                    </div>
                   ) : null}
                   <span>{item.label}</span>
                 </CommandItem>
@@ -172,11 +174,13 @@ export function CommandPaletteDialog({
                   keywords={[item.label, card?.promise ?? ""]}
                   onSelect={handleSelect}
                 >
-                  {Icon ? (
-                    <Icon className="size-4 text-muted-foreground" />
-                  ) : (
-                    <PlayIcon className="size-4 text-muted-foreground" />
-                  )}
+                  <div className="flex size-6 items-center justify-center rounded-md bg-primary/8">
+                    {Icon ? (
+                      <Icon className="size-3.5 text-primary" />
+                    ) : (
+                      <PlayIcon className="size-3.5 text-primary" />
+                    )}
+                  </div>
                   <span>{item.label}</span>
                 </CommandItem>
               );
@@ -192,7 +196,9 @@ export function CommandPaletteDialog({
                   keywords={[item.label]}
                   onSelect={handleSelect}
                 >
-                  <MessageSquareIcon className="size-4 text-muted-foreground" />
+                  <div className="flex size-6 items-center justify-center rounded-md bg-blue-500/8">
+                    <MessageSquareIcon className="size-3.5 text-blue-500" />
+                  </div>
                   <span>{item.label}</span>
                 </CommandItem>
               ))}

@@ -178,18 +178,22 @@ export const ReasoningTrigger = memo(
     return (
       <CollapsibleTrigger
         className={cn(
-          "flex w-full items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground",
+          "flex w-fit items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground",
+          isStreaming &&
+            "bg-primary/[0.04] text-primary/80 dark:bg-primary/[0.06]",
           className,
         )}
         {...props}
       >
         {children ?? (
           <>
-            <BrainIcon className="size-4" />
+            <BrainIcon
+              className={cn("size-4", isStreaming && "animate-pulse")}
+            />
             {getThinkingMessage(isStreaming, duration)}
             <ChevronDownIcon
               className={cn(
-                "size-4 transition-transform",
+                "size-3.5 transition-transform",
                 isOpen ? "rotate-180" : "rotate-0",
               )}
             />
@@ -212,13 +216,15 @@ export const ReasoningContent = memo(
   ({ className, children, ...props }: ReasoningContentProps) => (
     <CollapsibleContent
       className={cn(
-        "mt-4 text-sm",
+        "mt-3 text-sm",
         "data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-muted-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in",
         className,
       )}
       {...props}
     >
-      <Streamdown plugins={streamdownPlugins}>{children}</Streamdown>
+      <div className="border-l-2 border-border/60 pl-4">
+        <Streamdown plugins={streamdownPlugins}>{children}</Streamdown>
+      </div>
     </CollapsibleContent>
   ),
 );

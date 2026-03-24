@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
+  AGENTS_PAGE_SUBTITLE,
   FALLBACK_AGENT_DESCRIPTION,
+  SINGLE_AGENT_HINT,
   formatAgentCount,
   formatModelId,
   formatProviderId,
@@ -296,6 +298,10 @@ export function AgentsWorkspace({
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4">
+      <p className="text-[13px] leading-relaxed text-muted-foreground">
+        {AGENTS_PAGE_SUBTITLE}
+      </p>
+
       {errorMessage ? (
         <div className="rounded-lg border border-warning/20 bg-warning/8 px-3.5 py-2.5 text-[13px] text-warning-foreground">
           {errorMessage}
@@ -480,10 +486,10 @@ export function AgentsWorkspace({
                 <article
                   key={agent.id}
                   className={cn(
-                    "grid gap-3 border-t border-border/60 px-4 py-3.5 transition-colors hover:bg-muted/20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.8fr)_auto] lg:items-center lg:px-5",
+                    "grid gap-4 border-t border-border/60 px-4 py-3.5 transition-colors hover:bg-muted/20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-6 lg:px-5",
                   )}
                 >
-                  <div className="space-y-0.5">
+                  <div className="max-w-md space-y-0.5">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <h3 className="text-[13px] font-medium text-foreground">
                         {agent.name}
@@ -501,7 +507,7 @@ export function AgentsWorkspace({
                     </p>
                   </div>
 
-                  <div className="grid gap-2.5 text-[12px] text-muted-foreground sm:grid-cols-2 lg:grid-cols-1">
+                  <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-4 text-[12px] text-muted-foreground">
                     <div className="grid gap-1">
                       <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
                         Provider
@@ -548,21 +554,27 @@ export function AgentsWorkspace({
                         ) : null}
                       </div>
                     </label>
-                  </div>
 
-                  <div className="grid gap-1 text-right">
-                    <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
-                      Updated
-                    </span>
-                    <span className="text-[12px] text-muted-foreground/60">
-                      {formatDate(agent.updatedAt)}
-                    </span>
+                    <div className="grid gap-1 text-right">
+                      <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+                        Updated
+                      </span>
+                      <span className="text-[12px] text-muted-foreground/60">
+                        {formatDate(agent.updatedAt)}
+                      </span>
+                    </div>
                   </div>
                 </article>
               );
             })
           )}
         </div>
+
+        {!isLoading && agents.length === 1 ? (
+          <p className="px-4 pb-3.5 text-[12px] text-muted-foreground lg:px-5">
+            {SINGLE_AGENT_HINT}
+          </p>
+        ) : null}
       </section>
     </div>
   );

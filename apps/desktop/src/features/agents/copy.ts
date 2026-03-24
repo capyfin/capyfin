@@ -1,4 +1,16 @@
 /**
+ * Page-level subtitle describing what agents are.
+ */
+export const AGENTS_PAGE_SUBTITLE =
+  "Agents handle your research requests. Each agent uses a specific AI model and provider.";
+
+/**
+ * Hint text shown when only one agent exists.
+ */
+export const SINGLE_AGENT_HINT =
+  "CapyFin comes with one built-in agent. More agents may be added in the future.";
+
+/**
  * Formats the agent count subtitle with correct singular/plural grammar.
  */
 export function formatAgentCount(count: number): string {

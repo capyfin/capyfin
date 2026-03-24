@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  AGENTS_PAGE_SUBTITLE,
   FALLBACK_AGENT_DESCRIPTION,
+  SINGLE_AGENT_HINT,
   formatAgentCount,
   formatModelId,
   formatProviderId,
@@ -380,4 +382,40 @@ void test("getModelDisplayName uses catalog over formatting for matching model",
     getModelDisplayName("my-model", catalogWithCustomLabel),
     "My Special Model",
   );
+});
+
+// --- AGENTS_PAGE_SUBTITLE tests ---
+
+void test("AGENTS_PAGE_SUBTITLE describes what agents do", () => {
+  assert.ok(
+    AGENTS_PAGE_SUBTITLE.includes("research"),
+    "Subtitle should mention research",
+  );
+  assert.ok(
+    AGENTS_PAGE_SUBTITLE.includes("model"),
+    "Subtitle should mention model",
+  );
+});
+
+void test("AGENTS_PAGE_SUBTITLE is a meaningful sentence", () => {
+  assert.ok(AGENTS_PAGE_SUBTITLE.length > 30);
+});
+
+// --- SINGLE_AGENT_HINT tests ---
+
+void test("SINGLE_AGENT_HINT mentions built-in agent", () => {
+  assert.ok(
+    SINGLE_AGENT_HINT.includes("built-in"),
+    "Hint should mention built-in agent",
+  );
+});
+
+void test("SINGLE_AGENT_HINT is not a call to action", () => {
+  const ctaPhrases = ["create", "add", "click", "get started"];
+  for (const phrase of ctaPhrases) {
+    assert.ok(
+      !SINGLE_AGENT_HINT.toLowerCase().includes(phrase),
+      `Hint should not contain CTA phrase "${phrase}"`,
+    );
+  }
 });

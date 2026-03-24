@@ -13,6 +13,11 @@ import { WatchlistTable } from "./WatchlistTable";
 export const WATCHLIST_EMPTY_TEXT =
   "Your watchlist is empty. Add tickers and assets to track them here.";
 
+export const WATCHLIST_NEAR_EMPTY_TEXT =
+  "Add more tickers to build your watchlist — track price moves, run analyses, and set up alerts.";
+
+export const WATCHLIST_NEAR_EMPTY_THRESHOLD = 5;
+
 type FilterValue = "all" | "position" | "watching";
 
 interface WatchlistWorkspaceProps {
@@ -173,6 +178,12 @@ export function WatchlistWorkspace({ client }: WatchlistWorkspaceProps) {
               setDeleteTarget(ticker);
             }}
           />
+
+          {items.length < WATCHLIST_NEAR_EMPTY_THRESHOLD && (
+            <p className="text-center text-sm text-muted-foreground py-8">
+              {WATCHLIST_NEAR_EMPTY_TEXT}
+            </p>
+          )}
         </>
       )}
 

@@ -5,6 +5,7 @@ import {
   StickyNoteIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/EmptyState";
 
 export const REFERENCES_EMPTY_TEXT =
   "Files and documentation shared in chat will appear here.";
@@ -37,21 +38,14 @@ export function BrainKnowledgeWorkspace({
 
         <div className="border-t border-blue-400/20 px-4 py-8 lg:px-5">
           {references.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-5 py-6">
-              <div className="relative">
-                <div className="absolute -inset-3 rounded-2xl bg-blue-500/[0.06] blur-xl dark:bg-blue-500/[0.08]" />
-                <div className="relative flex size-14 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/[0.08] dark:bg-blue-500/[0.1]">
-                  <BookOpenIcon className="size-6 text-blue-500" />
-                </div>
-              </div>
-              <div className="text-center">
-                <h3 className="text-[17px] font-semibold text-foreground">
-                  No references yet
-                </h3>
-                <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
-                  {REFERENCES_EMPTY_TEXT}
-                </p>
-              </div>
+            <EmptyState
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
+              icon={BookOpenIcon}
+              iconColor="blue"
+              heading="No references yet"
+              description={REFERENCES_EMPTY_TEXT}
+              className="flex flex-col items-center justify-center gap-5 py-6"
+            >
               <Button
                 variant="outline"
                 size="sm"
@@ -62,7 +56,7 @@ export function BrainKnowledgeWorkspace({
                 <MessageSquareIcon className="size-3.5" />
                 Go to Chat
               </Button>
-            </div>
+            </EmptyState>
           ) : (
             <ul className="space-y-2">
               {references.map((ref, index) => (
@@ -83,21 +77,14 @@ export function BrainKnowledgeWorkspace({
 
         <div className="border-t border-amber-400/20 px-4 py-8 lg:px-5">
           {notes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-5 py-6">
-              <div className="relative">
-                <div className="absolute -inset-3 rounded-2xl bg-amber-500/[0.06] blur-xl dark:bg-amber-500/[0.08]" />
-                <div className="relative flex size-14 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-500/[0.08] dark:bg-amber-500/[0.1]">
-                  <StickyNoteIcon className="size-6 text-amber-500" />
-                </div>
-              </div>
-              <div className="text-center">
-                <h3 className="text-[17px] font-semibold text-foreground">
-                  No notes yet
-                </h3>
-                <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
-                  {NOTES_EMPTY_TEXT}
-                </p>
-              </div>
+            <EmptyState
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
+              icon={StickyNoteIcon}
+              iconColor="amber"
+              heading="No notes yet"
+              description={NOTES_EMPTY_TEXT}
+              className="flex flex-col items-center justify-center gap-5 py-6"
+            >
               <Button
                 variant="outline"
                 size="sm"
@@ -108,7 +95,7 @@ export function BrainKnowledgeWorkspace({
                 <RocketIcon className="size-3.5" />
                 Start Research
               </Button>
-            </div>
+            </EmptyState>
           ) : (
             <ul className="space-y-2">
               {notes.map((note, index) => (

@@ -100,20 +100,23 @@ void test("notes empty config CTA links to #launchpad", () => {
 // Component file assertions
 // ---------------------------------------------------------------------------
 
-void test("BrainKnowledgeWorkspace renders glow-icon pattern for references", () => {
+void test("BrainKnowledgeWorkspace uses shared EmptyState for references (blue)", () => {
   const src = readComponent("BrainKnowledgeWorkspace.tsx");
-  assert.ok(src.includes("blur-xl"), "Should use blur-xl for glow effect");
   assert.ok(
-    src.includes("bg-blue-500/[0.06]") || src.includes("bg-blue-500/[0.08]"),
-    "Should use blue-500 glow backdrop",
+    src.includes("@/components/EmptyState"),
+    "Should import shared EmptyState component",
+  );
+  assert.ok(
+    src.includes("<EmptyState") && src.includes('"blue"'),
+    "Should use EmptyState with blue iconColor for references",
   );
 });
 
-void test("BrainKnowledgeWorkspace renders glow-icon pattern for notes", () => {
+void test("BrainKnowledgeWorkspace uses shared EmptyState for notes (amber)", () => {
   const src = readComponent("BrainKnowledgeWorkspace.tsx");
   assert.ok(
-    src.includes("bg-amber-500/[0.06]") || src.includes("bg-amber-500/[0.08]"),
-    "Should use amber-500 glow backdrop",
+    src.includes("<EmptyState") && src.includes('"amber"'),
+    "Should use EmptyState with amber iconColor for notes",
   );
 });
 
@@ -139,10 +142,15 @@ void test("CTA buttons use outline variant", () => {
   );
 });
 
-void test("empty state headings use text-[17px] font-semibold", () => {
+void test("empty state headings are rendered by shared EmptyState component", () => {
   const src = readComponent("BrainKnowledgeWorkspace.tsx");
   assert.ok(
-    src.includes("text-[17px]") && src.includes("font-semibold"),
-    "Section headings should match the 17px semibold pattern",
+    src.includes("<EmptyState"),
+    "Should delegate heading rendering to shared EmptyState component",
+  );
+  // Section headers still use the section-level font-semibold
+  assert.ok(
+    src.includes("font-semibold"),
+    "Section headers should use font-semibold",
   );
 });

@@ -42,3 +42,14 @@ void test("WatchlistEmptyState renders with onAdd prop type", async () => {
   // Verify the component can be called (it's a valid React FC)
   assert.equal(mod.WatchlistEmptyState.length >= 0, true);
 });
+
+void test("WATCHLIST_NEAR_EMPTY_TEXT is a non-empty string", async () => {
+  const mod = await import("./components/WatchlistWorkspace");
+  assert.ok(typeof mod.WATCHLIST_NEAR_EMPTY_TEXT === "string");
+  assert.ok(mod.WATCHLIST_NEAR_EMPTY_TEXT.length > 0);
+});
+
+void test("WATCHLIST_NEAR_EMPTY_THRESHOLD is 5", async () => {
+  const mod = await import("./components/WatchlistWorkspace");
+  assert.equal(mod.WATCHLIST_NEAR_EMPTY_THRESHOLD, 5);
+});

@@ -1,29 +1,85 @@
-import {
-  MailIcon,
-  MessageCircleIcon,
-  MessageSquareIcon,
-  PhoneIcon,
-  SendIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import type { DeliveryChannel, DeliveryChannelType } from "@capyfin/contracts";
+import { LoaderCircleIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import type { SidecarClient } from "@/lib/sidecar/client";
+import { ChannelCard, CHANNEL_DEFINITIONS } from "./ChannelCard";
+import { ChannelConnectForm } from "./ChannelConnectForm";
 
-interface ChannelDefinition {
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
+interface DeliveryChannelsTabProps {
+  client: SidecarClient | null;
 }
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
-const CHANNELS: ChannelDefinition[] = [
-  { id: "telegram", label: "Telegram", icon: SendIcon },
-  { id: "discord", label: "Discord", icon: MessageSquareIcon },
-  { id: "slack", label: "Slack", icon: MessageCircleIcon },
-  { id: "whatsapp", label: "WhatsApp", icon: PhoneIcon },
-  { id: "email", label: "Email", icon: MailIcon },
-];
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+export function DeliveryChannelsTab({ client }: DeliveryChannelsTabProps) {
+  const [channels, setChannels] = useState<DeliveryChannel[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [connectType, setConnectType] = useState<DeliveryChannelType | null>(
+    null,
+  );
+  const [connectLabel, setConnectLabel] = useState("");
 
-export function DeliveryChannelsTab() {
+  const fetchChannels = useCallback(async () => {
+    if (!client) return;
+    try {
+      setIsLoading(true);
+      setError(null);
+      const result = await client.listDeliveryChannels();
+      setChannels(result.channels);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load channels");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
+  useEffect(() => {
+    void fetchChannels();
+  }, [fetchChannels]);
+
+  const handleConnect = useCallback(
+    async (type: DeliveryChannelType, config: Record<string, string>) => {
+      if (!client) return;
+      const def = CHANNEL_DEFINITIONS.find((d) => d.type === type);
+      await client.connectDeliveryChannel({
+        type,
+        label: def?.label ?? type,
+        config,
+      });
+      await fetchChannels();
+    },
+    [client, fetchChannels],
+  );
+
+  const handleDisconnect = useCallback(
+    async (id: string) => {
+      if (!client) return;
+      await client.disconnectDeliveryChannel(id);
+      await fetchChannels();
+    },
+    [client, fetchChannels],
+  );
+
+  const handleTest = useCallback(
+    async (id: string) => {
+      if (!client) throw new Error("No client");
+      return client.testDeliveryChannel(id);
+    },
+    [client],
+  );
+
+  const openConnectForm = useCallback(
+    (type: DeliveryChannelType, label: string) => {
+      setConnectType(type);
+      setConnectLabel(label);
+    },
+    [],
+  );
+
+  const closeConnectForm = useCallback(() => {
+    setConnectType(null);
+    setConnectLabel("");
+  }, []);
+
   return (
     <div className="flex flex-col gap-5" data-testid="delivery-channels-tab">
       <div>
@@ -36,41 +92,39 @@ export function DeliveryChannelsTab() {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        {CHANNELS.map((channel) => (
-          <div
-            key={channel.id}
-            className="flex items-center justify-between rounded-lg border border-border/60 bg-card p-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                <channel.icon className="size-4 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-[13px] font-medium text-foreground">
-                  {channel.label}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  Not connected
-                </p>
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-7 rounded-md text-[11px]"
-              disabled
-            >
-              Connect
-            </Button>
-          </div>
-        ))}
-      </div>
+      {isLoading && channels.length === 0 ? (
+        <div className="flex items-center justify-center py-8">
+          <LoaderCircleIcon className="size-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : error ? (
+        <p className="text-sm text-destructive">{error}</p>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {CHANNEL_DEFINITIONS.map((def) => {
+            const connected = channels.find((c) => c.type === def.type);
+            return (
+              <ChannelCard
+                key={def.type}
+                definition={def}
+                channel={connected}
+                onConnect={() => {
+                  openConnectForm(def.type, def.label);
+                }}
+                onDisconnect={handleDisconnect}
+                onTest={handleTest}
+              />
+            );
+          })}
+        </div>
+      )}
 
-      <p className="text-[12px] text-muted-foreground/60">
-        Channel integrations will be available with the Automation surface.
-      </p>
+      <ChannelConnectForm
+        channelType={connectType}
+        channelLabel={connectLabel}
+        open={connectType !== null}
+        onClose={closeConnectForm}
+        onConnect={handleConnect}
+      />
     </div>
   );
 }

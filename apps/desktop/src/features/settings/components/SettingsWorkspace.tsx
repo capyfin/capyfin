@@ -163,7 +163,7 @@ function SettingsContent({
     case "financial-data":
       return <FinancialDataTab client={client} />;
     case "delivery-channels":
-      return <DeliveryChannelsTab />;
+      return <DeliveryChannelsTab client={client} />;
     case "appearance":
       return <AppearanceTab />;
     case "preferences":

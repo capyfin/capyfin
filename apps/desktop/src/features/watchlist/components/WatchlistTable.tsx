@@ -1,9 +1,13 @@
 import type { WatchlistItem } from "@capyfin/contracts";
 import {
+  CalculatorIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  FileBarChart2Icon,
   MoreHorizontalIcon,
   PencilIcon,
+  ScaleIcon,
+  SearchIcon,
   TrashIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +22,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -29,6 +35,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import type { ActionCard } from "@/features/launchpad/types";
+import { WATCHLIST_CARD_ACTIONS } from "@/features/watchlist/get-watchlist-card-actions";
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
+const CARD_ICON_MAP: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  "deep-dive": SearchIcon,
+  "fair-value": CalculatorIcon,
+  "earnings-xray": FileBarChart2Icon,
+  "bull-bear": ScaleIcon,
+  "position-review": SearchIcon,
+};
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
 export type SortColumn = "ticker" | "addedAt";
 export type SortDirection = "asc" | "desc";
@@ -40,6 +61,7 @@ interface WatchlistTableProps {
   onSort: (col: SortColumn) => void;
   onEdit: (item: WatchlistItem) => void;
   onDelete: (ticker: string) => void;
+  onCardAction?: ((card: ActionCard, ticker: string) => void) | undefined;
 }
 
 function formatDate(iso: string): string {
@@ -75,6 +97,7 @@ export function WatchlistTable({
   onSort,
   onEdit,
   onDelete,
+  onCardAction,
 }: WatchlistTableProps) {
   return (
     <Card className="overflow-hidden border border-border/60 shadow-sm">
@@ -197,7 +220,29 @@ export function WatchlistTable({
                         <MoreHorizontalIcon className="size-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="w-48">
+                      {onCardAction && (
+                        <>
+                          <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground">
+                            Run Analysis
+                          </DropdownMenuLabel>
+                          {WATCHLIST_CARD_ACTIONS.map((card) => {
+                            const Icon = CARD_ICON_MAP[card.id];
+                            return (
+                              <DropdownMenuItem
+                                key={card.id}
+                                onClick={() => {
+                                  onCardAction(card, item.ticker);
+                                }}
+                              >
+                                {Icon ? <Icon className="size-3.5" /> : null}
+                                {card.title}
+                              </DropdownMenuItem>
+                            );
+                          })}
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
                       <DropdownMenuItem
                         onClick={() => {
                           onEdit(item);

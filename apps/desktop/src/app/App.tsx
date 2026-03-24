@@ -329,7 +329,12 @@ export function App() {
             ) : currentView === "brain" ? (
               <BrainKnowledgeWorkspace />
             ) : currentView === "watchlist" ? (
-              <WatchlistWorkspace client={state.client} />
+              <WatchlistWorkspace
+                client={state.client}
+                onCardAction={(card, ticker) => {
+                  void handleCardClick(card, ticker);
+                }}
+              />
             ) : currentView === "library" ? (
               <LibraryWorkspace client={state.client} />
             ) : currentView === "automation" ? (

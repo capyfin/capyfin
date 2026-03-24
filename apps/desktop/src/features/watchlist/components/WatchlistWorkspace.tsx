@@ -3,6 +3,7 @@ import { LoaderCircleIcon, PlusIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { ActionCard } from "@/features/launchpad/types";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { WatchlistEmptyState } from "./WatchlistEmptyState";
@@ -22,9 +23,13 @@ type FilterValue = "all" | "position" | "watching";
 
 interface WatchlistWorkspaceProps {
   client: SidecarClient | null;
+  onCardAction?: ((card: ActionCard, ticker: string) => void) | undefined;
 }
 
-export function WatchlistWorkspace({ client }: WatchlistWorkspaceProps) {
+export function WatchlistWorkspace({
+  client,
+  onCardAction,
+}: WatchlistWorkspaceProps) {
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -177,6 +182,7 @@ export function WatchlistWorkspace({ client }: WatchlistWorkspaceProps) {
             onDelete={(ticker) => {
               setDeleteTarget(ticker);
             }}
+            onCardAction={onCardAction}
           />
 
           {items.length < WATCHLIST_NEAR_EMPTY_THRESHOLD && (

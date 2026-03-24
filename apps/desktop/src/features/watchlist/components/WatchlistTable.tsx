@@ -77,123 +77,151 @@ export function WatchlistTable({
   onDelete,
 }: WatchlistTableProps) {
   return (
-    <Card className="border border-border/70 bg-card/92 shadow-[0_22px_70px_-42px_rgba(15,23,42,0.4)]">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold">Watchlist</CardTitle>
-        <CardDescription>
-          {items.length} {items.length === 1 ? "ticker" : "tickers"} tracked
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-hidden rounded-2xl border border-border/70">
-          <Table>
-            <TableHeader className="bg-muted/45">
-              <TableRow>
-                <TableHead>
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 font-medium"
-                    onClick={() => {
-                      onSort("ticker");
-                    }}
-                  >
-                    Ticker
-                    <SortIndicator
-                      column="ticker"
-                      sortBy={sortBy}
-                      sortDir={sortDir}
-                    />
-                  </button>
-                </TableHead>
-                <TableHead>List</TableHead>
-                <TableHead className="max-w-[200px]">Note</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead>
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 font-medium"
-                    onClick={() => {
-                      onSort("addedAt");
-                    }}
-                  >
-                    Added
-                    <SortIndicator
-                      column="addedAt"
-                      sortBy={sortBy}
-                      sortDir={sortDir}
-                    />
-                  </button>
-                </TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => (
-                <TableRow key={item.ticker}>
-                  <TableCell className="font-medium">{item.ticker}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {item.list === "position" ? "Position" : "Watching"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="max-w-[200px]">
-                    <span className="block truncate text-muted-foreground">
-                      {item.note ?? "—"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {item.tags?.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="text-[11px]"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(item.addedAt)}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="size-7 text-muted-foreground"
-                        >
-                          <MoreHorizontalIcon className="size-3.5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => {
-                            onEdit(item);
-                          }}
-                        >
-                          <PencilIcon className="size-3.5" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => {
-                            onDelete(item.ticker);
-                          }}
-                        >
-                          <TrashIcon className="size-3.5" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+    <Card className="overflow-hidden border border-border/60 shadow-sm">
+      <CardHeader className="border-b border-border/40 bg-muted/30 pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold">Watchlist</CardTitle>
+            <CardDescription className="mt-0.5">
+              {items.length} {items.length === 1 ? "ticker" : "tickers"} tracked
+            </CardDescription>
+          </div>
         </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b border-border/40 bg-muted/20 hover:bg-muted/20">
+              <TableHead className="h-9 pl-5">
+                <button
+                  type="button"
+                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+                  onClick={() => {
+                    onSort("ticker");
+                  }}
+                >
+                  Ticker
+                  <SortIndicator
+                    column="ticker"
+                    sortBy={sortBy}
+                    sortDir={sortDir}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="h-9">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                  List
+                </span>
+              </TableHead>
+              <TableHead className="h-9 max-w-[200px]">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                  Note
+                </span>
+              </TableHead>
+              <TableHead className="h-9">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                  Tags
+                </span>
+              </TableHead>
+              <TableHead className="h-9">
+                <button
+                  type="button"
+                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+                  onClick={() => {
+                    onSort("addedAt");
+                  }}
+                >
+                  Added
+                  <SortIndicator
+                    column="addedAt"
+                    sortBy={sortBy}
+                    sortDir={sortDir}
+                  />
+                </button>
+              </TableHead>
+              <TableHead className="h-9 w-10" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((item) => (
+              <TableRow
+                key={item.ticker}
+                className="group/row border-b border-border/30 transition-colors hover:bg-muted/30"
+              >
+                <TableCell className="pl-5">
+                  <span className="inline-flex items-center rounded-md bg-foreground/[0.04] px-2 py-0.5 font-mono text-[13px] font-semibold tracking-wide text-foreground dark:bg-foreground/[0.06]">
+                    {item.ticker}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant="outline"
+                    className={
+                      item.list === "position"
+                        ? "border-emerald-500/30 bg-emerald-500/[0.06] text-emerald-600 dark:text-emerald-400"
+                        : "border-blue-500/30 bg-blue-500/[0.06] text-blue-600 dark:text-blue-400"
+                    }
+                  >
+                    {item.list === "position" ? "Position" : "Watching"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="max-w-[200px]">
+                  <span className="block truncate text-[13px] text-muted-foreground">
+                    {item.note ?? "—"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {item.tags?.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="secondary"
+                        className="text-[11px]"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell className="text-[13px] text-muted-foreground">
+                  {formatDate(item.addedAt)}
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-7 text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100"
+                      >
+                        <MoreHorizontalIcon className="size-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          onEdit(item);
+                        }}
+                      >
+                        <PencilIcon className="size-3.5" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => {
+                          onDelete(item.ticker);
+                        }}
+                      >
+                        <TrashIcon className="size-3.5" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

@@ -333,7 +333,7 @@ export function App() {
             ) : currentView === "library" ? (
               <LibraryWorkspace client={state.client} />
             ) : currentView === "automation" ? (
-              <AutomationWorkspace />
+              <AutomationWorkspace client={state.client} />
             ) : currentView === "portfolio" ? (
               <PortfolioWorkspace
                 client={state.client}

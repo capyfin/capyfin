@@ -24,7 +24,7 @@ void test("ChannelConnectForm exports a function component", async () => {
 // Channel config definitions
 // ---------------------------------------------------------------------------
 
-void test("ChannelConnectForm exports CHANNEL_CONFIGS with all 4 channel types", async () => {
+void test("ChannelConnectForm exports CHANNEL_CONFIGS with all 5 channel types", async () => {
   const mod = await import("./components/ChannelConnectForm");
   assert.ok("CHANNEL_CONFIGS" in mod);
   const configs = mod.CHANNEL_CONFIGS as Record<string, unknown>;
@@ -32,6 +32,7 @@ void test("ChannelConnectForm exports CHANNEL_CONFIGS with all 4 channel types",
   assert.ok("discord" in configs);
   assert.ok("slack" in configs);
   assert.ok("email" in configs);
+  assert.ok("whatsapp" in configs);
 });
 
 void test("Telegram config has botToken and chatId fields", async () => {
@@ -77,21 +78,31 @@ void test("Email config has address field", async () => {
   assert.equal(field0.label, "Email Address");
 });
 
+void test("WhatsApp config has phoneNumber field", async () => {
+  const { CHANNEL_CONFIGS } = await import("./components/ChannelConnectForm");
+  const whatsappFields = CHANNEL_CONFIGS.whatsapp.fields;
+  assert.equal(whatsappFields.length, 1);
+  const field0 = whatsappFields[0];
+  assert.ok(field0);
+  assert.equal(field0.key, "phoneNumber");
+  assert.equal(field0.label, "Phone Number");
+});
+
 // ---------------------------------------------------------------------------
 // ChannelCard exports CHANNEL_DEFINITIONS
 // ---------------------------------------------------------------------------
 
-void test("ChannelCard exports CHANNEL_DEFINITIONS with 4 channels (no WhatsApp)", async () => {
+void test("ChannelCard exports CHANNEL_DEFINITIONS with 5 channels including WhatsApp", async () => {
   const mod = await import("./components/ChannelCard");
   assert.ok("CHANNEL_DEFINITIONS" in mod);
   const defs = mod.CHANNEL_DEFINITIONS as { type: string; label: string }[];
-  assert.equal(defs.length, 4);
+  assert.equal(defs.length, 5);
   const types = defs.map((d) => d.type);
   assert.ok(types.includes("telegram"));
   assert.ok(types.includes("discord"));
   assert.ok(types.includes("slack"));
   assert.ok(types.includes("email"));
-  assert.ok(!types.includes("whatsapp"), "WhatsApp should not be included");
+  assert.ok(types.includes("whatsapp"));
 });
 
 void test("Each channel definition has type, label, and icon", async () => {

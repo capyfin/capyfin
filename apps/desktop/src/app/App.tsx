@@ -300,9 +300,12 @@ export function App() {
             {currentView === "launchpad" ? (
               <LaunchpadWorkspace
                 client={state.client}
+                sessions={state.sessions}
                 onCardClick={(card, input) => {
                   void handleCardClick(card, input);
                 }}
+                onSessionSelect={handleSessionSelect}
+                onOpenCommandPalette={commandPalette.toggle}
               />
             ) : currentView === "chat" ? (
               <ChatWorkspace

@@ -20,6 +20,7 @@ function makeCard(overrides: Partial<ActionCard> = {}): ActionCard {
     icon: "Search",
     category: "research",
     input: "ticker",
+    estimatedDuration: "deep",
     skills: ["deep-dive"],
     persona: "fundamental-analyst",
     prompt: "Perform a comprehensive deep dive analysis of {ticker}.",

@@ -9,6 +9,7 @@ export const actionCards: ActionCard[] = [
     icon: "Newspaper",
     category: "today",
     input: "none",
+    estimatedDuration: "fast",
     skills: ["morning-brief"],
     persona: "macro-analyst",
     prompt:
@@ -23,10 +24,12 @@ export const actionCards: ActionCard[] = [
     icon: "Activity",
     category: "today",
     input: "none",
+    estimatedDuration: "fast",
     skills: ["market-health"],
     persona: "macro-analyst",
     prompt:
       "Assess current market health using distribution day analysis, breadth indicators, and sector rotation. Produce a regime verdict (Confirmed Uptrend / Uptrend Under Pressure / Rally Attempt / Downtrend), composite score (0-100), and exposure guidance.",
+    schedulable: true,
   },
   {
     id: "deep-dive",
@@ -36,6 +39,7 @@ export const actionCards: ActionCard[] = [
     icon: "Search",
     category: "research",
     input: "ticker",
+    estimatedDuration: "deep",
     skills: ["deep-dive"],
     persona: "fundamental-analyst",
     prompt:
@@ -48,6 +52,7 @@ export const actionCards: ActionCard[] = [
     icon: "Calculator",
     category: "research",
     input: "ticker",
+    estimatedDuration: "medium",
     skills: ["fair-value"],
     persona: "fundamental-analyst",
     prompt:
@@ -60,6 +65,7 @@ export const actionCards: ActionCard[] = [
     icon: "FileBarChart",
     category: "research",
     input: "ticker",
+    estimatedDuration: "medium",
     skills: ["earnings-xray"],
     persona: "fundamental-analyst",
     prompt:
@@ -73,6 +79,7 @@ export const actionCards: ActionCard[] = [
     icon: "Scale",
     category: "research",
     input: "ticker",
+    estimatedDuration: "medium",
     skills: ["bull-bear"],
     persona: "fundamental-analyst",
     prompt:
@@ -86,6 +93,7 @@ export const actionCards: ActionCard[] = [
     icon: "TrendingUp",
     category: "setups",
     input: "none",
+    estimatedDuration: "medium",
     skills: ["breakout-setups"],
     persona: "technical-analyst",
     prompt:
@@ -103,6 +111,7 @@ export const actionCards: ActionCard[] = [
     icon: "Zap",
     category: "setups",
     input: "none",
+    estimatedDuration: "medium",
     skills: ["earnings-momentum"],
     persona: "technical-analyst",
     prompt:
@@ -121,6 +130,7 @@ export const actionCards: ActionCard[] = [
     icon: "Eye",
     category: "setups",
     input: "none",
+    estimatedDuration: "medium",
     skills: ["smart-money"],
     persona: "fundamental-analyst",
     prompt:
@@ -142,6 +152,7 @@ export const portfolioCards: ActionCard[] = [
     icon: "BarChart3",
     category: "portfolio",
     input: "none",
+    estimatedDuration: "medium",
     skills: [],
     persona: "macro-analyst",
     prompt:
@@ -155,6 +166,7 @@ export const portfolioCards: ActionCard[] = [
     icon: "Search",
     category: "portfolio",
     input: "ticker",
+    estimatedDuration: "deep",
     skills: ["deep-dive"],
     persona: "fundamental-analyst",
     prompt:
@@ -168,6 +180,7 @@ export const portfolioCards: ActionCard[] = [
     icon: "GitCompareArrows",
     category: "portfolio",
     input: "none",
+    estimatedDuration: "medium",
     skills: [],
     persona: "macro-analyst",
     prompt:
@@ -184,6 +197,7 @@ export const incomeCards: ActionCard[] = [
     icon: "DollarSign",
     category: "income",
     input: "none",
+    estimatedDuration: "medium",
     skills: ["income-finder"],
     persona: "income-analyst",
     prompt:

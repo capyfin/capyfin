@@ -6,6 +6,7 @@ import {
   MailIcon,
   MessageCircleIcon,
   MessageSquareIcon,
+  PhoneIcon,
   SendIcon,
 } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -31,6 +32,7 @@ export const CHANNEL_DEFINITIONS: ChannelDefinition[] = [
   { type: "discord", label: "Discord", icon: MessageSquareIcon },
   { type: "slack", label: "Slack", icon: MessageCircleIcon },
   { type: "email", label: "Email", icon: MailIcon },
+  { type: "whatsapp", label: "WhatsApp", icon: PhoneIcon },
 ];
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 

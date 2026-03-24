@@ -63,6 +63,16 @@ export const CHANNEL_CONFIGS: Record<DeliveryChannelType, ChannelConfig> = {
       },
     ],
   },
+  whatsapp: {
+    fields: [
+      {
+        key: "phoneNumber",
+        label: "Phone Number",
+        placeholder: "e.g. +1 234 567 8900",
+        type: "tel",
+      },
+    ],
+  },
 };
 
 interface ChannelConnectFormProps {

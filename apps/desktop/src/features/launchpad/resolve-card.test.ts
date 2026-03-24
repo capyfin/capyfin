@@ -15,6 +15,7 @@ function makeCard(overrides: Partial<ActionCard> = {}): ActionCard {
     icon: "TrendingUp",
     category: "setups",
     input: "none",
+    estimatedDuration: "medium",
     skills: ["breakout-setups"],
     persona: "technical-analyst",
     prompt: "Scan for high-quality breakout setups.",

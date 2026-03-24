@@ -709,6 +709,7 @@ export const automationDestinationSchema = z.enum([
   "discord",
   "slack",
   "email",
+  "whatsapp",
 ]);
 
 export const automationRunStatusSchema = z.enum([
@@ -779,6 +780,7 @@ export const deliveryChannelTypeSchema = z.enum([
   "discord",
   "slack",
   "email",
+  "whatsapp",
 ]);
 
 export const deliveryChannelStatusSchema = z.enum([

@@ -17,7 +17,26 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { ActionCard, ActionCategory } from "../types";
+import type {
+  ActionCard,
+  ActionCategory,
+  CardInputMode,
+  EstimatedDuration,
+} from "../types";
+
+const inputLabel: Record<CardInputMode, string> = {
+  none: "No input",
+  ticker: "Ticker",
+  tickers: "Tickers",
+  preferences: "Preferences",
+  upload: "Upload",
+};
+
+const durationLabel: Record<EstimatedDuration, string> = {
+  fast: "Fast",
+  medium: "Medium",
+  deep: "Deep",
+};
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
 const iconMap: Record<string, LucideIcon> = {
@@ -107,6 +126,7 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
 
   return (
     <Card
+      data-card-id={card.id}
       size="sm"
       className={cn(
         "cursor-pointer gap-3 border-l-2 border-l-transparent py-0 ring-foreground/8 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.03] hover:ring-foreground/18 dark:hover:shadow-black/20",
@@ -142,6 +162,17 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
         </div>
       </div>
 
+      {/* metadata row */}
+      <div className="flex items-center gap-2 px-4 pb-3 pt-0.5 group-data-[size=sm]/card:px-3 group-data-[size=sm]/card:pb-2.5">
+        <span className="text-[11px] text-muted-foreground">
+          {inputLabel[card.input]}
+        </span>
+        <span className="text-[10px] text-muted-foreground/40">·</span>
+        <span className="text-[11px] text-muted-foreground">
+          {durationLabel[card.estimatedDuration]}
+        </span>
+      </div>
+
       {isExpanded && needsInput ? (
         <form
           className="flex items-center gap-2 px-4 pb-3.5 group-data-[size=sm]/card:px-3 group-data-[size=sm]/card:pb-3"
@@ -173,9 +204,7 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
             <ArrowRight className="size-3.5" />
           </Button>
         </form>
-      ) : (
-        <div className="pb-3.5 group-data-[size=sm]/card:pb-3" />
-      )}
+      ) : null}
     </Card>
   );
 }

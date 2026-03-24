@@ -12,6 +12,8 @@ export type CardInputMode =
   | "preferences"
   | "upload";
 
+export type EstimatedDuration = "fast" | "medium" | "deep";
+
 export interface ActionCard {
   id: string;
   title: string;
@@ -19,6 +21,7 @@ export interface ActionCard {
   icon: string;
   category: ActionCategory;
   input: CardInputMode;
+  estimatedDuration: EstimatedDuration;
   skills: string[];
   persona?: string;
   prompt: string;

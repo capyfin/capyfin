@@ -68,7 +68,7 @@ export function SettingsWorkspace({
     >
       {/* Left sidebar nav */}
       <nav
-        className="hidden w-48 shrink-0 flex-col gap-1 sm:flex"
+        className="hidden w-48 shrink-0 flex-col gap-0.5 border-r border-border/40 pr-4 sm:flex"
         data-testid="settings-nav"
       >
         {TABS.map((tab) => {
@@ -78,16 +78,18 @@ export function SettingsWorkspace({
             <button
               key={tab.id}
               type="button"
-              className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] transition-colors ${
+              className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] transition-all duration-150 ${
                 isActive
-                  ? "bg-accent font-medium text-foreground"
+                  ? "bg-accent font-medium text-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
               }`}
               onClick={() => {
                 setActiveTab(tab.id);
               }}
             >
-              <Icon className="size-4 shrink-0" />
+              <Icon
+                className={`size-4 shrink-0 ${isActive ? "text-primary" : ""}`}
+              />
               {tab.label}
             </button>
           );

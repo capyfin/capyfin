@@ -1,5 +1,7 @@
 import { Chat, useChat } from "@ai-sdk/react";
 import {
+  BookmarkIcon,
+  BookmarkCheckIcon,
   BotIcon,
   BriefcaseIcon,
   CopyIcon,
@@ -8,7 +10,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { AuthOverview, ChatBootstrap } from "@/app/types";
+import type { AuthOverview, CardOutput, ChatBootstrap } from "@/app/types";
 import {
   formatModelId,
   getAgentDisplayName,
@@ -453,6 +455,17 @@ function ChatSessionView({
                 onFollowUp={(text) => {
                   handleSubmit({ text });
                 }}
+                onSaveToLibrary={
+                  client
+                    ? (cardOutput) => {
+                        void client.saveReport({
+                          cardOutput,
+                          workflowType: cardOutput.cardId,
+                          subject: cardOutput.subject,
+                        });
+                      }
+                    : undefined
+                }
               />
             ))
           )}
@@ -554,11 +567,13 @@ function ChatMessage({
   isStreaming,
   message,
   onFollowUp,
+  onSaveToLibrary,
 }: {
   displayLabel?: string | undefined;
   isStreaming: boolean;
   message: ChatUIMessage;
   onFollowUp?: (text: string) => void;
+  onSaveToLibrary?: ((cardOutput: CardOutput) => void) | undefined;
 }) {
   const activityParts = getActivityParts(message);
   const reasoningText = getReasoningText(message);
@@ -671,6 +686,13 @@ function ChatMessage({
           )}
           <MessageToolbar>
             <MessageActions>
+              {parsed && onSaveToLibrary ? (
+                <SaveToLibraryAction
+                  onSave={() => {
+                    onSaveToLibrary(parsed.cardOutput);
+                  }}
+                />
+              ) : null}
               <CopyAction text={fullText} />
             </MessageActions>
           </MessageToolbar>
@@ -704,6 +726,40 @@ function CopyAction({ text }: { text: string }) {
         </TooltipTrigger>
         <TooltipContent side="bottom" className="px-2 py-1 text-xs">
           {copied ? "Copied!" : "Copy"}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function SaveToLibraryAction({ onSave }: { onSave: () => void }) {
+  const [saved, setSaved] = useState(false);
+
+  return (
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:text-muted-foreground"
+            disabled={saved}
+            onClick={() => {
+              onSave();
+              setSaved(true);
+            }}
+          >
+            {saved ? (
+              <BookmarkCheckIcon className="size-3.5 text-emerald-500" />
+            ) : (
+              <BookmarkIcon className="size-3.5" />
+            )}
+            <span className="sr-only">
+              {saved ? "Saved" : "Save to Library"}
+            </span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="px-2 py-1 text-xs">
+          {saved ? "Saved to Library" : "Save to Library"}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -7,7 +7,9 @@ import { createAuthRoutes } from "./routes/auth.ts";
 import { createChatRoutes } from "./routes/chat.ts";
 import { createDataProviderRoutes } from "./routes/data-providers.ts";
 import { createGlobalRoutes } from "./routes/global.ts";
+import { createLibraryRoutes } from "./routes/library.ts";
 import { createPortfolioRoutes } from "./routes/portfolio.ts";
+import { createPortfolioV2Routes } from "./routes/portfolio-v2.ts";
 import { createPreferencesRoutes } from "./routes/preferences.ts";
 import { createSkillRoutes } from "./routes/skills.ts";
 import type { SidecarRuntime } from "./context.ts";
@@ -75,6 +77,8 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
   app.route("/chat", createChatRoutes(runtime));
   app.route("/global", createGlobalRoutes(runtime));
   app.route("/auth", createAuthRoutes(runtime));
+  app.route("/library", createLibraryRoutes(runtime));
+  app.route("/portfolio", createPortfolioV2Routes(runtime));
   app.route("/preferences", createPreferencesRoutes(runtime));
   app.route("/providers", createDataProviderRoutes(runtime));
   app.route("/skills", createSkillRoutes(runtime));

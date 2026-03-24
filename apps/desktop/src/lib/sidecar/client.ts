@@ -11,16 +11,24 @@ import {
   createAgentSessionRequestSchema,
   dataProviderOverviewSchema,
   dataProviderStatusSchema,
+  deleteReportResponseSchema,
   installSkillRequestSchema,
   installSkillResponseSchema,
+  addHoldingRequestSchema,
   portfolioDeleteResponseSchema,
+  portfolioOverviewSchema,
   portfolioStatusResponseSchema,
   portfolioUploadResponseSchema,
+  removeHoldingResponseSchema,
   removeSkillResponseSchema,
   saveDataProviderKeyRequestSchema,
+  saveReportRequestSchema,
+  savedReportListSchema,
+  savedReportSchema,
   updateAgentRequestSchema,
   updateAgentSessionRequestSchema,
   updatePreferencesRequestSchema,
+  updateReportRequestSchema,
   userPreferencesSchema,
   providerModelCatalogSchema,
   createBasicAuthHeader,
@@ -33,6 +41,7 @@ import {
   sidecarConnectionSchema,
   sidecarHealthSchema,
   startAuthSessionRequestSchema,
+  type AddHoldingRequest,
   type AgentSession,
   type AgentSessionList,
   type AuthOverview,
@@ -42,18 +51,25 @@ import {
   type ChatBootstrap,
   type DataProviderOverview,
   type DataProviderStatus,
+  type DeleteReportResponse,
   type InstallSkillResponse,
   type PortfolioDeleteResponse,
+  type PortfolioOverview,
   type PortfolioStatusResponse,
   type PortfolioUploadResponse,
   type ProviderModelCatalog,
+  type RemoveHoldingResponse,
   type RemoveSkillResponse,
   type SavedConnection,
+  type SavedReport,
+  type SavedReportList,
+  type SaveReportRequest,
   type SidecarBootstrap,
   type SidecarConnection,
   type SidecarHealth,
   type SkillCatalog,
   type UpdatePreferencesRequest,
+  type UpdateReportRequest,
   type UserPreferences,
 } from "@capyfin/contracts";
 
@@ -297,6 +313,36 @@ export class SidecarClient {
     );
   }
 
+  async getPortfolio(): Promise<PortfolioOverview> {
+    return portfolioOverviewSchema.parse(await this.request("/portfolio"));
+  }
+
+  async importPortfolioCsv(csv: string): Promise<PortfolioOverview> {
+    return portfolioOverviewSchema.parse(
+      await this.request("/portfolio/import", {
+        body: JSON.stringify({ csv }),
+        method: "POST",
+      }),
+    );
+  }
+
+  async addHolding(holding: AddHoldingRequest): Promise<PortfolioOverview> {
+    return portfolioOverviewSchema.parse(
+      await this.request("/portfolio/holding", {
+        body: JSON.stringify(addHoldingRequestSchema.parse(holding)),
+        method: "POST",
+      }),
+    );
+  }
+
+  async removeHolding(ticker: string): Promise<RemoveHoldingResponse> {
+    return removeHoldingResponseSchema.parse(
+      await this.request(`/portfolio/holding/${encodeURIComponent(ticker)}`, {
+        method: "DELETE",
+      }),
+    );
+  }
+
   async listSkills(): Promise<SkillCatalog> {
     return skillCatalogSchema.parse(await this.request("/skills"));
   }
@@ -342,6 +388,45 @@ export class SidecarClient {
     await this.request(`/providers/data/${encodeURIComponent(providerId)}`, {
       method: "DELETE",
     });
+  }
+
+  async listReports(): Promise<SavedReportList> {
+    return savedReportListSchema.parse(await this.request("/library"));
+  }
+
+  async saveReport(request: SaveReportRequest): Promise<SavedReport> {
+    return savedReportSchema.parse(
+      await this.request("/library", {
+        body: JSON.stringify(saveReportRequestSchema.parse(request)),
+        method: "POST",
+      }),
+    );
+  }
+
+  async getReport(id: string): Promise<SavedReport> {
+    return savedReportSchema.parse(
+      await this.request(`/library/${encodeURIComponent(id)}`),
+    );
+  }
+
+  async updateReport(
+    id: string,
+    partial: UpdateReportRequest,
+  ): Promise<SavedReport> {
+    return savedReportSchema.parse(
+      await this.request(`/library/${encodeURIComponent(id)}`, {
+        body: JSON.stringify(updateReportRequestSchema.parse(partial)),
+        method: "PUT",
+      }),
+    );
+  }
+
+  async deleteReport(id: string): Promise<DeleteReportResponse> {
+    return deleteReportResponseSchema.parse(
+      await this.request(`/library/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      }),
+    );
   }
 
   async getPreferences(): Promise<UserPreferences> {

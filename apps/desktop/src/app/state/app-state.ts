@@ -15,7 +15,8 @@ export type AppView =
   | "watchlist"
   | "library"
   | "automation"
-  | "settings";
+  | "settings"
+  | "portfolio";
 
 export interface PendingCardPrompt {
   sessionId: string;

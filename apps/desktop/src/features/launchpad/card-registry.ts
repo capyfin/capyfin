@@ -98,6 +98,48 @@ export const actionCards: ActionCard[] = [
   },
 ];
 
+export const portfolioCards: ActionCard[] = [
+  {
+    id: "portfolio-analysis",
+    title: "Portfolio Analysis",
+    promise:
+      "Allocation check, concentration risks, regime-adjusted exposure guidance",
+    icon: "BarChart3",
+    category: "portfolio",
+    input: "none",
+    skills: [],
+    persona: "macro-analyst",
+    prompt:
+      "Analyze my portfolio for allocation balance, concentration risks, sector tilts, and regime-adjusted exposure. Read portfolio.csv for the current holdings. Provide a structured report with allocation summary, concentration alerts (any position >20% or sector >40%), diversification score, and specific rebalancing suggestions.",
+  },
+  {
+    id: "position-review",
+    title: "Position Review",
+    promise:
+      "Re-underwrite a specific holding — is the original thesis still intact?",
+    icon: "Search",
+    category: "portfolio",
+    input: "ticker",
+    skills: ["deep-dive"],
+    persona: "fundamental-analyst",
+    prompt:
+      "Review my position in {ticker} from my portfolio. Read portfolio.csv for context on my cost basis and allocation. Assess whether the original investment thesis still holds, flag any new risks or catalysts, and recommend whether to hold, add, trim, or exit. Include current valuation context.",
+  },
+  {
+    id: "benchmark-comparison",
+    title: "Compare Against Benchmark",
+    promise:
+      "Portfolio vs S&P 500 / custom benchmark — tracking error, factor exposure",
+    icon: "GitCompareArrows",
+    category: "portfolio",
+    input: "none",
+    skills: [],
+    persona: "macro-analyst",
+    prompt:
+      "Compare my portfolio against the S&P 500 benchmark. Read portfolio.csv for my current holdings. Analyze sector over/underweights vs the benchmark, estimate tracking error, identify factor tilts (value/growth/size/momentum), and highlight the biggest sources of active risk. Suggest adjustments to better align with or intentionally diverge from the benchmark.",
+  },
+];
+
 export const cardSections: CardSection[] = [
   {
     id: "today",
@@ -113,5 +155,10 @@ export const cardSections: CardSection[] = [
     id: "setups",
     title: "Find Setups",
     cards: actionCards.filter((c) => c.category === "setups"),
+  },
+  {
+    id: "portfolio",
+    title: "Portfolio",
+    cards: portfolioCards,
   },
 ];

@@ -4,6 +4,8 @@ import { RuntimeProviderAuthService } from "./auth/service.ts";
 import { RuntimeAuthSessionManager } from "./auth/sessions.ts";
 import { loadSidecarConfig, type SidecarConfig } from "./config.ts";
 import { DataProviderService } from "./data-providers/service.ts";
+import { LibraryService } from "./library/service.ts";
+import { PortfolioService } from "./portfolio/service.ts";
 import { PreferencesService } from "./preferences/service.ts";
 import { EmbeddedGatewayClient } from "./internal-gateway/gateway-client.ts";
 import { AgentMetadataStoreService } from "./internal-gateway/metadata-store.ts";
@@ -50,6 +52,11 @@ export async function startSidecarServer(
   const dataProviderService = new DataProviderService(
     gatewaySupervisor.paths.stateDir,
   );
+  const libraryService = new LibraryService(gatewaySupervisor.paths.stateDir);
+  const portfolioService = new PortfolioService(
+    gatewaySupervisor.paths.stateDir,
+    defaultAgent.workspaceDir,
+  );
   const preferencesService = new PreferencesService(
     gatewaySupervisor.paths.stateDir,
   );
@@ -58,6 +65,8 @@ export async function startSidecarServer(
     authSessions: new RuntimeAuthSessionManager(() => authService),
     config,
     dataProviderService,
+    libraryService,
+    portfolioService,
     preferencesService,
     embeddedGateway,
     gatewaySupervisor,

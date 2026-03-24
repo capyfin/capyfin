@@ -12,6 +12,7 @@ import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCen
 import { BrainKnowledgeWorkspace } from "@/features/brain/components/BrainKnowledgeWorkspace";
 import { LaunchpadWorkspace } from "@/features/launchpad/components/LaunchpadWorkspace";
 import { LibraryWorkspace } from "@/features/library/components/LibraryWorkspace";
+import { PortfolioWorkspace } from "@/features/portfolio/components/PortfolioWorkspace";
 import { SettingsWorkspace } from "@/features/settings/components/SettingsWorkspace";
 import { WatchlistWorkspace } from "@/features/watchlist/components/WatchlistWorkspace";
 import {
@@ -303,9 +304,16 @@ export function App() {
             ) : currentView === "watchlist" ? (
               <WatchlistWorkspace />
             ) : currentView === "library" ? (
-              <LibraryWorkspace />
+              <LibraryWorkspace client={state.client} />
             ) : currentView === "automation" ? (
               <AutomationWorkspace />
+            ) : currentView === "portfolio" ? (
+              <PortfolioWorkspace
+                client={state.client}
+                onCardClick={(card, input) => {
+                  void handleCardClick(card, input);
+                }}
+              />
             ) : currentView === "settings" ? (
               <SettingsWorkspace
                 authOverview={state.authOverview}
@@ -382,6 +390,10 @@ function readViewFromHash(): AppView {
 
   if (window.location.hash === "#settings") {
     return "settings";
+  }
+
+  if (window.location.hash === "#portfolio") {
+    return "portfolio";
   }
 
   return "launchpad";

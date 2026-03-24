@@ -366,10 +366,21 @@ export type Confidence = z.infer<typeof confidenceSchema>;
 export type OutputCitation = z.infer<typeof outputCitationSchema>;
 export type OutputSection = z.infer<typeof outputSectionSchema>;
 export type CardOutput = z.infer<typeof cardOutputSchema>;
+export type SavedReport = z.infer<typeof savedReportSchema>;
+export type SavedReportList = z.infer<typeof savedReportListSchema>;
+export type SaveReportRequest = z.infer<typeof saveReportRequestSchema>;
+export type UpdateReportRequest = z.infer<typeof updateReportRequestSchema>;
+export type DeleteReportResponse = z.infer<typeof deleteReportResponseSchema>;
 export type UserPreferences = z.infer<typeof userPreferencesSchema>;
 export type UpdatePreferencesRequest = z.infer<
   typeof updatePreferencesRequestSchema
 >;
+export type PortfolioHolding = z.infer<typeof portfolioHoldingSchema>;
+export type ConcentrationAlert = z.infer<typeof concentrationAlertSchema>;
+export type SectorExposure = z.infer<typeof sectorExposureSchema>;
+export type PortfolioOverview = z.infer<typeof portfolioOverviewSchema>;
+export type AddHoldingRequest = z.infer<typeof addHoldingRequestSchema>;
+export type RemoveHoldingResponse = z.infer<typeof removeHoldingResponseSchema>;
 
 export const skillManifestSchema = z.object({
   id: z.string().min(1),
@@ -477,6 +488,42 @@ export const cardOutputSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Library — Saved Reports
+// ---------------------------------------------------------------------------
+
+export const savedReportSchema = z.object({
+  id: z.string().min(1),
+  cardOutput: cardOutputSchema,
+  workflowType: z.string().min(1),
+  subject: z.string().optional(),
+  savedAt: z.string().min(1),
+  pinnedAt: z.string().nullable(),
+  starred: z.boolean(),
+  tags: z.array(z.string().min(1)),
+});
+
+export const savedReportListSchema = z.object({
+  reports: z.array(savedReportSchema),
+});
+
+export const saveReportRequestSchema = z.object({
+  cardOutput: cardOutputSchema,
+  workflowType: z.string().min(1),
+  subject: z.string().optional(),
+  tags: z.array(z.string().min(1)).optional(),
+});
+
+export const updateReportRequestSchema = z.object({
+  pinnedAt: z.string().nullable().optional(),
+  starred: z.boolean().optional(),
+  tags: z.array(z.string().min(1)).optional(),
+});
+
+export const deleteReportResponseSchema = z.object({
+  deleted: z.boolean(),
+});
+
+// ---------------------------------------------------------------------------
 // User Preferences
 // ---------------------------------------------------------------------------
 
@@ -504,6 +551,51 @@ export const userPreferencesSchema = z.object({
 });
 
 export const updatePreferencesRequestSchema = userPreferencesSchema.partial();
+
+// ---------------------------------------------------------------------------
+// Portfolio — Structured Holdings
+// ---------------------------------------------------------------------------
+
+export const portfolioHoldingSchema = z.object({
+  ticker: z.string().min(1),
+  name: z.string().optional(),
+  shares: z.number().positive(),
+  costBasis: z.number().nonnegative(),
+  currentPrice: z.number().nonnegative().optional(),
+  sector: z.string().optional(),
+  weight: z.number().nonnegative(),
+  addedAt: z.string().min(1),
+});
+
+export const concentrationAlertSchema = z.object({
+  type: z.enum(["position", "sector"]),
+  name: z.string().min(1),
+  weight: z.number().nonnegative(),
+});
+
+export const sectorExposureSchema = z.object({
+  sector: z.string().min(1),
+  weight: z.number().nonnegative(),
+});
+
+export const portfolioOverviewSchema = z.object({
+  holdings: z.array(portfolioHoldingSchema),
+  totalValue: z.number().nonnegative(),
+  sectorExposure: z.array(sectorExposureSchema),
+  concentrationAlerts: z.array(concentrationAlertSchema),
+});
+
+export const addHoldingRequestSchema = z.object({
+  ticker: z.string().min(1),
+  name: z.string().optional(),
+  shares: z.number().positive(),
+  costBasis: z.number().nonnegative(),
+  sector: z.string().optional(),
+});
+
+export const removeHoldingResponseSchema = z.object({
+  deleted: z.boolean(),
+});
 
 export const appManifest = appManifestSchema.parse(appManifestJson);
 

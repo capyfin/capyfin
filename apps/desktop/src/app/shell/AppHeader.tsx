@@ -23,6 +23,7 @@ const VIEW_TITLES: Record<Exclude<AppView, "providers-add">, string> = {
   library: "Library",
   automation: "Automation",
   settings: "Settings",
+  portfolio: "Portfolio",
 };
 
 interface AppHeaderProps {

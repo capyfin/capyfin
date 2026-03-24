@@ -20,6 +20,7 @@ void test("vite proxy config includes all sidecar API routes", async () => {
     "/chat",
     "/auth",
     "/global",
+    "/library",
     "/preferences",
     "/providers",
     "/skills",

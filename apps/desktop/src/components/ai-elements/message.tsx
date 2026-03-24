@@ -42,6 +42,30 @@ export const Message = ({ className, from, ...props }: MessageProps) => (
   />
 );
 
+export type MessageAvatarProps = HTMLAttributes<HTMLDivElement> & {
+  from: UIMessage["role"];
+};
+
+export const MessageAvatar = ({
+  className,
+  from,
+  children,
+  ...props
+}: MessageAvatarProps) => (
+  <div
+    className={cn(
+      "flex shrink-0 items-center justify-center rounded-lg",
+      from === "assistant"
+        ? "size-7 bg-primary/10 text-primary"
+        : "size-7 bg-secondary text-muted-foreground",
+      className,
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+);
+
 export type MessageContentProps = HTMLAttributes<HTMLDivElement>;
 
 export const MessageContent = ({
@@ -51,8 +75,8 @@ export const MessageContent = ({
 }: MessageContentProps) => (
   <div
     className={cn(
-      "is-user:dark flex w-fit min-w-0 max-w-full flex-col gap-2 overflow-hidden text-sm",
-      "group-[.is-user]:ml-auto group-[.is-user]:rounded-lg group-[.is-user]:bg-secondary group-[.is-user]:px-4 group-[.is-user]:py-3 group-[.is-user]:text-foreground",
+      "flex w-fit min-w-0 max-w-full flex-col gap-2 overflow-hidden text-sm",
+      "group-[.is-user]:ml-auto group-[.is-user]:rounded-2xl group-[.is-user]:rounded-br-md group-[.is-user]:bg-primary/[0.08] group-[.is-user]:px-4 group-[.is-user]:py-3 group-[.is-user]:text-foreground dark:group-[.is-user]:bg-primary/[0.12]",
       "group-[.is-assistant]:text-foreground",
       className,
     )}

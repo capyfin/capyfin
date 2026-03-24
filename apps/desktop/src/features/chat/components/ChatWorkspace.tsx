@@ -33,6 +33,7 @@ import {
 import {
   Message,
   MessageActions,
+  MessageAvatar,
   MessageContent,
   MessageResponse,
   MessageToolbar,
@@ -484,9 +485,16 @@ function ChatSessionView({
 
           {isStreaming && latestMessage?.role === "user" ? (
             <Message from="assistant">
-              <Reasoning isStreaming>
-                <ReasoningTrigger />
-              </Reasoning>
+              <div className="flex gap-3">
+                <MessageAvatar from="assistant" className="mt-0.5">
+                  <SparklesIcon className="size-3.5" />
+                </MessageAvatar>
+                <div className="min-w-0 flex-1">
+                  <Reasoning isStreaming>
+                    <ReasoningTrigger />
+                  </Reasoning>
+                </div>
+              </div>
             </Message>
           ) : null}
 
@@ -682,52 +690,59 @@ function ChatMessage({
 
   return (
     <Message from="assistant">
-      {activityParts.length > 0 || isThinking ? (
-        <Reasoning isStreaming={isThinking} defaultOpen={false}>
-          <ReasoningTrigger />
-        </Reasoning>
-      ) : null}
+      <div className="flex gap-3">
+        <MessageAvatar from="assistant" className="mt-0.5">
+          <SparklesIcon className="size-3.5" />
+        </MessageAvatar>
+        <div className="min-w-0 flex-1 space-y-2">
+          {activityParts.length > 0 || isThinking ? (
+            <Reasoning isStreaming={isThinking} defaultOpen={false}>
+              <ReasoningTrigger />
+            </Reasoning>
+          ) : null}
 
-      {reasoningText ? (
-        <Reasoning defaultOpen={false}>
-          <ReasoningTrigger />
-          <ReasoningContent>{reasoningText}</ReasoningContent>
-        </Reasoning>
-      ) : null}
+          {reasoningText ? (
+            <Reasoning defaultOpen={false}>
+              <ReasoningTrigger />
+              <ReasoningContent>{reasoningText}</ReasoningContent>
+            </Reasoning>
+          ) : null}
 
-      {fullText ? (
-        <MessageContent>
-          {parsed ? (
-            <>
-              {parsed.prefixText ? (
-                <MessageResponse>{parsed.prefixText}</MessageResponse>
-              ) : null}
-              <ReportView
-                cardOutput={parsed.cardOutput}
-                onFollowUp={onFollowUp}
-                onAddToWatchlist={onAddToWatchlist}
-              />
-              {parsed.suffixText ? (
-                <MessageResponse>{parsed.suffixText}</MessageResponse>
-              ) : null}
-            </>
-          ) : (
-            <MessageResponse>{fullText}</MessageResponse>
-          )}
-          <MessageToolbar>
-            <MessageActions>
-              {parsed && onSaveToLibrary ? (
-                <SaveToLibraryAction
-                  onSave={() => {
-                    onSaveToLibrary(parsed.cardOutput);
-                  }}
-                />
-              ) : null}
-              <CopyAction text={fullText} />
-            </MessageActions>
-          </MessageToolbar>
-        </MessageContent>
-      ) : null}
+          {fullText ? (
+            <MessageContent>
+              {parsed ? (
+                <>
+                  {parsed.prefixText ? (
+                    <MessageResponse>{parsed.prefixText}</MessageResponse>
+                  ) : null}
+                  <ReportView
+                    cardOutput={parsed.cardOutput}
+                    onFollowUp={onFollowUp}
+                    onAddToWatchlist={onAddToWatchlist}
+                  />
+                  {parsed.suffixText ? (
+                    <MessageResponse>{parsed.suffixText}</MessageResponse>
+                  ) : null}
+                </>
+              ) : (
+                <MessageResponse>{fullText}</MessageResponse>
+              )}
+              <MessageToolbar>
+                <MessageActions>
+                  {parsed && onSaveToLibrary ? (
+                    <SaveToLibraryAction
+                      onSave={() => {
+                        onSaveToLibrary(parsed.cardOutput);
+                      }}
+                    />
+                  ) : null}
+                  <CopyAction text={fullText} />
+                </MessageActions>
+              </MessageToolbar>
+            </MessageContent>
+          ) : null}
+        </div>
+      </div>
     </Message>
   );
 }

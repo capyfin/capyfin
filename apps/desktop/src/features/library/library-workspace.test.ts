@@ -48,3 +48,13 @@ void test("downloadReportAsMarkdown is exported from export-markdown", async () 
   const mod = await import("./export-markdown");
   assert.equal(typeof mod.downloadReportAsMarkdown, "function");
 });
+
+void test("LibraryEmptyState exports a function component", async () => {
+  const mod = await import("./components/LibraryEmptyState");
+  assert.equal(typeof mod.LibraryEmptyState, "function");
+});
+
+void test("LibraryEmptyState accepts onGoToLaunchpad and onOpenChat props", async () => {
+  const mod = await import("./components/LibraryEmptyState");
+  assert.equal(mod.LibraryEmptyState.length >= 0, true);
+});

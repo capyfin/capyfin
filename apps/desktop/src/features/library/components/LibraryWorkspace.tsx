@@ -1,5 +1,5 @@
 import type { SavedReport } from "@capyfin/contracts";
-import { BookOpenIcon, LoaderCircleIcon, SearchXIcon } from "lucide-react";
+import { LoaderCircleIcon, SearchXIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import {
@@ -11,6 +11,7 @@ import {
   INITIAL_FILTER_STATE,
   type LibraryFilterState,
 } from "./LibraryFilters";
+import { LibraryEmptyState } from "./LibraryEmptyState";
 import { ReportDetailDialog } from "./ReportDetailDialog";
 import { SavedReportCard } from "./SavedReportCard";
 
@@ -223,22 +224,14 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
           )}
         </>
       ) : (
-        <div className="flex flex-1 flex-col items-center justify-center gap-5 py-20">
-          <div className="relative">
-            <div className="absolute -inset-3 rounded-2xl bg-violet-500/[0.06] blur-xl dark:bg-violet-500/[0.08]" />
-            <div className="relative flex size-14 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/[0.08] dark:bg-violet-500/[0.1]">
-              <BookOpenIcon className="size-6 text-violet-500" />
-            </div>
-          </div>
-          <div className="text-center">
-            <h2 className="text-[17px] font-semibold text-foreground">
-              Your research library
-            </h2>
-            <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
-              {LIBRARY_EMPTY_TEXT}
-            </p>
-          </div>
-        </div>
+        <LibraryEmptyState
+          onGoToLaunchpad={() => {
+            window.location.hash = "#launchpad";
+          }}
+          onOpenChat={() => {
+            window.location.hash = "#chat";
+          }}
+        />
       )}
 
       <ReportDetailDialog

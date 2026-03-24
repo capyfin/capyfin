@@ -1,9 +1,10 @@
 import {
-  BotIcon,
-  BrainIcon,
+  BookOpenIcon,
   HomeIcon,
+  ListChecksIcon,
   MessageSquareIcon,
-  SlidersHorizontalIcon,
+  SettingsIcon,
+  ZapIcon,
 } from "lucide-react";
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
@@ -19,19 +20,24 @@ export const primaryNavigation = [
     icon: MessageSquareIcon,
   },
   {
-    title: "Agents",
-    href: "#agents",
-    icon: BotIcon,
+    title: "Watchlist",
+    href: "#watchlist",
+    icon: ListChecksIcon,
   },
   {
-    title: "Brain",
-    href: "#brain",
-    icon: BrainIcon,
+    title: "Library",
+    href: "#library",
+    icon: BookOpenIcon,
   },
   {
-    title: "Providers",
-    href: "#providers",
-    icon: SlidersHorizontalIcon,
+    title: "Automation",
+    href: "#automation",
+    icon: ZapIcon,
+  },
+  {
+    title: "Settings",
+    href: "#settings",
+    icon: SettingsIcon,
   },
 ] as const;
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */

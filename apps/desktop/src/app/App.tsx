@@ -1,14 +1,19 @@
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { toast, Toaster } from "sonner";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
+import { RightContextRail } from "@/app/shell/RightContextRail";
 import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
+import { AutomationWorkspace } from "@/features/automation/components/AutomationWorkspace";
 import { ChatWorkspace } from "@/features/chat/components/ChatWorkspace";
 import { evictChatSession } from "@/features/chat/chat-cache";
 import { ProvidersWorkspace } from "@/features/providers/components/ProvidersWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { BrainKnowledgeWorkspace } from "@/features/brain/components/BrainKnowledgeWorkspace";
 import { LaunchpadWorkspace } from "@/features/launchpad/components/LaunchpadWorkspace";
+import { LibraryWorkspace } from "@/features/library/components/LibraryWorkspace";
+import { SettingsWorkspace } from "@/features/settings/components/SettingsWorkspace";
+import { WatchlistWorkspace } from "@/features/watchlist/components/WatchlistWorkspace";
 import {
   buildCardPrompt,
   buildDisplayLabel,
@@ -30,6 +35,7 @@ export function App() {
     readViewFromHash,
     createInitialState,
   );
+  const [isRailOpen, setIsRailOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -248,51 +254,71 @@ export function App() {
       <SidebarInset className="min-h-0 bg-background">
         <AppHeader
           currentView={currentView}
+          isRailOpen={isRailOpen}
           onAddConnection={() => {
             window.location.hash = "#providers/add";
           }}
-          onCreateAgent={() => {
-            dispatch({ type: "REQUEST_CREATE_AGENT" });
+          onToggleRail={() => {
+            setIsRailOpen((prev) => !prev);
           }}
         />
-        <div
-          className={`flex min-h-0 flex-1 flex-col ${currentView === "chat" ? "" : "gap-4 overflow-y-auto p-4 lg:p-5"}`}
-        >
-          {currentView === "launchpad" ? (
-            <LaunchpadWorkspace
-              client={state.client}
-              onCardClick={(card, input) => {
-                void handleCardClick(card, input);
-              }}
-            />
-          ) : currentView === "chat" ? (
-            <ChatWorkspace
-              authOverview={state.authOverview}
-              client={state.client}
-              hasPortfolio={state.hasPortfolio}
-              onBootstrap={handleBootstrap}
-              onClearPendingPrompt={handleClearPendingPrompt}
-              onSessionLabelUpdate={handleSessionLabelUpdate}
-              pendingCardPrompt={state.pendingCardPrompt}
-              sessionId={state.activeSessionId}
-            />
-          ) : currentView === "providers" ? (
-            <ProvidersWorkspace
-              authOverview={state.authOverview}
-              client={state.client}
-              onAuthOverviewChange={(overview) => {
-                dispatch({ type: "SET_AUTH_OVERVIEW", authOverview: overview });
-              }}
-            />
-          ) : currentView === "brain" ? (
-            <BrainKnowledgeWorkspace />
-          ) : (
-            <AgentsWorkspace
-              authOverview={state.authOverview}
-              client={state.client}
-              createRequestToken={state.createAgentToken}
-            />
-          )}
+        <div className="flex min-h-0 flex-1">
+          <div
+            className={`flex min-h-0 min-w-0 flex-1 flex-col ${currentView === "chat" ? "" : "gap-4 overflow-y-auto p-4 lg:p-5"}`}
+          >
+            {currentView === "launchpad" ? (
+              <LaunchpadWorkspace
+                client={state.client}
+                onCardClick={(card, input) => {
+                  void handleCardClick(card, input);
+                }}
+              />
+            ) : currentView === "chat" ? (
+              <ChatWorkspace
+                authOverview={state.authOverview}
+                client={state.client}
+                hasPortfolio={state.hasPortfolio}
+                onBootstrap={handleBootstrap}
+                onClearPendingPrompt={handleClearPendingPrompt}
+                onSessionLabelUpdate={handleSessionLabelUpdate}
+                pendingCardPrompt={state.pendingCardPrompt}
+                sessionId={state.activeSessionId}
+              />
+            ) : currentView === "providers" ? (
+              <ProvidersWorkspace
+                authOverview={state.authOverview}
+                client={state.client}
+                onAuthOverviewChange={(overview) => {
+                  dispatch({
+                    type: "SET_AUTH_OVERVIEW",
+                    authOverview: overview,
+                  });
+                }}
+              />
+            ) : currentView === "brain" ? (
+              <BrainKnowledgeWorkspace />
+            ) : currentView === "watchlist" ? (
+              <WatchlistWorkspace />
+            ) : currentView === "library" ? (
+              <LibraryWorkspace />
+            ) : currentView === "automation" ? (
+              <AutomationWorkspace />
+            ) : currentView === "settings" ? (
+              <SettingsWorkspace />
+            ) : (
+              <AgentsWorkspace
+                authOverview={state.authOverview}
+                client={state.client}
+                createRequestToken={state.createAgentToken}
+              />
+            )}
+          </div>
+          <RightContextRail
+            isOpen={isRailOpen}
+            onClose={() => {
+              setIsRailOpen(false);
+            }}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>
@@ -324,6 +350,22 @@ function readViewFromHash(): AppView {
 
   if (window.location.hash === "#chat") {
     return "chat";
+  }
+
+  if (window.location.hash === "#watchlist") {
+    return "watchlist";
+  }
+
+  if (window.location.hash === "#library") {
+    return "library";
+  }
+
+  if (window.location.hash === "#automation") {
+    return "automation";
+  }
+
+  if (window.location.hash === "#settings") {
+    return "settings";
   }
 
   return "launchpad";

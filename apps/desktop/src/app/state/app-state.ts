@@ -7,7 +7,11 @@ export type AppView =
   | "chat"
   | "agents"
   | "launchpad"
-  | "brain";
+  | "brain"
+  | "watchlist"
+  | "library"
+  | "automation"
+  | "settings";
 
 export interface PendingCardPrompt {
   sessionId: string;

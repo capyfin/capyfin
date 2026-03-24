@@ -8,6 +8,7 @@ import {
   Wallet2Icon,
   ZapIcon,
 } from "lucide-react";
+import type { AppView } from "@/app/state/app-state";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { primaryNavigation } from "@/app/config/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -39,7 +40,7 @@ import type { AuthOverview } from "@/app/types";
 
 interface AppSidebarProps {
   activeSessionId?: string | undefined;
-  activeView: "providers" | "chat" | "agents" | "launchpad" | "brain";
+  activeView: Exclude<AppView, "providers-add">;
   authOverview: AuthOverview | null;
   onNewChat?: (() => void) | undefined;
   onSessionDelete?: ((sessionId: string) => void) | undefined;
@@ -99,15 +100,7 @@ export function AppSidebar({
                   <SidebarMenuButton
                     asChild
                     tooltip={item.title}
-                    isActive={
-                      (item.href === "#providers" &&
-                        activeView === "providers") ||
-                      (item.href === "#chat" && activeView === "chat") ||
-                      (item.href === "#agents" && activeView === "agents") ||
-                      (item.href === "#launchpad" &&
-                        activeView === "launchpad") ||
-                      (item.href === "#brain" && activeView === "brain")
-                    }
+                    isActive={item.href === `#${activeView}`}
                   >
                     <a href={item.href}>
                       <item.icon />

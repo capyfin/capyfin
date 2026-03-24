@@ -144,6 +144,39 @@ void test("HYDRATE_START clears runtimeError for a fresh attempt", () => {
   assert.equal(next.isLoading, true);
 });
 
+// ---------------------------------------------------------------------------
+// New workspace views — watchlist, library, automation, settings
+// ---------------------------------------------------------------------------
+
+void test("SET_HASH_VIEW accepts watchlist as a valid view", () => {
+  const state = makeState();
+  const next = appReducer(state, { type: "SET_HASH_VIEW", view: "watchlist" });
+  assert.equal(next.hashView, "watchlist");
+});
+
+void test("SET_HASH_VIEW accepts library as a valid view", () => {
+  const state = makeState();
+  const next = appReducer(state, { type: "SET_HASH_VIEW", view: "library" });
+  assert.equal(next.hashView, "library");
+});
+
+void test("SET_HASH_VIEW accepts automation as a valid view", () => {
+  const state = makeState();
+  const next = appReducer(state, { type: "SET_HASH_VIEW", view: "automation" });
+  assert.equal(next.hashView, "automation");
+});
+
+void test("SET_HASH_VIEW accepts settings as a valid view", () => {
+  const state = makeState();
+  const next = appReducer(state, { type: "SET_HASH_VIEW", view: "settings" });
+  assert.equal(next.hashView, "settings");
+});
+
+void test("createInitialState can initialize with new view types", () => {
+  const state = createInitialState(() => "watchlist");
+  assert.equal(state.hashView, "watchlist");
+});
+
 void test("after failure the retry-button disabled guard resolves correctly", () => {
   // Simulates the exact condition used in ConnectionCenter:
   //   disabled={(!client && !runtimeError) || isBusy || isLoading}

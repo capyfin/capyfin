@@ -125,18 +125,19 @@ void test("dataProviderIconConfig entries have distinct colors", async () => {
 // Navigation config
 // ---------------------------------------------------------------------------
 
-void test("primaryNavigation includes Providers item with correct icon", async () => {
+void test("primaryNavigation includes Settings item (Providers accessible from Settings)", async () => {
   const { primaryNavigation } = await import("@/app/config/navigation");
-  const providersItem = primaryNavigation.find(
-    (item) => item.title === "Providers",
+  const settingsItem = primaryNavigation.find(
+    (item) => item.title === "Settings",
   );
-  assert.ok(providersItem, "Providers navigation item should exist");
-  assert.equal(providersItem.href, "#providers");
+  assert.ok(settingsItem, "Settings navigation item should exist");
+  assert.equal(settingsItem.href, "#settings");
 });
 
-void test("primaryNavigation no longer includes Connections item", async () => {
+void test("primaryNavigation no longer includes Providers or Connections as top-level items", async () => {
   const { primaryNavigation } = await import("@/app/config/navigation");
   const titles = primaryNavigation.map((item) => item.title);
+  assert.ok(!titles.includes("Providers" as never));
   assert.ok(!titles.includes("Connections" as never));
 });
 

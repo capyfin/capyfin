@@ -1,32 +1,44 @@
 import type { LucideIcon } from "lucide-react";
-import { MonitorIcon, MoonIcon, PlusIcon, SunIcon } from "lucide-react";
+import {
+  MonitorIcon,
+  MoonIcon,
+  PanelRightIcon,
+  PlusIcon,
+  SunIcon,
+} from "lucide-react";
+import type { AppView } from "@/app/state/app-state";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useTheme, type Theme } from "@/hooks/theme-context";
 import { cn } from "@/lib/utils";
 
+const VIEW_TITLES: Record<Exclude<AppView, "providers-add">, string> = {
+  launchpad: "Home",
+  chat: "Chat",
+  providers: "Providers",
+  agents: "Agents",
+  brain: "Brain",
+  watchlist: "Watchlist",
+  library: "Library",
+  automation: "Automation",
+  settings: "Settings",
+};
+
 interface AppHeaderProps {
-  currentView: "providers" | "chat" | "agents" | "launchpad" | "brain";
+  currentView: Exclude<AppView, "providers-add">;
+  isRailOpen?: boolean;
   onAddConnection: () => void;
-  onCreateAgent: () => void;
+  onToggleRail?: () => void;
 }
 
 export function AppHeader({
   currentView,
+  isRailOpen,
   onAddConnection,
-  onCreateAgent,
+  onToggleRail,
 }: AppHeaderProps) {
-  const pageTitle =
-    currentView === "launchpad"
-      ? "Home"
-      : currentView === "providers"
-        ? "Providers"
-        : currentView === "agents"
-          ? "Agents"
-          : currentView === "brain"
-            ? "Brain"
-            : "Chat";
+  const pageTitle = VIEW_TITLES[currentView];
 
   return (
     <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -58,15 +70,18 @@ export function AppHeader({
             </Button>
           ) : null}
 
-          {currentView === "agents" ? (
+          {onToggleRail ? (
             <Button
-              size="sm"
-              variant="outline"
-              className="ml-1 hidden h-7 rounded-md px-2.5 text-[12px] font-medium lg:inline-flex"
-              onClick={onCreateAgent}
+              size="icon"
+              variant="ghost"
+              className={cn(
+                "size-7 text-muted-foreground/70 hover:text-foreground",
+                isRailOpen && "bg-accent text-foreground",
+              )}
+              onClick={onToggleRail}
+              title={isRailOpen ? "Close panel" : "Open panel"}
             >
-              <PlusIcon className="size-3" />
-              New agent
+              <PanelRightIcon className="size-3.5" />
             </Button>
           ) : null}
         </div>

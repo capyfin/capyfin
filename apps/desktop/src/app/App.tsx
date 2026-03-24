@@ -7,6 +7,8 @@ import { AgentsWorkspace } from "@/features/agents/components/AgentsWorkspace";
 import { AutomationWorkspace } from "@/features/automation/components/AutomationWorkspace";
 import { ChatWorkspace } from "@/features/chat/components/ChatWorkspace";
 import { evictChatSession } from "@/features/chat/chat-cache";
+import { CommandPaletteDialog } from "@/features/command-palette/CommandPaletteDialog";
+import { useCommandPalette } from "@/features/command-palette/useCommandPalette";
 import { ProvidersWorkspace } from "@/features/providers/components/ProvidersWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { BrainKnowledgeWorkspace } from "@/features/brain/components/BrainKnowledgeWorkspace";
@@ -37,6 +39,7 @@ export function App() {
     createInitialState,
   );
   const [isRailOpen, setIsRailOpen] = useState(false);
+  const commandPalette = useCommandPalette();
 
   useEffect(() => {
     let isMounted = true;
@@ -192,6 +195,21 @@ export function App() {
     dispatch({ type: "CLEAR_PENDING_PROMPT" });
   }, []);
 
+  const handlePaletteNavigate = useCallback((href: string) => {
+    window.location.hash = href;
+  }, []);
+
+  const handlePaletteCardSelect = useCallback(
+    (card: ActionCard) => {
+      if (card.input === "ticker" || card.input === "tickers") {
+        window.location.hash = "#launchpad";
+      } else {
+        void handleCardClick(card);
+      }
+    },
+    [handleCardClick],
+  );
+
   if (
     !state.authOverview?.selectedProviderId ||
     state.onboardingActive ||
@@ -239,6 +257,14 @@ export function App() {
       className="!min-h-0 h-svh overflow-hidden"
     >
       <Toaster position="top-right" richColors />
+      <CommandPaletteDialog
+        isOpen={commandPalette.isOpen}
+        onOpenChange={commandPalette.setIsOpen}
+        sessions={state.sessions}
+        onNavigate={handlePaletteNavigate}
+        onSelectSession={handleSessionSelect}
+        onSelectCard={handlePaletteCardSelect}
+      />
       <AppSidebar
         activeSessionId={state.activeSessionId}
         activeView={currentView}
@@ -246,6 +272,7 @@ export function App() {
         onNewChat={() => {
           void handleNewChat();
         }}
+        onOpenCommandPalette={commandPalette.toggle}
         onSessionDelete={(id) => {
           void handleSessionDelete(id);
         }}

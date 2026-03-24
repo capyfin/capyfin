@@ -4,6 +4,7 @@ import {
   MoreHorizontalIcon,
   PencilIcon,
   PlusIcon,
+  SearchIcon,
   TrashIcon,
   Wallet2Icon,
   ZapIcon,
@@ -43,6 +44,7 @@ interface AppSidebarProps {
   activeView: Exclude<AppView, "providers-add">;
   authOverview: AuthOverview | null;
   onNewChat?: (() => void) | undefined;
+  onOpenCommandPalette?: (() => void) | undefined;
   onSessionDelete?: ((sessionId: string) => void) | undefined;
   onSessionRename?: ((sessionId: string, label: string) => void) | undefined;
   onSessionSelect?: ((sessionId: string) => void) | undefined;
@@ -54,6 +56,7 @@ export function AppSidebar({
   activeView,
   authOverview,
   onNewChat,
+  onOpenCommandPalette,
   onSessionDelete,
   onSessionRename,
   onSessionSelect,
@@ -95,6 +98,19 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Search"
+                  onClick={onOpenCommandPalette}
+                  className="text-sidebar-foreground/65"
+                >
+                  <SearchIcon />
+                  <span>Search</span>
+                  <kbd className="ml-auto hidden rounded border border-sidebar-border bg-sidebar px-1.5 py-0.5 text-[10px] font-medium text-sidebar-foreground/45 group-data-[collapsible=icon]:hidden lg:inline-block">
+                    ⌘K
+                  </kbd>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               {primaryNavigation.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton

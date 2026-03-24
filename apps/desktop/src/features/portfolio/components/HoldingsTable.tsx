@@ -16,10 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { ActionCard } from "@/features/launchpad/types";
+import { TickerLink } from "@/features/ticker-actions/TickerLink";
 
 interface HoldingsTableProps {
   holdings: PortfolioHolding[];
   onRemove: (ticker: string) => void;
+  onTickerAction?: (card: ActionCard, ticker: string) => void;
 }
 
 function formatCurrency(value: number): string {
@@ -31,7 +34,11 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
-export function HoldingsTable({ holdings, onRemove }: HoldingsTableProps) {
+export function HoldingsTable({
+  holdings,
+  onRemove,
+  onTickerAction,
+}: HoldingsTableProps) {
   return (
     <Card className="border border-border/70 bg-card/92 shadow-[0_22px_70px_-42px_rgba(15,23,42,0.4)]">
       <CardHeader>
@@ -61,7 +68,14 @@ export function HoldingsTable({ holdings, onRemove }: HoldingsTableProps) {
                   <TableRow key={holding.ticker}>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{holding.ticker}</p>
+                        {onTickerAction ? (
+                          <TickerLink
+                            ticker={holding.ticker}
+                            onAction={onTickerAction}
+                          />
+                        ) : (
+                          <p className="font-medium">{holding.ticker}</p>
+                        )}
                         {holding.name ? (
                           <p className="text-xs text-muted-foreground">
                             {holding.name}

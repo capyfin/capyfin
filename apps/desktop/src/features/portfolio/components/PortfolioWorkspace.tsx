@@ -122,6 +122,9 @@ export function PortfolioWorkspace({
             onRemove={(ticker) => {
               void handleRemoveHolding(ticker);
             }}
+            onTickerAction={(card, ticker) => {
+              onCardClick(card, ticker);
+            }}
           />
 
           {portfolio.sectorExposure.length > 0 ? (

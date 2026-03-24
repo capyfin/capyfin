@@ -11,8 +11,13 @@ export function createGlobalRoutes(runtime: SidecarRuntime): Hono {
     return context.json(createSidecarHealth(runtime.version));
   });
 
-  app.get("/bootstrap", (context) => {
-    return context.json(createSidecarBootstrap(runtime.version));
+  app.get("/bootstrap", async (context) => {
+    const items = await runtime.watchlistService.getAll();
+    return context.json(
+      createSidecarBootstrap(runtime.version, {
+        watchlistCount: items.length,
+      }),
+    );
   });
 
   app.get("/events", (context) => {

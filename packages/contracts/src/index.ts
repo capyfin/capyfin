@@ -35,6 +35,11 @@ export const sidecarBootstrapSchema = z.object({
     }),
   }),
   version: z.string().min(1).optional(),
+  watchlist: z
+    .object({
+      count: z.number().int().nonnegative(),
+    })
+    .optional(),
 });
 
 export const providerConnectionInputSchema = z.enum([

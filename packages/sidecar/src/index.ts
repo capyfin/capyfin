@@ -8,6 +8,7 @@ import { LibraryService } from "./library/service.ts";
 import { PortfolioService } from "./portfolio/service.ts";
 import { PreferencesService } from "./preferences/service.ts";
 import { WatchlistService } from "./watchlist/service.ts";
+import { syncWatchlistToWorkspace } from "./watchlist/workspace-sync.ts";
 import { EmbeddedGatewayClient } from "./internal-gateway/gateway-client.ts";
 import { AgentMetadataStoreService } from "./internal-gateway/metadata-store.ts";
 import { EmbeddedGatewaySupervisor } from "./internal-gateway/supervisor.ts";
@@ -63,7 +64,14 @@ export async function startSidecarServer(
   );
   const watchlistService = new WatchlistService(
     gatewaySupervisor.paths.stateDir,
+    defaultAgent.workspaceDir,
   );
+  // Sync watchlist to agent workspace on boot so the agent has fresh data
+  const watchlistItems = await watchlistService.getAll();
+  if (watchlistItems.length > 0) {
+    await syncWatchlistToWorkspace(defaultAgent.workspaceDir, watchlistItems);
+  }
+
   const runtime = {
     authService,
     authSessions: new RuntimeAuthSessionManager(() => authService),

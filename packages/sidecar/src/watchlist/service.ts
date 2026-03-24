@@ -7,6 +7,7 @@ import {
   type UpdateWatchlistItemRequest,
   type WatchlistItem,
 } from "@capyfin/contracts";
+import { syncWatchlistToWorkspace } from "./workspace-sync.ts";
 
 interface WatchlistStore {
   version: 1;
@@ -15,9 +16,11 @@ interface WatchlistStore {
 
 export class WatchlistService {
   readonly #storePath: string;
+  readonly #workspaceDir: string | undefined;
 
-  constructor(stateDir: string) {
+  constructor(stateDir: string, workspaceDir?: string) {
     this.#storePath = join(stateDir, "watchlist.json");
+    this.#workspaceDir = workspaceDir;
   }
 
   async getAll(): Promise<WatchlistItem[]> {
@@ -42,6 +45,7 @@ export class WatchlistService {
     });
     store.items.push(item);
     await this.#save(store);
+    await this.#syncToWorkspace(store.items);
     return item;
   }
 
@@ -71,6 +75,7 @@ export class WatchlistService {
     });
     store.items[index] = updated;
     await this.#save(store);
+    await this.#syncToWorkspace(store.items);
     return updated;
   }
 
@@ -83,6 +88,7 @@ export class WatchlistService {
     }
     store.items.splice(index, 1);
     await this.#save(store);
+    await this.#syncToWorkspace(store.items);
     return { deleted: true };
   }
 
@@ -99,6 +105,12 @@ export class WatchlistService {
         return { version: 1, items: [] };
       }
       throw error;
+    }
+  }
+
+  async #syncToWorkspace(items: WatchlistItem[]): Promise<void> {
+    if (this.#workspaceDir) {
+      await syncWatchlistToWorkspace(this.#workspaceDir, items);
     }
   }
 

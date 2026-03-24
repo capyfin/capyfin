@@ -27,6 +27,7 @@ interface WatchlistItemDialogProps {
   onClose: () => void;
   onSave: () => void;
   editItem?: WatchlistItem | undefined;
+  prefillTicker?: string | undefined;
 }
 
 export function WatchlistItemDialog({
@@ -35,6 +36,7 @@ export function WatchlistItemDialog({
   onClose,
   onSave,
   editItem,
+  prefillTicker,
 }: WatchlistItemDialogProps) {
   const isEdit = editItem !== undefined;
 
@@ -68,8 +70,11 @@ export function WatchlistItemDialog({
       setError(null);
     } else if (open) {
       resetForm();
+      if (prefillTicker) {
+        setTicker(prefillTicker.toUpperCase());
+      }
     }
-  }, [open, editItem, resetForm]);
+  }, [open, editItem, prefillTicker, resetForm]);
 
   const handleSubmit = useCallback(async () => {
     const trimmedTicker = ticker.trim().toUpperCase();

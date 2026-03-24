@@ -25,7 +25,10 @@ export function createSidecarHealth(version: string): SidecarHealth {
   });
 }
 
-export function createSidecarBootstrap(version: string): SidecarBootstrap {
+export function createSidecarBootstrap(
+  version: string,
+  options?: { watchlistCount?: number },
+): SidecarBootstrap {
   const payload = {
     manifest: appManifest,
     runtime: {
@@ -37,6 +40,9 @@ export function createSidecarBootstrap(version: string): SidecarBootstrap {
       },
     },
     version,
+    ...(options?.watchlistCount !== undefined
+      ? { watchlist: { count: options.watchlistCount } }
+      : {}),
   };
 
   return sidecarBootstrapSchema.parse(payload);

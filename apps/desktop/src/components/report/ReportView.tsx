@@ -1,6 +1,7 @@
 import type { CardOutput } from "@capyfin/contracts";
 import { MessageResponse } from "@/components/ai-elements/message";
-import { AlertTriangleIcon, ShieldAlertIcon } from "lucide-react";
+import { AlertTriangleIcon, ListPlusIcon, ShieldAlertIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { FollowUpChips } from "./FollowUpChips";
 import { FreshnessFooter } from "./FreshnessFooter";
 import { ImprovementNote } from "./ImprovementNote";
@@ -10,18 +11,31 @@ import { ScoresTable } from "./ScoresTable";
 interface ReportViewProps {
   cardOutput: CardOutput;
   onFollowUp?: ((suggestion: string) => void) | undefined;
+  onAddToWatchlist?: ((ticker: string) => void) | undefined;
 }
 
-export function ReportView({ cardOutput, onFollowUp }: ReportViewProps) {
+export function ReportView({
+  cardOutput,
+  onFollowUp,
+  onAddToWatchlist,
+}: ReportViewProps) {
   return (
     <div className="space-y-4">
       {/* Title & subject */}
       <div className="space-y-1.5">
-        {cardOutput.subject ? (
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            {cardOutput.subject}
-          </p>
-        ) : null}
+        <div className="flex items-center justify-between gap-2">
+          {cardOutput.subject ? (
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {cardOutput.subject}
+            </p>
+          ) : null}
+          {cardOutput.subject && onAddToWatchlist ? (
+            <AddToWatchlistButton
+              ticker={cardOutput.subject}
+              onAddToWatchlist={onAddToWatchlist}
+            />
+          ) : null}
+        </div>
         <h2 className="text-lg font-semibold tracking-tight text-foreground">
           {cardOutput.title}
         </h2>
@@ -97,5 +111,27 @@ export function ReportView({ cardOutput, onFollowUp }: ReportViewProps) {
         />
       ) : null}
     </div>
+  );
+}
+
+function AddToWatchlistButton({
+  ticker,
+  onAddToWatchlist,
+}: {
+  ticker: string;
+  onAddToWatchlist: (ticker: string) => void;
+}) {
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-6 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
+      onClick={() => {
+        onAddToWatchlist(ticker);
+      }}
+    >
+      <ListPlusIcon className="size-3.5" />
+      Add to Watchlist
+    </Button>
   );
 }

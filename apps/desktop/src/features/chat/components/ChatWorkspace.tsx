@@ -73,6 +73,7 @@ import { SidecarClient } from "@/lib/sidecar/client";
 import { deriveSessionLabel } from "@/features/chat/session-label";
 import { tryParseCardOutput } from "@/features/chat/structured-output";
 import { ReportView } from "@/components/report";
+import { WatchlistItemDialog } from "@/features/watchlist/components/WatchlistItemDialog";
 import type { PendingCardPrompt } from "@/app/state/app-state";
 
 import {
@@ -262,6 +263,7 @@ function ChatSessionView({
   const listRef = useRef<HTMLDivElement | null>(null);
   const hasCustomLabelRef = useRef(bootstrap.messages.length > 0);
   const didMountRef = useRef(false);
+  const [watchlistTicker, setWatchlistTicker] = useState<string | null>(null);
 
   // Re-use existing Chat instance if one exists (preserves streaming state)
   const chat = useMemo(() => {
@@ -455,6 +457,13 @@ function ChatSessionView({
                 onFollowUp={(text) => {
                   handleSubmit({ text });
                 }}
+                onAddToWatchlist={
+                  client
+                    ? (ticker) => {
+                        setWatchlistTicker(ticker);
+                      }
+                    : undefined
+                }
                 onSaveToLibrary={
                   client
                     ? (cardOutput) => {
@@ -526,6 +535,21 @@ function ChatSessionView({
           </p>
         </div>
       ) : null}
+
+      {/* Add to Watchlist dialog */}
+      {client ? (
+        <WatchlistItemDialog
+          client={client}
+          open={watchlistTicker !== null}
+          prefillTicker={watchlistTicker ?? undefined}
+          onClose={() => {
+            setWatchlistTicker(null);
+          }}
+          onSave={() => {
+            setWatchlistTicker(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -567,12 +591,14 @@ function ChatMessage({
   isStreaming,
   message,
   onFollowUp,
+  onAddToWatchlist,
   onSaveToLibrary,
 }: {
   displayLabel?: string | undefined;
   isStreaming: boolean;
   message: ChatUIMessage;
   onFollowUp?: (text: string) => void;
+  onAddToWatchlist?: ((ticker: string) => void) | undefined;
   onSaveToLibrary?: ((cardOutput: CardOutput) => void) | undefined;
 }) {
   const activityParts = getActivityParts(message);
@@ -676,6 +702,7 @@ function ChatMessage({
               <ReportView
                 cardOutput={parsed.cardOutput}
                 onFollowUp={onFollowUp}
+                onAddToWatchlist={onAddToWatchlist}
               />
               {parsed.suffixText ? (
                 <MessageResponse>{parsed.suffixText}</MessageResponse>

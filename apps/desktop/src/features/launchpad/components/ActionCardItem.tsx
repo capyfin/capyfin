@@ -34,12 +34,35 @@ const iconMap: Record<string, LucideIcon> = {
 };
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
-const categoryAccent: Record<ActionCategory, { bg: string; text: string }> = {
-  today: { bg: "bg-amber-500/8", text: "text-amber-500" },
-  research: { bg: "bg-blue-500/8", text: "text-blue-500" },
-  setups: { bg: "bg-emerald-500/8", text: "text-emerald-500" },
-  income: { bg: "bg-violet-500/8", text: "text-violet-500" },
-  portfolio: { bg: "bg-amber-500/8", text: "text-amber-500" },
+const categoryAccent: Record<
+  ActionCategory,
+  { bg: string; text: string; border: string }
+> = {
+  today: {
+    bg: "bg-amber-500/8",
+    text: "text-amber-500",
+    border: "group-hover/card:border-l-amber-500/40",
+  },
+  research: {
+    bg: "bg-blue-500/8",
+    text: "text-blue-500",
+    border: "group-hover/card:border-l-blue-500/40",
+  },
+  setups: {
+    bg: "bg-emerald-500/8",
+    text: "text-emerald-500",
+    border: "group-hover/card:border-l-emerald-500/40",
+  },
+  income: {
+    bg: "bg-violet-500/8",
+    text: "text-violet-500",
+    border: "group-hover/card:border-l-violet-500/40",
+  },
+  portfolio: {
+    bg: "bg-amber-500/8",
+    text: "text-amber-500",
+    border: "group-hover/card:border-l-amber-500/40",
+  },
 };
 
 interface ActionCardItemProps {
@@ -86,9 +109,11 @@ export function ActionCardItem({ card, onCardClick }: ActionCardItemProps) {
     <Card
       size="sm"
       className={cn(
-        "cursor-pointer gap-3 py-0 ring-foreground/8 transition-all hover:ring-foreground/18",
+        "cursor-pointer gap-3 border-l-2 border-l-transparent py-0 ring-foreground/8 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.03] hover:ring-foreground/18 dark:hover:shadow-black/20",
+        accent.border,
         isTodayCard && "bg-amber-500/[0.03] dark:bg-amber-500/[0.05]",
-        isExpanded && "ring-primary/40 hover:ring-primary/40",
+        isExpanded &&
+          "ring-primary/40 hover:translate-y-0 hover:ring-primary/40",
       )}
       onClick={!isExpanded ? handleCardClick : undefined}
       role="button"

@@ -15,5 +15,6 @@ export type {
   SidecarBootstrap,
   SidecarConnection,
   SidecarHealth,
+  UserPreferences,
   WorkspaceArea,
 } from "@capyfin/contracts";

@@ -64,6 +64,10 @@ export default defineConfig({
             "/chat": { target: "http://127.0.0.1:19110", changeOrigin: true },
             "/auth": { target: "http://127.0.0.1:19110", changeOrigin: true },
             "/global": { target: "http://127.0.0.1:19110", changeOrigin: true },
+            "/preferences": {
+              target: "http://127.0.0.1:19110",
+              changeOrigin: true,
+            },
             "/providers": {
               target: "http://127.0.0.1:19110",
               changeOrigin: true,

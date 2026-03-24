@@ -20,6 +20,8 @@ import {
   saveDataProviderKeyRequestSchema,
   updateAgentRequestSchema,
   updateAgentSessionRequestSchema,
+  updatePreferencesRequestSchema,
+  userPreferencesSchema,
   providerModelCatalogSchema,
   createBasicAuthHeader,
   respondAuthSessionRequestSchema,
@@ -51,6 +53,8 @@ import {
   type SidecarConnection,
   type SidecarHealth,
   type SkillCatalog,
+  type UpdatePreferencesRequest,
+  type UserPreferences,
 } from "@capyfin/contracts";
 
 export class SidecarClient {
@@ -338,6 +342,21 @@ export class SidecarClient {
     await this.request(`/providers/data/${encodeURIComponent(providerId)}`, {
       method: "DELETE",
     });
+  }
+
+  async getPreferences(): Promise<UserPreferences> {
+    return userPreferencesSchema.parse(await this.request("/preferences"));
+  }
+
+  async updatePreferences(
+    partial: UpdatePreferencesRequest,
+  ): Promise<UserPreferences> {
+    return userPreferencesSchema.parse(
+      await this.request("/preferences", {
+        body: JSON.stringify(updatePreferencesRequestSchema.parse(partial)),
+        method: "PUT",
+      }),
+    );
   }
 
   createApiUrl(path: string): string {

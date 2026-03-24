@@ -48,13 +48,15 @@ export function App() {
       try {
         const connection = await initializeSidecarConnection();
         const sidecarClient = SidecarClient.fromConnection(connection);
-        const [overview, sessionList, portfolioStatus] = await Promise.all([
-          sidecarClient.authOverview(),
-          sidecarClient.listSessions("main").catch(() => ({ sessions: [] })),
-          sidecarClient
-            .getPortfolioStatus("main")
-            .catch(() => ({ hasPortfolio: false })),
-        ]);
+        const [overview, sessionList, portfolioStatus, preferences] =
+          await Promise.all([
+            sidecarClient.authOverview(),
+            sidecarClient.listSessions("main").catch(() => ({ sessions: [] })),
+            sidecarClient
+              .getPortfolioStatus("main")
+              .catch(() => ({ hasPortfolio: false })),
+            sidecarClient.getPreferences().catch(() => null),
+          ]);
 
         if (isMounted) {
           dispatch({
@@ -63,6 +65,7 @@ export function App() {
             client: sidecarClient,
             sessions: sessionList.sessions,
             hasPortfolio: portfolioStatus.hasPortfolio,
+            preferences,
           });
         }
       } catch (error) {
@@ -304,7 +307,20 @@ export function App() {
             ) : currentView === "automation" ? (
               <AutomationWorkspace />
             ) : currentView === "settings" ? (
-              <SettingsWorkspace />
+              <SettingsWorkspace
+                authOverview={state.authOverview}
+                client={state.client}
+                onAuthOverviewChange={(overview) => {
+                  dispatch({
+                    type: "SET_AUTH_OVERVIEW",
+                    authOverview: overview,
+                  });
+                }}
+                preferences={state.preferences}
+                onPreferencesChange={(preferences) => {
+                  dispatch({ type: "SET_PREFERENCES", preferences });
+                }}
+              />
             ) : (
               <AgentsWorkspace
                 authOverview={state.authOverview}

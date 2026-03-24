@@ -362,6 +362,10 @@ export type DataProviderOverview = z.infer<typeof dataProviderOverviewSchema>;
 export type SaveDataProviderKeyRequest = z.infer<
   typeof saveDataProviderKeyRequestSchema
 >;
+export type UserPreferences = z.infer<typeof userPreferencesSchema>;
+export type UpdatePreferencesRequest = z.infer<
+  typeof updatePreferencesRequestSchema
+>;
 
 export const skillManifestSchema = z.object({
   id: z.string().min(1),
@@ -431,6 +435,35 @@ export const dataProviderOverviewSchema = z.object({
 export const saveDataProviderKeyRequestSchema = z.object({
   apiKey: z.string().min(1),
 });
+
+// ---------------------------------------------------------------------------
+// User Preferences
+// ---------------------------------------------------------------------------
+
+export const userPreferencesSchema = z.object({
+  investmentStyle: z
+    .enum(["growth", "value", "blend", "income"])
+    .nullable()
+    .default(null),
+  timeHorizon: z.enum(["short", "medium", "long"]).nullable().default(null),
+  riskTolerance: z
+    .enum(["conservative", "moderate", "aggressive"])
+    .nullable()
+    .default(null),
+  favoriteSectors: z.array(z.string().min(1)).default([]),
+  preferredMarketFocus: z
+    .enum(["us", "global", "emerging"])
+    .nullable()
+    .default(null),
+  reportDensity: z
+    .enum(["brief", "standard", "detailed"])
+    .nullable()
+    .default(null),
+  developerMode: z.boolean().default(false),
+  traceVisibility: z.boolean().default(false),
+});
+
+export const updatePreferencesRequestSchema = userPreferencesSchema.partial();
 
 export const appManifest = appManifestSchema.parse(appManifestJson);
 

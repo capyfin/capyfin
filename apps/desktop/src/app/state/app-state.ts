@@ -1,4 +1,8 @@
-import type { AgentSession, AuthOverview } from "@capyfin/contracts";
+import type {
+  AgentSession,
+  AuthOverview,
+  UserPreferences,
+} from "@capyfin/contracts";
 import type { SidecarClient } from "@/lib/sidecar/client";
 
 export type AppView =
@@ -36,6 +40,7 @@ export interface AppState {
   hasPortfolio: boolean;
   onboardingActive: boolean;
   pendingCardPrompt: PendingCardPrompt | null;
+  preferences: UserPreferences | null;
 }
 
 export function createInitialState(readHash: () => AppView): AppState {
@@ -52,6 +57,7 @@ export function createInitialState(readHash: () => AppView): AppState {
     hasPortfolio: false,
     onboardingActive: false,
     pendingCardPrompt: null,
+    preferences: null,
   };
 }
 
@@ -67,6 +73,7 @@ export type AppAction =
       client: SidecarClient;
       sessions: AgentSession[];
       hasPortfolio: boolean;
+      preferences: UserPreferences | null;
     }
   | { type: "HYDRATE_FAILURE"; error: string }
   | { type: "HYDRATE_COMPLETE" }
@@ -82,7 +89,8 @@ export type AppAction =
   | { type: "FINISH_ONBOARDING" }
   | { type: "SET_AUTH_OVERVIEW"; authOverview: AuthOverview | null }
   | { type: "SET_PENDING_PROMPT"; pending: PendingCardPrompt }
-  | { type: "CLEAR_PENDING_PROMPT" };
+  | { type: "CLEAR_PENDING_PROMPT" }
+  | { type: "SET_PREFERENCES"; preferences: UserPreferences };
 
 // ---------------------------------------------------------------------------
 // Reducer
@@ -100,6 +108,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         client: action.client,
         sessions: action.sessions,
         hasPortfolio: action.hasPortfolio,
+        preferences: action.preferences,
         runtimeError: null,
         onboardingActive: !action.authOverview.selectedProviderId,
       };
@@ -165,5 +174,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case "CLEAR_PENDING_PROMPT":
       return { ...state, pendingCardPrompt: null };
+
+    case "SET_PREFERENCES":
+      return { ...state, preferences: action.preferences };
   }
 }

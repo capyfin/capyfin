@@ -32,6 +32,7 @@ void test("HYDRATE_SUCCESS still sets hasPortfolio from payload", () => {
     client: {} as never,
     sessions: [],
     hasPortfolio: true,
+    preferences: null,
   });
   assert.equal(next.hasPortfolio, true);
 });

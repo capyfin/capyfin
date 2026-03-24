@@ -1370,6 +1370,12 @@ export class EmbeddedGatewayClient {
         );
       }
     }
+
+    // Always ensure bundled skills are installed in the workspace.
+    // Skills may have been added or updated since the agent was created.
+    if (agent.workspaceDir) {
+      await installBundledSkills(agent.workspaceDir);
+    }
   }
 
   async #resolveCompatibleModelRef(params: {

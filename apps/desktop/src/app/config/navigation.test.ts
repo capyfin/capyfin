@@ -36,6 +36,7 @@ void test("Agents, Brain, Providers are not in primary navigation", () => {
 
 void test("each nav item has an icon component", () => {
   for (const item of primaryNavigation) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     assert.ok(item.icon != null, `${item.title} should have an icon`);
   }
 });

@@ -7,6 +7,7 @@ import { DataProviderService } from "./data-providers/service.ts";
 import { LibraryService } from "./library/service.ts";
 import { PortfolioService } from "./portfolio/service.ts";
 import { PreferencesService } from "./preferences/service.ts";
+import { WatchlistService } from "./watchlist/service.ts";
 import { EmbeddedGatewayClient } from "./internal-gateway/gateway-client.ts";
 import { AgentMetadataStoreService } from "./internal-gateway/metadata-store.ts";
 import { EmbeddedGatewaySupervisor } from "./internal-gateway/supervisor.ts";
@@ -60,6 +61,9 @@ export async function startSidecarServer(
   const preferencesService = new PreferencesService(
     gatewaySupervisor.paths.stateDir,
   );
+  const watchlistService = new WatchlistService(
+    gatewaySupervisor.paths.stateDir,
+  );
   const runtime = {
     authService,
     authSessions: new RuntimeAuthSessionManager(() => authService),
@@ -68,6 +72,7 @@ export async function startSidecarServer(
     libraryService,
     portfolioService,
     preferencesService,
+    watchlistService,
     embeddedGateway,
     gatewaySupervisor,
     startedAt: Date.now(),

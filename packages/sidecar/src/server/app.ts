@@ -12,6 +12,7 @@ import { createPortfolioRoutes } from "./routes/portfolio.ts";
 import { createPortfolioV2Routes } from "./routes/portfolio-v2.ts";
 import { createPreferencesRoutes } from "./routes/preferences.ts";
 import { createSkillRoutes } from "./routes/skills.ts";
+import { createWatchlistRoutes } from "./routes/watchlist.ts";
 import type { SidecarRuntime } from "./context.ts";
 
 const TAURI_ORIGINS = new Set([
@@ -82,6 +83,7 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
   app.route("/preferences", createPreferencesRoutes(runtime));
   app.route("/providers", createDataProviderRoutes(runtime));
   app.route("/skills", createSkillRoutes(runtime));
+  app.route("/watchlist", createWatchlistRoutes(runtime));
 
   app.notFound((context) => context.json({ error: "Not Found" }, 404));
   app.onError((error, context) => {

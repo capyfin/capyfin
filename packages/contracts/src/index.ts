@@ -381,6 +381,17 @@ export type SectorExposure = z.infer<typeof sectorExposureSchema>;
 export type PortfolioOverview = z.infer<typeof portfolioOverviewSchema>;
 export type AddHoldingRequest = z.infer<typeof addHoldingRequestSchema>;
 export type RemoveHoldingResponse = z.infer<typeof removeHoldingResponseSchema>;
+export type WatchlistItem = z.infer<typeof watchlistItemSchema>;
+export type WatchlistList = z.infer<typeof watchlistListSchema>;
+export type AddWatchlistItemRequest = z.infer<
+  typeof addWatchlistItemRequestSchema
+>;
+export type UpdateWatchlistItemRequest = z.infer<
+  typeof updateWatchlistItemRequestSchema
+>;
+export type DeleteWatchlistItemResponse = z.infer<
+  typeof deleteWatchlistItemResponseSchema
+>;
 
 export const skillManifestSchema = z.object({
   id: z.string().min(1),
@@ -595,6 +606,45 @@ export const addHoldingRequestSchema = z.object({
 
 export const removeHoldingResponseSchema = z.object({
   deleted: z.boolean(),
+});
+
+// ---------------------------------------------------------------------------
+// Watchlist
+// ---------------------------------------------------------------------------
+
+export const watchlistItemSchema = z.object({
+  ticker: z.string().min(1),
+  list: z.enum(["position", "watching"]),
+  note: z.string().optional(),
+  thesis: z.string().optional(),
+  targetZone: z.string().optional(),
+  addedAt: z.string().min(1),
+  tags: z.array(z.string().min(1)).optional(),
+});
+
+export const watchlistListSchema = z.object({
+  items: z.array(watchlistItemSchema),
+});
+
+export const addWatchlistItemRequestSchema = z.object({
+  ticker: z.string().min(1),
+  list: z.enum(["position", "watching"]),
+  note: z.string().optional(),
+  thesis: z.string().optional(),
+  targetZone: z.string().optional(),
+  tags: z.array(z.string().min(1)).optional(),
+});
+
+export const updateWatchlistItemRequestSchema = z.object({
+  list: z.enum(["position", "watching"]).optional(),
+  note: z.string().optional(),
+  thesis: z.string().optional(),
+  targetZone: z.string().optional(),
+  tags: z.array(z.string().min(1)).optional(),
+});
+
+export const deleteWatchlistItemResponseSchema = z.object({
+  deleted: z.literal(true),
 });
 
 export const appManifest = appManifestSchema.parse(appManifestJson);

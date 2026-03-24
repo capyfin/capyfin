@@ -71,6 +71,16 @@ import {
   type UpdatePreferencesRequest,
   type UpdateReportRequest,
   type UserPreferences,
+  type WatchlistItem,
+  type WatchlistList,
+  type AddWatchlistItemRequest,
+  type UpdateWatchlistItemRequest,
+  type DeleteWatchlistItemResponse,
+  watchlistListSchema,
+  watchlistItemSchema,
+  addWatchlistItemRequestSchema,
+  updateWatchlistItemRequestSchema,
+  deleteWatchlistItemResponseSchema,
 } from "@capyfin/contracts";
 
 export class SidecarClient {
@@ -440,6 +450,43 @@ export class SidecarClient {
       await this.request("/preferences", {
         body: JSON.stringify(updatePreferencesRequestSchema.parse(partial)),
         method: "PUT",
+      }),
+    );
+  }
+
+  async getWatchlist(): Promise<WatchlistList> {
+    return watchlistListSchema.parse(await this.request("/watchlist"));
+  }
+
+  async addWatchlistItem(
+    input: AddWatchlistItemRequest,
+  ): Promise<WatchlistItem> {
+    return watchlistItemSchema.parse(
+      await this.request("/watchlist", {
+        body: JSON.stringify(addWatchlistItemRequestSchema.parse(input)),
+        method: "POST",
+      }),
+    );
+  }
+
+  async updateWatchlistItem(
+    ticker: string,
+    updates: UpdateWatchlistItemRequest,
+  ): Promise<WatchlistItem> {
+    return watchlistItemSchema.parse(
+      await this.request(`/watchlist/${encodeURIComponent(ticker)}`, {
+        body: JSON.stringify(updateWatchlistItemRequestSchema.parse(updates)),
+        method: "PUT",
+      }),
+    );
+  }
+
+  async removeWatchlistItem(
+    ticker: string,
+  ): Promise<DeleteWatchlistItemResponse> {
+    return deleteWatchlistItemResponseSchema.parse(
+      await this.request(`/watchlist/${encodeURIComponent(ticker)}`, {
+        method: "DELETE",
       }),
     );
   }

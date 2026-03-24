@@ -80,12 +80,15 @@ export function AppSidebar({
               className="h-11 data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#launchpad">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <div className="relative flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm shadow-primary/20">
                   <Wallet2Icon className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left leading-tight">
                   <span className="text-[13px] font-semibold tracking-tight">
                     CapyFin
+                  </span>
+                  <span className="text-[10px] text-sidebar-foreground/40">
+                    Research Workstation
                   </span>
                 </div>
               </a>
@@ -170,10 +173,10 @@ export function AppSidebar({
         ) : null}
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border/60">
         <div className="flex items-center gap-2.5 rounded-lg p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1">
           <Avatar className="size-7 rounded-md">
-            <AvatarFallback className="rounded-md bg-primary/12 text-[10px] font-semibold text-primary">
+            <AvatarFallback className="rounded-md bg-gradient-to-br from-primary/15 to-primary/8 text-[10px] font-semibold text-primary">
               CF
             </AvatarFallback>
           </Avatar>
@@ -183,13 +186,14 @@ export function AppSidebar({
             </p>
             <p className="truncate text-[11px] text-sidebar-foreground/45">
               {connectedProviderCount > 0
-                ? `${String(connectedProviderCount)} connected`
+                ? `${String(connectedProviderCount)} provider${connectedProviderCount === 1 ? "" : "s"} connected`
                 : "Setup pending"}
             </p>
           </div>
           {connectedProviderCount > 0 ? (
-            <div className="hidden text-success group-data-[collapsible=icon]:hidden lg:block">
-              <ZapIcon className="size-3" />
+            <div className="hidden items-center gap-1 rounded-full bg-success/10 px-1.5 py-0.5 text-success group-data-[collapsible=icon]:hidden lg:flex">
+              <ZapIcon className="size-2.5" />
+              <span className="text-[9px] font-medium">Live</span>
             </div>
           ) : null}
         </div>

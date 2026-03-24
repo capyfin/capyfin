@@ -402,15 +402,18 @@ function ChatSessionView({
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6">
           {messages.length === 0 ? (
             <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
-              <div className="space-y-3">
-                <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <SparklesIcon className="size-5" />
+              <div className="space-y-4">
+                <div className="relative mx-auto w-fit">
+                  <div className="absolute -inset-3 rounded-2xl bg-primary/[0.06] blur-xl dark:bg-primary/[0.08]" />
+                  <div className="relative flex size-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.08] text-primary dark:bg-primary/[0.1]">
+                    <SparklesIcon className="size-6" />
+                  </div>
                 </div>
                 <div className="space-y-1.5">
-                  <h1 className="text-lg font-semibold tracking-tight text-foreground">
+                  <h1 className="text-[20px] font-semibold tracking-tight text-foreground">
                     Start a conversation
                   </h1>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-[14px] leading-relaxed text-muted-foreground">
                     {CHAT_EMPTY_STATE_SUBTITLE}
                   </p>
                 </div>
@@ -425,13 +428,13 @@ function ChatSessionView({
                     <button
                       key={prompt.text}
                       type="button"
-                      className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 text-left text-sm font-medium leading-relaxed transition-all duration-150 ${accent.card} ${accent.hover}`}
+                      className={`flex items-start gap-3 rounded-xl border px-3.5 py-3.5 text-left text-[13px] leading-relaxed transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.03] dark:hover:shadow-black/20 ${accent.card} ${accent.hover}`}
                       onClick={() => {
                         handleSubmit({ text: prompt.text });
                       }}
                     >
                       <div
-                        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md ${accent.iconBg}`}
+                        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg ${accent.iconBg}`}
                       >
                         <prompt.icon className={`size-4 ${accent.iconText}`} />
                       </div>

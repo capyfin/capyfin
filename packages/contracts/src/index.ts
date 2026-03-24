@@ -362,6 +362,10 @@ export type DataProviderOverview = z.infer<typeof dataProviderOverviewSchema>;
 export type SaveDataProviderKeyRequest = z.infer<
   typeof saveDataProviderKeyRequestSchema
 >;
+export type Confidence = z.infer<typeof confidenceSchema>;
+export type OutputCitation = z.infer<typeof outputCitationSchema>;
+export type OutputSection = z.infer<typeof outputSectionSchema>;
+export type CardOutput = z.infer<typeof cardOutputSchema>;
 export type UserPreferences = z.infer<typeof userPreferencesSchema>;
 export type UpdatePreferencesRequest = z.infer<
   typeof updatePreferencesRequestSchema
@@ -434,6 +438,42 @@ export const dataProviderOverviewSchema = z.object({
 
 export const saveDataProviderKeyRequestSchema = z.object({
   apiKey: z.string().min(1),
+});
+
+// ---------------------------------------------------------------------------
+// Structured Output Contract
+// ---------------------------------------------------------------------------
+
+export const confidenceSchema = z.enum(["HIGH", "MEDIUM", "LOW"]);
+
+export const outputCitationSchema = z.object({
+  label: z.string().min(1),
+  source: z.string().min(1),
+  date: z.string().min(1),
+});
+
+export const outputSectionSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  confidence: confidenceSchema,
+  content: z.string(),
+  citations: z.array(outputCitationSchema),
+});
+
+export const cardOutputSchema = z.object({
+  cardId: z.string().min(1),
+  subject: z.string().min(1).optional(),
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  sections: z.array(outputSectionSchema),
+  scores: z.record(z.string(), z.union([z.number(), z.string()])).optional(),
+  keyRisks: z.array(z.string().min(1)),
+  challengeSummary: z.string(),
+  dataTier: z.enum(["0", "1", "2"]),
+  sourcesUsed: z.array(z.string().min(1)),
+  dataAsOf: z.string().min(1),
+  improvementNote: z.string().min(1).optional(),
+  followUps: z.array(z.string().min(1)).optional(),
 });
 
 // ---------------------------------------------------------------------------

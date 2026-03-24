@@ -69,6 +69,8 @@ import {
 import { createChatTransport } from "@/features/chat/transport";
 import { SidecarClient } from "@/lib/sidecar/client";
 import { deriveSessionLabel } from "@/features/chat/session-label";
+import { tryParseCardOutput } from "@/features/chat/structured-output";
+import { ReportView } from "@/components/report";
 import type { PendingCardPrompt } from "@/app/state/app-state";
 
 import {
@@ -448,6 +450,9 @@ function ChatSessionView({
                 }
                 isStreaming={isStreaming && latestMessage?.id === message.id}
                 message={message}
+                onFollowUp={(text) => {
+                  handleSubmit({ text });
+                }}
               />
             ))
           )}
@@ -548,10 +553,12 @@ function ChatMessage({
   displayLabel,
   isStreaming,
   message,
+  onFollowUp,
 }: {
   displayLabel?: string | undefined;
   isStreaming: boolean;
   message: ChatUIMessage;
+  onFollowUp?: (text: string) => void;
 }) {
   const activityParts = getActivityParts(message);
   const reasoningText = getReasoningText(message);
@@ -626,6 +633,9 @@ function ChatMessage({
     );
   }
 
+  // Only attempt structured output detection when the message is not still streaming
+  const parsed = fullText && !isStreaming ? tryParseCardOutput(fullText) : null;
+
   return (
     <Message from="assistant">
       {activityParts.length > 0 || isThinking ? (
@@ -643,7 +653,22 @@ function ChatMessage({
 
       {fullText ? (
         <MessageContent>
-          <MessageResponse>{fullText}</MessageResponse>
+          {parsed ? (
+            <>
+              {parsed.prefixText ? (
+                <MessageResponse>{parsed.prefixText}</MessageResponse>
+              ) : null}
+              <ReportView
+                cardOutput={parsed.cardOutput}
+                onFollowUp={onFollowUp}
+              />
+              {parsed.suffixText ? (
+                <MessageResponse>{parsed.suffixText}</MessageResponse>
+              ) : null}
+            </>
+          ) : (
+            <MessageResponse>{fullText}</MessageResponse>
+          )}
           <MessageToolbar>
             <MessageActions>
               <CopyAction text={fullText} />

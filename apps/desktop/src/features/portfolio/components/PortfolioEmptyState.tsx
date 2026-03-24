@@ -12,20 +12,27 @@ export function PortfolioEmptyState({
   onAddHolding,
 }: PortfolioEmptyStateProps) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
-      <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
-        <BriefcaseIcon className="size-5 text-muted-foreground" />
+    <div className="flex flex-1 flex-col items-center justify-center gap-5 py-20">
+      <div className="relative">
+        <div className="absolute -inset-3 rounded-2xl bg-emerald-500/[0.06] blur-xl dark:bg-emerald-500/[0.08]" />
+        <div className="relative flex size-14 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.08] dark:bg-emerald-500/[0.1]">
+          <BriefcaseIcon className="size-6 text-emerald-500" />
+        </div>
       </div>
-      <h2 className="text-[15px] font-semibold text-foreground">Portfolio</h2>
-      <p className="max-w-sm text-center text-sm text-muted-foreground">
-        {PORTFOLIO_EMPTY_TEXT}
-      </p>
+      <div className="text-center">
+        <h2 className="text-[17px] font-semibold text-foreground">
+          Track your portfolio
+        </h2>
+        <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
+          {PORTFOLIO_EMPTY_TEXT}
+        </p>
+      </div>
       <div className="flex gap-2">
         <Button variant="outline" size="sm" onClick={onImport}>
           <UploadIcon className="size-3.5" />
           Import CSV
         </Button>
-        <Button variant="outline" size="sm" onClick={onAddHolding}>
+        <Button size="sm" onClick={onAddHolding}>
           <PlusIcon className="size-3.5" />
           Add Position
         </Button>

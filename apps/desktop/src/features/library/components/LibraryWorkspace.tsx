@@ -223,14 +223,21 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
           )}
         </>
       ) : (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
-            <BookOpenIcon className="size-5 text-muted-foreground" />
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 py-20">
+          <div className="relative">
+            <div className="absolute -inset-3 rounded-2xl bg-violet-500/[0.06] blur-xl dark:bg-violet-500/[0.08]" />
+            <div className="relative flex size-14 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/[0.08] dark:bg-violet-500/[0.1]">
+              <BookOpenIcon className="size-6 text-violet-500" />
+            </div>
           </div>
-          <h2 className="text-[15px] font-semibold text-foreground">Library</h2>
-          <p className="max-w-sm text-center text-sm text-muted-foreground">
-            {LIBRARY_EMPTY_TEXT}
-          </p>
+          <div className="text-center">
+            <h2 className="text-[17px] font-semibold text-foreground">
+              Your research library
+            </h2>
+            <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
+              {LIBRARY_EMPTY_TEXT}
+            </p>
+          </div>
         </div>
       )}
 

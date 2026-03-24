@@ -77,6 +77,22 @@ export default defineConfig({
               changeOrigin: true,
             },
             "/skills": { target: "http://127.0.0.1:19110", changeOrigin: true },
+            "/watchlist": {
+              target: "http://127.0.0.1:19110",
+              changeOrigin: true,
+            },
+            "/automations": {
+              target: "http://127.0.0.1:19110",
+              changeOrigin: true,
+            },
+            "/delivery-channels": {
+              target: "http://127.0.0.1:19110",
+              changeOrigin: true,
+            },
+            "/portfolio": {
+              target: "http://127.0.0.1:19110",
+              changeOrigin: true,
+            },
           },
         }),
     watch: {

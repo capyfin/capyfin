@@ -24,15 +24,47 @@ interface ChannelDefinition {
   type: DeliveryChannelType;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  accent: string;
+  iconColor: string;
 }
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
 export const CHANNEL_DEFINITIONS: ChannelDefinition[] = [
-  { type: "telegram", label: "Telegram", icon: SendIcon },
-  { type: "discord", label: "Discord", icon: MessageSquareIcon },
-  { type: "slack", label: "Slack", icon: MessageCircleIcon },
-  { type: "email", label: "Email", icon: MailIcon },
-  { type: "whatsapp", label: "WhatsApp", icon: PhoneIcon },
+  {
+    type: "telegram",
+    label: "Telegram",
+    icon: SendIcon,
+    accent: "bg-blue-500/10",
+    iconColor: "text-blue-500",
+  },
+  {
+    type: "discord",
+    label: "Discord",
+    icon: MessageSquareIcon,
+    accent: "bg-indigo-500/10",
+    iconColor: "text-indigo-500",
+  },
+  {
+    type: "slack",
+    label: "Slack",
+    icon: MessageCircleIcon,
+    accent: "bg-emerald-500/10",
+    iconColor: "text-emerald-500",
+  },
+  {
+    type: "email",
+    label: "Email",
+    icon: MailIcon,
+    accent: "bg-amber-500/10",
+    iconColor: "text-amber-500",
+  },
+  {
+    type: "whatsapp",
+    label: "WhatsApp",
+    icon: PhoneIcon,
+    accent: "bg-green-500/10",
+    iconColor: "text-green-500",
+  },
 ];
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
@@ -98,12 +130,14 @@ export function ChannelCard({
   return (
     <>
       <div
-        className="flex items-center justify-between rounded-lg border border-border/60 bg-card p-4"
+        className="flex items-center justify-between rounded-lg border border-border/60 bg-card p-4 transition-colors hover:border-border"
         data-testid={`channel-card-${definition.type}`}
       >
         <div className="flex items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-            <Icon className="size-4 text-muted-foreground" />
+          <div
+            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${definition.accent}`}
+          >
+            <Icon className={`size-4 ${definition.iconColor}`} />
           </div>
           <div>
             <p className="text-[13px] font-medium text-foreground">

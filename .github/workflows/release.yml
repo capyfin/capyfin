@@ -31,6 +31,7 @@ jobs:
     outputs:
       tag: ${{ steps.release_meta.outputs.tag }}
       version: ${{ steps.release_meta.outputs.version }}
+      tag_exists: ${{ steps.tag_state.outputs.tag_exists }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -49,20 +50,24 @@ jobs:
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
 
       - name: Fail if tag already exists
+        id: tag_state
         env:
           RELEASE_TAG: ${{ steps.release_meta.outputs.tag }}
         run: |
           if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
-            echo "Tag $RELEASE_TAG already exists on origin" >&2
-            exit 1
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Sync repository versions
+        if: steps.tag_state.outputs.tag_exists != 'true'
         env:
           RELEASE_VERSION: ${{ steps.release_meta.outputs.version }}
         run: node scripts/sync-version.mjs --set "$RELEASE_VERSION"
 
       - name: Commit release metadata
+        if: steps.tag_state.outputs.tag_exists != 'true'
         env:
           RELEASE_VERSION: ${{ steps.release_meta.outputs.version }}
         run: |
@@ -74,11 +79,13 @@ jobs:
           fi
 
       - name: Create release tag
+        if: steps.tag_state.outputs.tag_exists != 'true'
         env:
           RELEASE_TAG: ${{ steps.release_meta.outputs.tag }}
         run: git tag "$RELEASE_TAG"
 
       - name: Push release commit and tag
+        if: steps.tag_state.outputs.tag_exists != 'true'
         env:
           RELEASE_TAG: ${{ steps.release_meta.outputs.tag }}
           RELEASE_BRANCH: ${{ github.ref_name }}
@@ -131,6 +138,7 @@ jobs:
   create-release:
     name: Create GitHub release
     needs: [release-info]
+    if: always() && needs.release-info.result == 'success'
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.release.outputs.release_id }}
@@ -163,6 +171,7 @@ jobs:
   publish:
     name: Build and publish desktop bundles
     needs: [release-info, create-release]
+    if: always() && needs.release-info.result == 'success' && needs.create-release.result == 'success'
     strategy:
       fail-fast: false
       matrix:

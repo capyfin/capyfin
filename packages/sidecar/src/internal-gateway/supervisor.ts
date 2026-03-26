@@ -87,6 +87,7 @@ export class EmbeddedGatewaySupervisor {
   readonly #env: NodeJS.ProcessEnv;
   readonly #paths: EmbeddedGatewayPaths;
   #processState: EmbeddedGatewayProcessState | null = null;
+  #readyPromise: Promise<void> | null = null;
   #stopping = false;
 
   constructor(env: NodeJS.ProcessEnv = process.env) {
@@ -110,7 +111,7 @@ export class EmbeddedGatewaySupervisor {
     };
   }
 
-  async start(): Promise<void> {
+  async launch(): Promise<void> {
     if (this.#processState) {
       return;
     }
@@ -156,17 +157,37 @@ export class EmbeddedGatewaySupervisor {
       });
     });
 
-    await Promise.race([waitForReady(port), exitPromise]);
     this.#processState = {
       child,
       port,
       token,
     };
+    this.#readyPromise = Promise.race([waitForReady(port), exitPromise]).catch(
+      async (error: unknown) => {
+        if (!this.#stopping) {
+          await this.stop().catch(() => undefined);
+        } else {
+          this.#processState = null;
+          this.#readyPromise = null;
+        }
+        throw error;
+      },
+    );
+  }
+
+  async waitUntilReady(): Promise<void> {
+    await this.launch();
+    await this.#readyPromise;
+  }
+
+  async start(): Promise<void> {
+    await this.waitUntilReady();
   }
 
   async stop(): Promise<void> {
     const current = this.#processState;
     if (!current) {
+      this.#readyPromise = null;
       return;
     }
 
@@ -186,5 +207,6 @@ export class EmbeddedGatewaySupervisor {
     ]);
     this.#stopping = false;
     this.#processState = null;
+    this.#readyPromise = null;
   }
 }

@@ -36,7 +36,10 @@ export async function startSidecarServer(
   config: SidecarConfig = loadSidecarConfig(),
 ): Promise<SidecarServerHandle> {
   const gatewaySupervisor = new EmbeddedGatewaySupervisor(process.env);
-  await gatewaySupervisor.start();
+  await gatewaySupervisor.launch();
+  void gatewaySupervisor.waitUntilReady().catch((error: unknown) => {
+    console.error("[sidecar] embedded gateway failed to become ready", error);
+  });
   process.env.OPENCLAW_CONFIG_PATH = gatewaySupervisor.paths.configPath;
   process.env.OPENCLAW_OAUTH_DIR = gatewaySupervisor.paths.oauthDir;
   process.env.OPENCLAW_STATE_DIR = gatewaySupervisor.paths.stateDir;

@@ -29,6 +29,8 @@ The workflow will:
 5. Build macOS and Windows desktop bundles
 6. Upload the generated installers to that release
 
+The manual workflow expects a fresh version. If `vX.Y.Z` already exists on the remote, it fails instead of rebuilding an older tagged revision.
+
 You can also trigger the workflow by pushing a `vX.Y.Z` tag yourself. In that case the workflow uses the versions already committed in the tagged revision.
 
 ## Repository prerequisites

@@ -1,0 +1,99 @@
+import { createBasicAuthHeader } from "@capyfin/core";
+import type { HttpBindings } from "@hono/node-server";
+import { cors } from "hono/cors";
+import { Hono } from "hono";
+import { createAgentRoutes } from "./routes/agents.ts";
+import { createAuthRoutes } from "./routes/auth.ts";
+import { createAutomationRoutes } from "./routes/automations.ts";
+import { createChatRoutes } from "./routes/chat.ts";
+import { createDataProviderRoutes } from "./routes/data-providers.ts";
+import { createDeliveryChannelRoutes } from "./routes/delivery-channels.ts";
+import { createGlobalRoutes } from "./routes/global.ts";
+import { createLibraryRoutes } from "./routes/library.ts";
+import { createPortfolioRoutes } from "./routes/portfolio.ts";
+import { createPortfolioV2Routes } from "./routes/portfolio-v2.ts";
+import { createPreferencesRoutes } from "./routes/preferences.ts";
+import { createSkillRoutes } from "./routes/skills.ts";
+import { createWatchlistRoutes } from "./routes/watchlist.ts";
+import type { SidecarRuntime } from "./context.ts";
+
+const TAURI_ORIGINS = new Set([
+  "tauri://localhost",
+  "http://tauri.localhost",
+  "https://tauri.localhost",
+]);
+
+export function createSidecarApp(runtime: SidecarRuntime): Hono<{
+  Bindings: HttpBindings;
+}> {
+  const app = new Hono<{
+    Bindings: HttpBindings;
+  }>();
+
+  app.use(
+    "*",
+    cors({
+      origin(origin) {
+        if (!origin) {
+          return origin;
+        }
+
+        if (
+          origin.startsWith("http://localhost:") ||
+          origin.startsWith("http://127.0.0.1:")
+        ) {
+          return origin;
+        }
+
+        if (TAURI_ORIGINS.has(origin)) {
+          return origin;
+        }
+
+        return undefined;
+      },
+      allowHeaders: ["Authorization", "Content-Type"],
+      allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    }),
+  );
+
+  app.use("*", async (context, next) => {
+    if (context.req.method === "OPTIONS") {
+      return next();
+    }
+
+    const expected = createBasicAuthHeader(
+      runtime.config.username,
+      runtime.config.password,
+    );
+    const actual = context.req.header("authorization");
+
+    if (actual !== expected) {
+      context.header("WWW-Authenticate", 'Basic realm="CapyFin API"');
+      return context.json({ error: "Unauthorized" }, 401);
+    }
+
+    return next();
+  });
+
+  app.route("/agents", createAgentRoutes(runtime));
+  app.route("/agents", createPortfolioRoutes(runtime));
+  app.route("/automations", createAutomationRoutes(runtime));
+  app.route("/chat", createChatRoutes(runtime));
+  app.route("/delivery-channels", createDeliveryChannelRoutes(runtime));
+  app.route("/global", createGlobalRoutes(runtime));
+  app.route("/auth", createAuthRoutes(runtime));
+  app.route("/library", createLibraryRoutes(runtime));
+  app.route("/portfolio", createPortfolioV2Routes(runtime));
+  app.route("/preferences", createPreferencesRoutes(runtime));
+  app.route("/providers", createDataProviderRoutes(runtime));
+  app.route("/skills", createSkillRoutes(runtime));
+  app.route("/watchlist", createWatchlistRoutes(runtime));
+
+  app.notFound((context) => context.json({ error: "Not Found" }, 404));
+  app.onError((error, context) => {
+    console.error("[sidecar] unhandled error", error);
+    return context.json({ error: "Internal Server Error" }, 500);
+  });
+
+  return app;
+}

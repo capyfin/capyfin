@@ -2,11 +2,11 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "CapyFin",
   "version": "0.1.0",
-  "identifier": "com.capyfin.app",
+  "identifier": "com.capyfin.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1430",
-    "beforeBuildCommand": "pnpm build && pnpm sidecar:bundle",
+    "beforeBuildCommand": "pnpm build && pnpm --filter @capyfin/sidecar bundle:prepare",
     "frontendDist": "../dist"
   },
   "app": {

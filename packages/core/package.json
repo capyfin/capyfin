@@ -5,16 +5,16 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./agents": {
-      "types": "./src/agents/index.ts",
-      "default": "./src/agents/index.ts"
+      "types": "./dist/agents/index.d.ts",
+      "default": "./dist/agents/index.js"
     },
     "./config-paths": {
-      "types": "./src/config-paths.ts",
-      "default": "./src/config-paths.ts"
+      "types": "./dist/config-paths.d.ts",
+      "default": "./dist/config-paths.js"
     }
   },
   "files": [

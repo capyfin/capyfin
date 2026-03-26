@@ -35,7 +35,15 @@ async function run(command, args, cwd) {
 await rm(bundleDir, { force: true, recursive: true });
 await run(
   "pnpm",
-  ["deploy", "--legacy", "--filter", "@capyfin/sidecar", "--prod", bundleDir],
+  [
+    "deploy",
+    "--legacy",
+    "--filter",
+    "@capyfin/sidecar",
+    "--prod",
+    "--config.node-linker=hoisted",
+    bundleDir,
+  ],
   workspaceRoot,
 );
 await mkdir(dirname(bundledNodePath), { recursive: true });

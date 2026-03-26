@@ -1,21 +1,30 @@
 import type { AgentSession } from "@capyfin/contracts";
 import {
+  ChevronRightIcon,
   MessageSquareIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PlusIcon,
   SearchIcon,
+  SettingsIcon,
   TrashIcon,
-  Wallet2Icon,
-  ZapIcon,
 } from "lucide-react";
 import type { AppView } from "@/app/state/app-state";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { primaryNavigation } from "@/app/config/navigation";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import capyfinLogo from "@/assets/brand/capyfin-circled.png";
+import {
+  SETTINGS_TABS,
+  type SettingsTab,
+} from "@/features/settings/components/SettingsWorkspace";
 import { groupSessionsByDate } from "@/features/chat/session-grouping";
 import { formatSessionLabel } from "@/features/chat/session-label";
 import { formatSessionTimestamp } from "@/features/chat/session-timestamp";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,14 +44,16 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import type { AuthOverview } from "@/app/types";
 
 interface AppSidebarProps {
   activeSessionId?: string | undefined;
+  activeSettingsTab?: SettingsTab | undefined;
   activeView: Exclude<AppView, "providers-add">;
-  authOverview: AuthOverview | null;
   onNewChat?: (() => void) | undefined;
   onOpenCommandPalette?: (() => void) | undefined;
   onSessionDelete?: ((sessionId: string) => void) | undefined;
@@ -53,8 +64,8 @@ interface AppSidebarProps {
 
 export function AppSidebar({
   activeSessionId,
+  activeSettingsTab,
   activeView,
-  authOverview,
   onNewChat,
   onOpenCommandPalette,
   onSessionDelete,
@@ -62,8 +73,9 @@ export function AppSidebar({
   onSessionSelect,
   sessions,
 }: AppSidebarProps) {
-  const connectedProviderCount = authOverview?.connections.length ?? 0;
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(activeView === "settings");
+  const effectiveSettingsOpen = activeView === "settings" || settingsOpen;
   const sessionGroups = useMemo(
     () => groupSessionsByDate(sessions ?? []),
     [sessions],
@@ -80,9 +92,12 @@ export function AppSidebar({
               className="h-11 data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#launchpad">
-                <div className="relative flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm shadow-primary/20">
-                  <Wallet2Icon className="size-4" />
-                </div>
+                <img
+                  src={capyfinLogo}
+                  alt="CapyFin"
+                  className="size-8 rounded-lg object-contain"
+                  draggable={false}
+                />
                 <div className="grid flex-1 text-left leading-tight">
                   <span className="text-[13px] font-semibold tracking-tight">
                     CapyFin
@@ -173,31 +188,45 @@ export function AppSidebar({
         ) : null}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/60">
-        <div className="flex items-center gap-2.5 rounded-lg p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1">
-          <Avatar className="size-7 rounded-md">
-            <AvatarFallback className="rounded-md bg-gradient-to-br from-primary/15 to-primary/8 text-[10px] font-semibold text-primary">
-              CF
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-[12px] font-medium text-sidebar-foreground">
-              Primary household
-            </p>
-            <p className="truncate text-[11px] text-sidebar-foreground/45">
-              {connectedProviderCount > 0
-                ? `${String(connectedProviderCount)} provider${connectedProviderCount === 1 ? "" : "s"} connected`
-                : "Setup pending"}
-            </p>
-          </div>
-          {connectedProviderCount > 0 ? (
-            <div className="hidden items-center gap-1 rounded-full bg-success/10 px-1.5 py-0.5 text-success group-data-[collapsible=icon]:hidden lg:flex">
-              <ZapIcon className="size-2.5" />
-              <span className="text-[9px] font-medium">Live</span>
-            </div>
-          ) : null}
-        </div>
+      <SidebarFooter>
+        <SidebarMenu>
+          <Collapsible
+            open={effectiveSettingsOpen}
+            onOpenChange={setSettingsOpen}
+            className="group/collapsible"
+          >
+            <SidebarMenuItem>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  {SETTINGS_TABS.map((tab) => (
+                    <SidebarMenuSubItem key={tab.id}>
+                      <SidebarMenuSubButton
+                        href={`#settings/${tab.id}`}
+                        isActive={activeSettingsTab === tab.id}
+                        size="sm"
+                      >
+                        <tab.icon className="size-4" />
+                        <span>{tab.label}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton
+                  tooltip="Settings"
+                  isActive={activeView === "settings" && !settingsOpen}
+                >
+                  <SettingsIcon />
+                  <span>Settings</span>
+                  <ChevronRightIcon className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+            </SidebarMenuItem>
+          </Collapsible>
+        </SidebarMenu>
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   );

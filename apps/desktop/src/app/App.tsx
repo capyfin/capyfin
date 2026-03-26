@@ -15,7 +15,11 @@ import { BrainKnowledgeWorkspace } from "@/features/brain/components/BrainKnowle
 import { LaunchpadWorkspace } from "@/features/launchpad/components/LaunchpadWorkspace";
 import { LibraryWorkspace } from "@/features/library/components/LibraryWorkspace";
 import { PortfolioWorkspace } from "@/features/portfolio/components/PortfolioWorkspace";
-import { SettingsWorkspace } from "@/features/settings/components/SettingsWorkspace";
+import {
+  SettingsWorkspace,
+  SETTINGS_TABS,
+  type SettingsTab,
+} from "@/features/settings/components/SettingsWorkspace";
 import { WatchlistWorkspace } from "@/features/watchlist/components/WatchlistWorkspace";
 import {
   buildCardPrompt,
@@ -250,6 +254,8 @@ export function App() {
   }
 
   const currentView: Exclude<AppView, "providers-add"> = state.hashView;
+  const activeSettingsTab =
+    currentView === "settings" ? readSettingsTabFromHash() : undefined;
 
   return (
     <SidebarProvider
@@ -267,8 +273,8 @@ export function App() {
       />
       <AppSidebar
         activeSessionId={state.activeSessionId}
+        activeSettingsTab={activeSettingsTab}
         activeView={currentView}
-        authOverview={state.authOverview}
         onNewChat={() => {
           void handleNewChat();
         }}
@@ -351,6 +357,7 @@ export function App() {
               />
             ) : currentView === "settings" ? (
               <SettingsWorkspace
+                activeTab={activeSettingsTab ?? "ai-models"}
                 authOverview={state.authOverview}
                 client={state.client}
                 onAuthOverviewChange={(overview) => {
@@ -423,7 +430,10 @@ function readViewFromHash(): AppView {
     return "automation";
   }
 
-  if (window.location.hash === "#settings") {
+  if (
+    window.location.hash === "#settings" ||
+    window.location.hash.startsWith("#settings/")
+  ) {
     return "settings";
   }
 
@@ -432,4 +442,15 @@ function readViewFromHash(): AppView {
   }
 
   return "launchpad";
+}
+
+function readSettingsTabFromHash(): SettingsTab {
+  const match = /^#settings\/(.+)$/.exec(window.location.hash);
+  if (match?.[1]) {
+    const validIds: string[] = SETTINGS_TABS.map((t) => t.id);
+    if (validIds.includes(match[1])) {
+      return match[1] as SettingsTab;
+    }
+  }
+  return "ai-models";
 }

@@ -3,7 +3,6 @@ import {
   HomeIcon,
   ListChecksIcon,
   MessageSquareIcon,
-  SettingsIcon,
   ZapIcon,
 } from "lucide-react";
 
@@ -33,11 +32,6 @@ export const primaryNavigation = [
     title: "Automation",
     href: "#automation",
     icon: ZapIcon,
-  },
-  {
-    title: "Settings",
-    href: "#settings",
-    icon: SettingsIcon,
   },
 ] as const;
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */

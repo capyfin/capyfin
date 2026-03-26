@@ -1,10 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { SETTINGS_DESCRIPTION } from "./components/SettingsWorkspace";
+import { SETTINGS_TABS } from "./components/SettingsWorkspace";
 
-void test("SETTINGS_DESCRIPTION is a non-empty string", () => {
-  assert.ok(typeof SETTINGS_DESCRIPTION === "string");
-  assert.ok(SETTINGS_DESCRIPTION.length > 0);
+void test("SETTINGS_TABS contains all 6 settings sections", () => {
+  assert.equal(SETTINGS_TABS.length, 6);
+  const ids = SETTINGS_TABS.map((t) => t.id);
+  assert.ok(ids.includes("ai-models"));
+  assert.ok(ids.includes("financial-data"));
+  assert.ok(ids.includes("delivery-channels"));
+  assert.ok(ids.includes("appearance"));
+  assert.ok(ids.includes("preferences"));
+  assert.ok(ids.includes("advanced"));
 });
 
 void test("SettingsWorkspace exports a function component", async () => {
@@ -12,11 +18,10 @@ void test("SettingsWorkspace exports a function component", async () => {
   assert.equal(typeof mod.SettingsWorkspace, "function");
 });
 
-void test("SettingsWorkspace exports SettingsTab type with all 6 tabs", async () => {
-  // Verify the TABS config includes all required sections
+void test("SettingsWorkspace exports SETTINGS_TABS config", async () => {
   const mod = await import("./components/SettingsWorkspace");
   assert.ok("SettingsWorkspace" in mod);
-  assert.ok("SETTINGS_DESCRIPTION" in mod);
+  assert.ok("SETTINGS_TABS" in mod);
 });
 
 // ---------------------------------------------------------------------------

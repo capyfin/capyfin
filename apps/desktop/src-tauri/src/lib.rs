@@ -13,6 +13,12 @@ use crate::{
     state::{AppState, InitStep, SidecarConnection},
 };
 
+const SIDECAR_START_TIMEOUT: Duration = if cfg!(target_os = "windows") {
+    Duration::from_secs(90)
+} else {
+    Duration::from_secs(30)
+};
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let (init_tx, init_rx) = watch::channel(InitStep::SidecarWaiting);
@@ -70,13 +76,17 @@ async fn initialize(app: AppHandle, init_tx: watch::Sender<InitStep>) {
     state.register_sidecar(spawned.handle, connection).await;
     let _ = init_tx.send(InitStep::SidecarReady);
 
-    let initialization_result =
-        tokio::time::timeout(Duration::from_secs(20), spawned.health_check.0)
-            .await
-            .map_err(|_| "Timed out waiting for the CapyFin sidecar to become healthy".to_string())
-            .and_then(|result| {
-                result.map_err(|error| format!("Sidecar health check task failed: {error}"))?
-            });
+    let initialization_result = tokio::time::timeout(SIDECAR_START_TIMEOUT, spawned.health_check.0)
+        .await
+        .map_err(|_| {
+            format!(
+                "Timed out waiting for the CapyFin sidecar to become healthy after {} seconds",
+                SIDECAR_START_TIMEOUT.as_secs()
+            )
+        })
+        .and_then(|result| {
+            result.map_err(|error| format!("Sidecar health check task failed: {error}"))?
+        });
 
     if let Err(error) = initialization_result {
         state.set_initialization_error(error).await;

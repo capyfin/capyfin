@@ -7,6 +7,8 @@ use std::{
 
 #[cfg(unix)]
 use std::os::unix::process::ExitStatusExt;
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
 
 use tauri::{AppHandle, Manager};
 use tokio::{
@@ -15,6 +17,9 @@ use tokio::{
     sync::{mpsc, oneshot},
     task::JoinHandle,
 };
+
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 #[derive(Clone, Debug)]
 pub struct SidecarHandle {
@@ -50,6 +55,8 @@ pub fn spawn_local_server(
     password: &str,
 ) -> Result<SpawnedSidecar, String> {
     let mut command = build_sidecar_command(app)?;
+    #[cfg(windows)]
+    command.creation_flags(CREATE_NO_WINDOW);
     command
         .arg("--hostname")
         .arg(hostname)

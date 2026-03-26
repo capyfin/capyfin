@@ -16,7 +16,7 @@ interface EmbeddedGatewayProcessState {
   token: string;
 }
 
-const HOST_READY_TIMEOUT_MS = 20_000;
+const HOST_READY_TIMEOUT_MS = process.platform === "win32" ? 90_000 : 30_000;
 
 function resolveHostCommand(
   port: number,
@@ -137,6 +137,7 @@ export class EmbeddedGatewaySupervisor {
         OPENCLAW_STATE_DIR: this.#paths.stateDir,
       },
       stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
     });
 
     if (shouldPipeGatewayLogs(this.#env)) {

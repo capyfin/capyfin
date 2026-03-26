@@ -112,7 +112,7 @@ export class SidecarClient {
     return new SidecarClient(sidecarConnectionSchema.parse(candidate));
   }
 
-  async waitUntilHealthy(timeoutMs = 20_000): Promise<SidecarHealth> {
+  async waitUntilHealthy(timeoutMs = 30_000): Promise<SidecarHealth> {
     const deadline = Date.now() + timeoutMs;
 
     while (Date.now() < deadline) {

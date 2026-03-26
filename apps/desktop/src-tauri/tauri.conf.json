@@ -27,6 +27,9 @@
   },
   "bundle": {
     "active": true,
+    "macOS": {
+      "signingIdentity": "-"
+    },
     "resources": {
       "../../../packages/sidecar/.bundle/": "sidecar/"
     },

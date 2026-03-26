@@ -128,10 +128,37 @@ jobs:
           echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
-  create-release:
-    name: Create GitHub release
+  validate-release-config:
+    name: Validate release signing configuration
     needs: [release-info]
     if: always() && needs.release-info.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require Apple signing and notarization secrets
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          missing=0
+          for secret_name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+            if [ -z "${!secret_name}" ]; then
+              echo "::error::Missing required repository secret: $secret_name"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::macOS public releases require Developer ID signing and notarization credentials. Configure the missing Apple secrets and rerun the release."
+            exit 1
+          fi
+
+  create-release:
+    name: Create GitHub release
+    needs: [release-info, validate-release-config]
+    if: always() && needs.release-info.result == 'success' && needs.validate-release-config.result == 'success'
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.release.outputs.release_id }}
@@ -163,8 +190,8 @@ jobs:
 
   publish:
     name: Build and publish desktop bundles
-    needs: [release-info, create-release]
-    if: always() && needs.release-info.result == 'success' && needs.create-release.result == 'success'
+    needs: [release-info, validate-release-config, create-release]
+    if: always() && needs.release-info.result == 'success' && needs.validate-release-config.result == 'success' && needs.create-release.result == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -202,6 +229,12 @@ jobs:
       - uses: tauri-apps/tauri-action@v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         with:
           projectPath: ./apps/desktop
           tauriScript: pnpm tauri

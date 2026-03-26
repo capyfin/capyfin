@@ -41,11 +41,28 @@ You can also trigger the workflow by pushing a `vX.Y.Z` tag yourself. In that ca
 
 ## Signing
 
-The current workflow builds unsigned desktop bundles so release automation works without extra secrets.
+Local macOS builds use Tauri's ad-hoc signing identity (`-`) by default. That is suitable for internal testing only.
 
 For production distribution outside internal testing, add platform signing credentials before broad release:
 
 - macOS: Developer ID Application certificate and notarization credentials
 - Windows: code-signing certificate
 
-Unsigned artifacts are valid for testing, but signed installers are the production baseline.
+The release workflow now requires Apple signing/notarization secrets before it creates a public GitHub release, so it does not publish broken macOS assets.
+
+Configure these GitHub Actions secrets for macOS releases:
+
+- `APPLE_CERTIFICATE`
+- `APPLE_CERTIFICATE_PASSWORD`
+- `APPLE_ID`
+- `APPLE_PASSWORD`
+- `APPLE_TEAM_ID`
+
+Optional when the certificate imports multiple identities:
+
+- `APPLE_SIGNING_IDENTITY`
+
+Production baseline:
+
+- macOS: Developer ID signed and notarized
+- Windows: code-signed installers

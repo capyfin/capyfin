@@ -7,7 +7,12 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const packageDir = resolve(scriptDir, "..");
 const workspaceRoot = resolve(packageDir, "../..");
 const bundleDir = resolve(packageDir, ".bundle");
-const bundledNodePath = join(bundleDir, "node", "bin", "node");
+const bundledNodePath = join(
+  bundleDir,
+  "node",
+  "bin",
+  process.platform === "win32" ? "node.exe" : "node",
+);
 
 async function run(command, args, cwd) {
   await new Promise((resolvePromise, rejectPromise) => {
@@ -48,4 +53,6 @@ await run(
 );
 await mkdir(dirname(bundledNodePath), { recursive: true });
 await cp(process.execPath, bundledNodePath);
-await chmod(bundledNodePath, 0o755);
+if (process.platform !== "win32") {
+  await chmod(bundledNodePath, 0o755);
+}

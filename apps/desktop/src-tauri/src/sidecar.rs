@@ -217,10 +217,15 @@ fn sidecar_entrypoint(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 fn packaged_node_binary(app: &AppHandle) -> Option<PathBuf> {
-    app.path()
-        .resource_dir()
-        .ok()
-        .map(|resource_dir| resource_dir.join("sidecar/node/bin/node"))
+    let binary_name = format!("node{}", std::env::consts::EXE_SUFFIX);
+
+    app.path().resource_dir().ok().map(|resource_dir| {
+        resource_dir
+            .join("sidecar")
+            .join("node")
+            .join("bin")
+            .join(binary_name)
+    })
 }
 
 fn workspace_root() -> PathBuf {

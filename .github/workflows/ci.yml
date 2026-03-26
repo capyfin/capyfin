@@ -21,8 +21,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: package.json
+          node-version: 22
           cache: pnpm
+
+      - name: Check version sync
+        run: pnpm release:check-version
 
       - run: pnpm install --frozen-lockfile
 
@@ -48,8 +51,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: package.json
+          node-version: 22
           cache: pnpm
+
+      - name: Check version sync
+        run: pnpm release:check-version
 
       - run: pnpm install --frozen-lockfile
 

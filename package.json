@@ -16,6 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "turbo run lint",
+    "release:check-version": "node scripts/sync-version.mjs --check",
+    "release:sync-version": "node scripts/sync-version.mjs",
     "rust:check": "cargo check --workspace",
     "rust:clippy": "cargo clippy --workspace --all-targets -- -D warnings",
     "rust:fmt": "cargo fmt --all",

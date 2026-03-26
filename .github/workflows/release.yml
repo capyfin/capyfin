@@ -206,7 +206,7 @@ jobs:
       - name: Verify release version sync
         run: pnpm release:check-version
 
-      - uses: tauri-apps/tauri-action@v1
+      - uses: tauri-apps/tauri-action@v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

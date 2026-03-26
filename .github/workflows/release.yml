@@ -216,5 +216,5 @@ jobs:
           tagName: ${{ needs.release-info.outputs.tag }}
           args: --target ${{ matrix.target }} --ci
           retryAttempts: 2
-          uploadUpdaterJson: false
-          releaseAssetNamePattern: CapyFin_[version]_[platform]_[arch][_setup].[ext]
+          includeUpdaterJson: false
+          assetNamePattern: CapyFin_[version]_[platform]_[arch][_setup].[ext]

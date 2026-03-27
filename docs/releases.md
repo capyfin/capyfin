@@ -48,19 +48,16 @@ For production distribution outside internal testing, add platform signing crede
 - macOS: Developer ID Application certificate and notarization credentials
 - Windows: code-signing certificate
 
-When Apple signing credentials are configured in GitHub Actions, the release workflow passes them through automatically.
+The current release workflow does not attempt Developer ID signing or notarization in CI. It publishes ad-hoc-signed macOS bundles so the release can produce `.dmg` and `.app.tar.gz` artifacts without Apple certificate setup.
 
-Configure these GitHub Actions secrets when you want notarized macOS releases:
+If you later want notarized macOS releases, reintroduce the Apple signing environment and configure:
 
 - `APPLE_CERTIFICATE`
 - `APPLE_CERTIFICATE_PASSWORD`
 - `APPLE_ID`
 - `APPLE_PASSWORD`
 - `APPLE_TEAM_ID`
-
-Optional when the certificate imports multiple identities:
-
-- `APPLE_SIGNING_IDENTITY`
+- optional: `APPLE_SIGNING_IDENTITY`
 
 Production baseline:
 

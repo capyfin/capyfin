@@ -41,6 +41,7 @@ void test("agent routes manage agents and create sessions", async (context) => {
       workspaceDir: string;
     }[]
   >();
+  let gatewayWaitCalls = 0;
 
   const runtime = {
     authSessions: {} as never,
@@ -144,7 +145,12 @@ void test("agent routes manage agents and create sessions", async (context) => {
         return Promise.resolve(next);
       },
     },
-    gatewaySupervisor: {} as never,
+    gatewaySupervisor: {
+      waitUntilReady() {
+        gatewayWaitCalls++;
+        return Promise.resolve();
+      },
+    },
     startedAt: Date.now(),
     version: "0.1.0-test",
   };
@@ -214,4 +220,5 @@ void test("agent routes manage agents and create sessions", async (context) => {
   assert.ok(createdSession);
   assert.equal(createdSession.agentId, "research");
   assert.equal(createdSession.label, "Market open");
+  assert.equal(gatewayWaitCalls, 2);
 });

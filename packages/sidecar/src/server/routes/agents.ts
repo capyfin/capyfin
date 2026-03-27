@@ -47,12 +47,14 @@ export function createAgentRoutes(runtime: SidecarRuntime): Hono {
   });
 
   app.get("/sessions", async (context) => {
+    await runtime.gatewaySupervisor.waitUntilReady();
     const agentId = context.req.query("agentId")?.trim();
     const sessions = await runtime.embeddedGateway.listSessions(agentId);
     return context.json(agentSessionListSchema.parse(sessions));
   });
 
   app.post("/sessions", async (context) => {
+    await runtime.gatewaySupervisor.waitUntilReady();
     const payload = createAgentSessionRequestSchema.parse(
       await context.req.json(),
     );
@@ -61,6 +63,7 @@ export function createAgentRoutes(runtime: SidecarRuntime): Hono {
   });
 
   app.delete("/sessions/:sessionId", async (context) => {
+    await runtime.gatewaySupervisor.waitUntilReady();
     const result = await runtime.embeddedGateway.deleteSession(
       context.req.param("sessionId"),
     );
@@ -68,6 +71,7 @@ export function createAgentRoutes(runtime: SidecarRuntime): Hono {
   });
 
   app.patch("/sessions/:sessionId", async (context) => {
+    await runtime.gatewaySupervisor.waitUntilReady();
     const payload = updateAgentSessionRequestSchema.parse(
       await context.req.json(),
     );

@@ -4,6 +4,7 @@ import { createChatRoutes } from "./chat.ts";
 
 void test("chat routes expose bootstrap and stream endpoints", async () => {
   let streamed = false;
+  let gatewayWaitCalls = 0;
   const app = createChatRoutes(
     {
       automationService: {} as never,
@@ -18,7 +19,12 @@ void test("chat routes expose bootstrap and stream endpoints", async () => {
         username: "capyfin",
       },
       embeddedGateway: {} as never,
-      gatewaySupervisor: {} as never,
+      gatewaySupervisor: {
+        waitUntilReady() {
+          gatewayWaitCalls++;
+          return Promise.resolve();
+        },
+      } as never,
       libraryService: {} as never,
       portfolioService: {} as never,
       preferencesService: {} as never,
@@ -101,10 +107,12 @@ void test("chat routes expose bootstrap and stream endpoints", async () => {
   });
   assert.equal(streamResponse.status, 200);
   assert.equal(streamed, true);
+  assert.equal(gatewayWaitCalls, 2);
 });
 
 void test("chat routes normalize plain string messages from the transport", async () => {
   let streamed = false;
+  let gatewayWaitCalls = 0;
   const app = createChatRoutes(
     {
       automationService: {} as never,
@@ -119,7 +127,12 @@ void test("chat routes normalize plain string messages from the transport", asyn
         username: "capyfin",
       },
       embeddedGateway: {} as never,
-      gatewaySupervisor: {} as never,
+      gatewaySupervisor: {
+        waitUntilReady() {
+          gatewayWaitCalls++;
+          return Promise.resolve();
+        },
+      } as never,
       libraryService: {} as never,
       portfolioService: {} as never,
       preferencesService: {} as never,
@@ -156,4 +169,5 @@ void test("chat routes normalize plain string messages from the transport", asyn
 
   assert.equal(streamResponse.status, 200);
   assert.equal(streamed, true);
+  assert.equal(gatewayWaitCalls, 1);
 });

@@ -48,9 +48,9 @@ For production distribution outside internal testing, add platform signing crede
 - macOS: Developer ID Application certificate and notarization credentials
 - Windows: code-signing certificate
 
-The release workflow now requires Apple signing/notarization secrets before it creates a public GitHub release, so it does not publish broken macOS assets.
+When Apple signing credentials are configured in GitHub Actions, the release workflow passes them through automatically.
 
-Configure these GitHub Actions secrets for macOS releases:
+Configure these GitHub Actions secrets when you want notarized macOS releases:
 
 - `APPLE_CERTIFICATE`
 - `APPLE_CERTIFICATE_PASSWORD`

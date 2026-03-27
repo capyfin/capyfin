@@ -644,6 +644,32 @@ export function resolveCompatibleAgentModelRef(params: {
   );
 }
 
+export function makeUniqueSessionLabel(
+  baseLabel: string,
+  existingLabels: string[],
+): string {
+  const normalizedBaseLabel = baseLabel.trim();
+  if (!normalizedBaseLabel) {
+    return baseLabel;
+  }
+
+  const labelSet = new Set(
+    existingLabels
+      .map((label) => label.trim())
+      .filter((label) => label.length > 0),
+  );
+  if (!labelSet.has(normalizedBaseLabel)) {
+    return normalizedBaseLabel;
+  }
+
+  let counter = 2;
+  while (labelSet.has(`${normalizedBaseLabel} (${String(counter)})`)) {
+    counter++;
+  }
+
+  return `${normalizedBaseLabel} (${String(counter)})`;
+}
+
 export class EmbeddedGatewayClient {
   readonly #authState: {
     getOverview(): Promise<
@@ -816,12 +842,20 @@ export class EmbeddedGatewayClient {
       agent,
       authOverview,
     });
+    const label = payload.label?.trim()
+      ? makeUniqueSessionLabel(
+          payload.label,
+          (await this.listSessions(agent.id)).sessions
+            .map((session) => session.label)
+            .filter((candidate): candidate is string => Boolean(candidate)),
+        )
+      : undefined;
     const sessionKey = `agent:${agent.id}:session:${randomUUID()}`;
     const patch = await this.request<GatewaySessionsPatchResult>(
       "sessions.patch",
       {
         key: sessionKey,
-        ...(payload.label?.trim() ? { label: payload.label.trim() } : {}),
+        ...(label ? { label } : {}),
         ...(fallbackModelRef ? { model: fallbackModelRef } : {}),
       },
     );
@@ -843,7 +877,7 @@ export class EmbeddedGatewayClient {
       agentName: agent.name,
       createdAt: new Date(patch.entry.updatedAt ?? Date.now()).toISOString(),
       id: patch.entry.sessionId,
-      ...(payload.label?.trim() ? { label: payload.label.trim() } : {}),
+      ...(label ? { label } : {}),
       sessionFile: resolveGatewaySessionFile(
         this.#paths,
         agent.id,

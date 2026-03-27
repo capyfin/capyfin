@@ -46,6 +46,7 @@ export function createChatRoutes(
     options.createChatService ?? (() => runtime.embeddedGateway);
 
   app.get("/bootstrap", async (context) => {
+    await runtime.gatewaySupervisor.waitUntilReady();
     const agentId = context.req.query("agentId")?.trim();
     const sessionId = context.req.query("sessionId")?.trim();
     const bootstrap = await createChatService().bootstrapConversation(
@@ -56,6 +57,7 @@ export function createChatRoutes(
   });
 
   app.post("/", async (context) => {
+    await runtime.gatewaySupervisor.waitUntilReady();
     const payload = chatRequestSchema.parse(await context.req.json());
     const normalizedMessage =
       typeof payload.message === "string"

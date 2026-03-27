@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Agent, ProviderModelCatalog } from "@capyfin/contracts";
-import { resolveCompatibleAgentModelRef } from "./gateway-client.ts";
+import {
+  makeUniqueSessionLabel,
+  resolveCompatibleAgentModelRef,
+} from "./gateway-client.ts";
 
 const baseAgent: Agent = {
   agentDir: "/tmp/main",
@@ -96,4 +99,22 @@ void test("resolveCompatibleAgentModelRef preserves valid explicit agent models"
   });
 
   assert.equal(result, "github-copilot/gpt-4o");
+});
+
+void test("makeUniqueSessionLabel returns base label when no collision exists", () => {
+  assert.equal(
+    makeUniqueSessionLabel("Morning Brief", ["Deep Dive", "Market Health"]),
+    "Morning Brief",
+  );
+});
+
+void test("makeUniqueSessionLabel appends the next numeric suffix on collision", () => {
+  assert.equal(
+    makeUniqueSessionLabel("Morning Brief", [
+      "Morning Brief",
+      "Morning Brief (2)",
+      "Morning Brief (4)",
+    ]),
+    "Morning Brief (3)",
+  );
 });

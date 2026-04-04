@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import packageJson from "../package.json" with { type: "json" };
 import { AutomationService } from "./automation/service.ts";
 import { RuntimeProviderAuthService } from "./auth/service.ts";
+import { CasesService } from "./cases/service.ts";
 import { RuntimeAuthSessionManager } from "./auth/sessions.ts";
 import { loadSidecarConfig, type SidecarConfig } from "./config.ts";
 import { DataProviderService } from "./data-providers/service.ts";
@@ -59,6 +60,7 @@ export async function startSidecarServer(
   const automationService = new AutomationService(
     gatewaySupervisor.paths.stateDir,
   );
+  const casesService = new CasesService(gatewaySupervisor.paths.stateDir);
   const dataProviderService = new DataProviderService(
     gatewaySupervisor.paths.stateDir,
   );
@@ -86,6 +88,7 @@ export async function startSidecarServer(
   const runtime = {
     automationService,
     authService,
+    casesService,
     authSessions: new RuntimeAuthSessionManager(() => authService),
     config,
     dataProviderService,

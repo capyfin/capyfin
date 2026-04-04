@@ -817,6 +817,122 @@ export const testChannelResponseSchema = z.object({
   message: z.string().min(1),
 });
 
+// ---------------------------------------------------------------------------
+// Investment Cases
+// ---------------------------------------------------------------------------
+
+export const caseStanceSchema = z.enum([
+  "bullish",
+  "bearish",
+  "neutral",
+  "watching",
+]);
+
+export const caseSectionSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  content: z.string(),
+  confidence: confidenceSchema,
+  citations: z.array(outputCitationSchema),
+});
+
+export const caseHistoryEventTypeSchema = z.enum([
+  "created",
+  "refreshed",
+  "earnings-update",
+  "manual-edit",
+  "comparison",
+]);
+
+export const caseVersionSchema = z.object({
+  stance: caseStanceSchema,
+  confidence: confidenceSchema,
+});
+
+export const caseHistoryEntrySchema = z.object({
+  id: z.string().min(1),
+  date: z.string().min(1),
+  eventType: caseHistoryEventTypeSchema,
+  summary: z.string(),
+  priorStance: caseStanceSchema.optional(),
+  newStance: caseStanceSchema.optional(),
+  priorConfidence: confidenceSchema.optional(),
+  newConfidence: confidenceSchema.optional(),
+});
+
+export const investmentCaseSchema = z.object({
+  id: z.string().min(1),
+  ticker: z.string().min(1),
+  companyName: z.string().min(1),
+  stance: caseStanceSchema,
+  confidence: confidenceSchema,
+  lastReviewedAt: z.string().min(1),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  sections: z.array(caseSectionSchema),
+  keyAssumptions: z.array(z.string()),
+  invalidationSignals: z.array(z.string()),
+  nextActions: z.array(z.string()),
+  history: z.array(caseHistoryEntrySchema),
+  tags: z.array(z.string()),
+});
+
+export const createCaseRequestSchema = z.object({
+  ticker: z.string().min(1),
+  companyName: z.string().min(1),
+  stance: caseStanceSchema.optional(),
+  confidence: confidenceSchema.optional(),
+  sections: z.array(caseSectionSchema).optional(),
+  keyAssumptions: z.array(z.string()).optional(),
+  invalidationSignals: z.array(z.string()).optional(),
+  nextActions: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export const updateCaseRequestSchema = z.object({
+  ticker: z.string().min(1).optional(),
+  companyName: z.string().min(1).optional(),
+  stance: caseStanceSchema.optional(),
+  confidence: confidenceSchema.optional(),
+  lastReviewedAt: z.string().min(1).optional(),
+  sections: z.array(caseSectionSchema).optional(),
+  keyAssumptions: z.array(z.string()).optional(),
+  invalidationSignals: z.array(z.string()).optional(),
+  nextActions: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export const caseListSchema = z.object({
+  cases: z.array(investmentCaseSchema),
+});
+
+export const deleteCaseResponseSchema = z.object({
+  deleted: z.literal(true),
+});
+
+export const addCaseHistoryEntryRequestSchema = z.object({
+  eventType: caseHistoryEventTypeSchema,
+  summary: z.string(),
+  priorStance: caseStanceSchema.optional(),
+  newStance: caseStanceSchema.optional(),
+  priorConfidence: confidenceSchema.optional(),
+  newConfidence: confidenceSchema.optional(),
+});
+
+export type CaseStance = z.infer<typeof caseStanceSchema>;
+export type CaseSection = z.infer<typeof caseSectionSchema>;
+export type CaseHistoryEventType = z.infer<typeof caseHistoryEventTypeSchema>;
+export type CaseVersion = z.infer<typeof caseVersionSchema>;
+export type CaseHistoryEntry = z.infer<typeof caseHistoryEntrySchema>;
+export type InvestmentCase = z.infer<typeof investmentCaseSchema>;
+export type CreateCaseRequest = z.infer<typeof createCaseRequestSchema>;
+export type UpdateCaseRequest = z.infer<typeof updateCaseRequestSchema>;
+export type CaseList = z.infer<typeof caseListSchema>;
+export type DeleteCaseResponse = z.infer<typeof deleteCaseResponseSchema>;
+export type AddCaseHistoryEntryRequest = z.infer<
+  typeof addCaseHistoryEntryRequestSchema
+>;
+
 export const appManifest = appManifestSchema.parse(appManifestJson);
 
 export function createBasicAuthHeader(

@@ -87,6 +87,20 @@ import {
   type ConnectChannelRequest,
   type DisconnectChannelResponse,
   type TestChannelResponse,
+  type InvestmentCase,
+  type CaseList,
+  type CreateCaseRequest,
+  type UpdateCaseRequest,
+  type DeleteCaseResponse,
+  type CaseHistoryEntry,
+  type AddCaseHistoryEntryRequest,
+  investmentCaseSchema,
+  caseListSchema,
+  createCaseRequestSchema,
+  updateCaseRequestSchema,
+  deleteCaseResponseSchema,
+  caseHistoryEntrySchema,
+  addCaseHistoryEntryRequestSchema,
   watchlistListSchema,
   watchlistItemSchema,
   addWatchlistItemRequestSchema,
@@ -472,6 +486,57 @@ export class SidecarClient {
       await this.request("/preferences", {
         body: JSON.stringify(updatePreferencesRequestSchema.parse(partial)),
         method: "PUT",
+      }),
+    );
+  }
+
+  async listCases(): Promise<CaseList> {
+    return caseListSchema.parse(await this.request("/cases"));
+  }
+
+  async getCase(id: string): Promise<InvestmentCase> {
+    return investmentCaseSchema.parse(
+      await this.request(`/cases/${encodeURIComponent(id)}`),
+    );
+  }
+
+  async createCase(request: CreateCaseRequest): Promise<InvestmentCase> {
+    return investmentCaseSchema.parse(
+      await this.request("/cases", {
+        body: JSON.stringify(createCaseRequestSchema.parse(request)),
+        method: "POST",
+      }),
+    );
+  }
+
+  async updateCase(
+    id: string,
+    request: UpdateCaseRequest,
+  ): Promise<InvestmentCase> {
+    return investmentCaseSchema.parse(
+      await this.request(`/cases/${encodeURIComponent(id)}`, {
+        body: JSON.stringify(updateCaseRequestSchema.parse(request)),
+        method: "PATCH",
+      }),
+    );
+  }
+
+  async deleteCase(id: string): Promise<DeleteCaseResponse> {
+    return deleteCaseResponseSchema.parse(
+      await this.request(`/cases/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      }),
+    );
+  }
+
+  async addCaseHistoryEntry(
+    id: string,
+    entry: AddCaseHistoryEntryRequest,
+  ): Promise<CaseHistoryEntry> {
+    return caseHistoryEntrySchema.parse(
+      await this.request(`/cases/${encodeURIComponent(id)}/history`, {
+        body: JSON.stringify(addCaseHistoryEntryRequestSchema.parse(entry)),
+        method: "POST",
       }),
     );
   }

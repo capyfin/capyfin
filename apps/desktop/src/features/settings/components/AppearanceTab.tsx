@@ -20,17 +20,12 @@ export function AppearanceTab() {
 
   return (
     <div className="flex flex-col gap-5" data-testid="appearance-tab">
-      <div>
-        <h2 className="text-[15px] font-semibold text-foreground">
-          Appearance
-        </h2>
-        <p className="mt-0.5 text-[12px] text-muted-foreground">
-          Customize the look and feel of the application.
-        </p>
-      </div>
+      <p className="text-[13px] text-muted-foreground">
+        Customize the look and feel of the application.
+      </p>
 
-      <div>
-        <label className="mb-2 block text-[13px] font-medium text-foreground">
+      <div className="rounded-lg border border-border/60 bg-card p-5">
+        <label className="mb-3 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
           Theme
         </label>
         <div className="grid grid-cols-3 gap-3">
@@ -41,16 +36,22 @@ export function AppearanceTab() {
               <button
                 key={option.value}
                 type="button"
-                className={`flex flex-col items-center gap-2 rounded-lg border p-4 transition-colors ${
+                className={`flex flex-col items-center gap-2.5 rounded-lg border p-5 transition-all duration-200 ${
                   isActive
-                    ? "border-primary bg-primary/5 text-foreground"
-                    : "border-border/60 bg-card text-muted-foreground hover:border-border hover:text-foreground"
+                    ? "border-primary/40 bg-primary/[0.06] text-foreground ring-1 ring-primary/20"
+                    : "border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted/30 hover:text-foreground"
                 }`}
                 onClick={() => {
                   setTheme(option.value);
                 }}
               >
-                <Icon className="size-5" />
+                <div
+                  className={`flex size-10 items-center justify-center rounded-full ${isActive ? "bg-primary/10" : "bg-muted/60"}`}
+                >
+                  <Icon
+                    className={`size-5 ${isActive ? "text-primary" : ""}`}
+                  />
+                </div>
                 <span className="text-[12px] font-medium">{option.label}</span>
               </button>
             );

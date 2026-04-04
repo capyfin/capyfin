@@ -160,14 +160,9 @@ export function AIModelsTab({
   return (
     <div className="flex flex-col gap-5" data-testid="ai-models-tab">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-[15px] font-semibold text-foreground">
-            AI Models
-          </h2>
-          <p className="mt-0.5 text-[12px] text-muted-foreground">
-            Manage AI provider connections, models, and credentials.
-          </p>
-        </div>
+        <p className="text-[13px] text-muted-foreground">
+          Manage AI provider connections, models, and credentials.
+        </p>
         <div className="flex items-center gap-2">
           <Button
             type="button"

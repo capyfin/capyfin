@@ -126,14 +126,9 @@ export function PreferencesTab({
 
   return (
     <div className="flex flex-col gap-5" data-testid="preferences-tab">
-      <div>
-        <h2 className="text-[15px] font-semibold text-foreground">
-          Preferences
-        </h2>
-        <p className="mt-0.5 text-[12px] text-muted-foreground">
-          Tailor analysis and reports to your investment profile.
-        </p>
-      </div>
+      <p className="text-[13px] text-muted-foreground">
+        Tailor analysis and reports to your investment profile.
+      </p>
 
       {errorMessage ? (
         <FeedbackBanner tone="error">{errorMessage}</FeedbackBanner>
@@ -142,41 +137,46 @@ export function PreferencesTab({
         <FeedbackBanner tone="success">{feedback}</FeedbackBanner>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <SelectField
-          label="Investment Style"
-          value={investmentStyle}
-          options={INVESTMENT_STYLES}
-          onChange={setInvestmentStyle}
-        />
-        <SelectField
-          label="Time Horizon"
-          value={timeHorizon}
-          options={TIME_HORIZONS}
-          onChange={setTimeHorizon}
-        />
-        <SelectField
-          label="Risk Tolerance"
-          value={riskTolerance}
-          options={RISK_TOLERANCES}
-          onChange={setRiskTolerance}
-        />
-        <SelectField
-          label="Market Focus"
-          value={marketFocus}
-          options={MARKET_FOCUSES}
-          onChange={setMarketFocus}
-        />
-        <SelectField
-          label="Report Density"
-          value={reportDensity}
-          options={REPORT_DENSITIES}
-          onChange={setReportDensity}
-        />
+      <div className="rounded-lg border border-border/60 bg-card p-5">
+        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+          Investment Profile
+        </h3>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField
+            label="Investment Style"
+            value={investmentStyle}
+            options={INVESTMENT_STYLES}
+            onChange={setInvestmentStyle}
+          />
+          <SelectField
+            label="Time Horizon"
+            value={timeHorizon}
+            options={TIME_HORIZONS}
+            onChange={setTimeHorizon}
+          />
+          <SelectField
+            label="Risk Tolerance"
+            value={riskTolerance}
+            options={RISK_TOLERANCES}
+            onChange={setRiskTolerance}
+          />
+          <SelectField
+            label="Market Focus"
+            value={marketFocus}
+            options={MARKET_FOCUSES}
+            onChange={setMarketFocus}
+          />
+          <SelectField
+            label="Report Density"
+            value={reportDensity}
+            options={REPORT_DENSITIES}
+            onChange={setReportDensity}
+          />
+        </div>
       </div>
 
-      <div>
-        <label className="mb-2 block text-[13px] font-medium text-foreground">
+      <div className="rounded-lg border border-border/60 bg-card p-5">
+        <label className="mb-3 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
           Favorite Sectors
         </label>
         <div className="flex flex-wrap gap-2">
@@ -186,10 +186,10 @@ export function PreferencesTab({
               <button
                 key={sector}
                 type="button"
-                className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-[12px] transition-colors ${
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] transition-all duration-150 ${
                   isSelected
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-border/60 bg-card text-muted-foreground hover:border-border hover:text-foreground"
+                    ? "border-primary/40 bg-primary/10 text-primary shadow-sm shadow-primary/5"
+                    : "border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground"
                 }`}
                 onClick={() => {
                   toggleSector(sector);
@@ -207,7 +207,7 @@ export function PreferencesTab({
         <Button
           type="button"
           size="sm"
-          className="h-8 rounded-md px-4 text-[12px]"
+          className="h-8 rounded-md px-5 text-[12px]"
           disabled={!client || isSaving}
           onClick={() => {
             void handleSave();

@@ -37,17 +37,13 @@ export function AdvancedTab({
 
   return (
     <div className="flex flex-col gap-5" data-testid="advanced-tab">
-      <div>
-        <h2 className="text-[15px] font-semibold text-foreground">Advanced</h2>
-        <p className="mt-0.5 text-[12px] text-muted-foreground">
-          Developer and debugging settings. These options are intended for
-          advanced users.
-        </p>
-      </div>
+      <p className="text-[13px] text-muted-foreground">
+        Developer and debugging settings for advanced users.
+      </p>
 
-      <div className="flex items-start gap-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-3">
+      <div className="flex items-start gap-2.5 rounded-lg border border-yellow-500/15 bg-yellow-500/[0.04] p-3.5">
         <AlertTriangleIcon className="mt-0.5 size-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
-        <p className="text-[12px] text-yellow-700 dark:text-yellow-300">
+        <p className="text-[12px] leading-relaxed text-yellow-700 dark:text-yellow-300/80">
           These settings are for power users. Changing them may affect
           application behavior.
         </p>

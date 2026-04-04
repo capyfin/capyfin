@@ -57,11 +57,25 @@ export function SettingsWorkspace({
   preferences,
   onPreferencesChange,
 }: SettingsWorkspaceProps) {
+  const tabDef = SETTINGS_TABS.find((t) => t.id === activeTab);
+
   return (
     <div
-      className="mx-auto w-full max-w-5xl flex-1"
+      className="mx-auto w-full max-w-4xl flex-1"
       data-testid="settings-workspace"
     >
+      {/* Active tab icon accent */}
+      {tabDef ? (
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-primary/[0.08] text-primary ring-1 ring-primary/10">
+            <tabDef.icon className="size-4" />
+          </div>
+          <h1 className="text-lg font-semibold tracking-tight">
+            {tabDef.label}
+          </h1>
+        </div>
+      ) : null}
+
       <SettingsContent
         activeTab={activeTab}
         authOverview={authOverview}

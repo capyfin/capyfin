@@ -82,15 +82,10 @@ export function DeliveryChannelsTab({ client }: DeliveryChannelsTabProps) {
 
   return (
     <div className="flex flex-col gap-5" data-testid="delivery-channels-tab">
-      <div>
-        <h2 className="text-[15px] font-semibold text-foreground">
-          Delivery Channels
-        </h2>
-        <p className="mt-0.5 text-[12px] text-muted-foreground">
-          Connect messaging platforms to receive alerts, reports, and
-          notifications.
-        </p>
-      </div>
+      <p className="text-[13px] text-muted-foreground">
+        Connect messaging platforms to receive alerts, reports, and
+        notifications.
+      </p>
 
       {isLoading && channels.length === 0 ? (
         <div className="flex items-center justify-center py-8">

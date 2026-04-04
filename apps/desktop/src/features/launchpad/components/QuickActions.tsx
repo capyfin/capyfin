@@ -85,7 +85,7 @@ export function QuickActions({ onCardClick }: QuickActionsProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
           Quick Actions
         </h2>
         <div className="h-px flex-1 bg-border/50" />
@@ -106,7 +106,7 @@ export function QuickActions({ onCardClick }: QuickActionsProps) {
               }}
             >
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary/[0.06] text-primary/70 transition-colors group-hover/qa:bg-primary/[0.10] group-hover/qa:text-primary dark:bg-primary/[0.08]">
-                <Icon className="size-4" />
+                <Icon className="size-5" />
               </div>
               <span className="text-[12px] font-medium text-muted-foreground transition-colors group-hover/qa:text-foreground">
                 {def.label}

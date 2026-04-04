@@ -42,13 +42,15 @@ export function LaunchpadWorkspace({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-8">
+    <div className="mx-auto flex w-full max-w-4xl flex-col pb-8">
       <LaunchpadHeroBar
         onCardClick={onCardClick}
         onOpenCommandPalette={onOpenCommandPalette}
       />
 
-      <AttentionDashboard client={client} onCardClick={onCardClick} />
+      <div className="mt-6">
+        <AttentionDashboard client={client} onCardClick={onCardClick} />
+      </div>
 
       <WorkflowsSection>
         {resolvedSections.map((section) => (
@@ -64,16 +66,20 @@ export function LaunchpadWorkspace({
         ))}
       </WorkflowsSection>
 
-      <RecentActivitySection
-        sessions={sessions}
-        onSessionSelect={onSessionSelect}
-      />
+      <div className="mt-4">
+        <RecentActivitySection
+          sessions={sessions}
+          onSessionSelect={onSessionSelect}
+        />
+      </div>
 
-      <SuggestionsSection
-        sessions={sessions}
-        onSessionSelect={onSessionSelect}
-        onCardClick={onCardClick}
-      />
+      <div className="mt-4">
+        <SuggestionsSection
+          sessions={sessions}
+          onSessionSelect={onSessionSelect}
+          onCardClick={onCardClick}
+        />
+      </div>
     </div>
   );
 }

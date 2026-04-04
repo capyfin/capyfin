@@ -105,17 +105,33 @@ export function AttentionDashboard({
   const portfolioRisks = computePortfolioRisks(portfolio, cases);
 
   return (
-    <div className="space-y-6">
+    <div>
       {hasCases && metrics && <AttentionSummary metrics={metrics} />}
       {!hasCases && <AttentionEmptyState onCardClick={onCardClick} />}
-      <MarketContext />
+      <div className="mt-6">
+        <MarketContext />
+      </div>
       {hasCases && (
-        <NeedsReview staleCases={staleCases} onCardClick={onCardClick} />
+        <div className="mt-5">
+          <NeedsReview staleCases={staleCases} onCardClick={onCardClick} />
+        </div>
       )}
-      {hasCases && <UpcomingCatalysts catalysts={catalysts} />}
-      <WatchlistChanges changes={watchlistChanges} />
-      {portfolioRisks && <PortfolioRisks risks={portfolioRisks} />}
-      <QuickActions onCardClick={onCardClick} />
+      {hasCases && (
+        <div className="mt-5">
+          <UpcomingCatalysts catalysts={catalysts} />
+        </div>
+      )}
+      <div className="mt-5">
+        <WatchlistChanges changes={watchlistChanges} />
+      </div>
+      {portfolioRisks && (
+        <div className="mt-5">
+          <PortfolioRisks risks={portfolioRisks} />
+        </div>
+      )}
+      <div className="mt-6">
+        <QuickActions onCardClick={onCardClick} />
+      </div>
     </div>
   );
 }

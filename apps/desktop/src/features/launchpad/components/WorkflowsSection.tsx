@@ -9,7 +9,7 @@ export function WorkflowsSection({ children }: WorkflowsSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <section className="space-y-4">
+    <section className="mt-8 space-y-4">
       <button
         type="button"
         onClick={() => {

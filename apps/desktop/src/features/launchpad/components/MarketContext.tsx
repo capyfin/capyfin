@@ -9,9 +9,9 @@ import { Globe, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
  */
 export function MarketContext() {
   return (
-    <section className="space-y-3">
+    <section className="rounded-lg border border-border/40 bg-card/30 p-4 space-y-3">
       <div className="flex items-center gap-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
           Today&apos;s Market Context
         </h2>
         <div className="h-px flex-1 bg-border/50" />

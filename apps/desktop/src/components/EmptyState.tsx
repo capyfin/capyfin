@@ -51,16 +51,18 @@ export function EmptyState({
   return (
     <div className={className}>
       <div className="relative">
-        <div className={`absolute -inset-3 rounded-2xl ${colors.glow}`} />
+        <div className={`absolute -inset-4 rounded-3xl ${colors.glow}`} />
         <div
-          className={`relative flex size-14 items-center justify-center rounded-2xl border ${colors.container}`}
+          className={`relative flex size-14 items-center justify-center rounded-2xl border ring-4 ring-current/[0.04] ${colors.container}`}
         >
           <Icon className={`size-6 ${colors.icon}`} />
         </div>
       </div>
       <div className="text-center">
-        <h2 className="text-[17px] font-semibold text-foreground">{heading}</h2>
-        <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
+        <h2 className="text-[18px] font-semibold tracking-tight text-foreground">
+          {heading}
+        </h2>
+        <p className="mt-2 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
           {description}
         </p>
       </div>

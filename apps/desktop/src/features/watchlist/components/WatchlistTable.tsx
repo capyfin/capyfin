@@ -120,12 +120,14 @@ export function WatchlistTable({
   onRefreshCase,
 }: WatchlistTableProps) {
   return (
-    <Card className="overflow-hidden border border-border/60 shadow-sm">
-      <CardHeader className="border-b border-border/40 bg-muted/30 pb-4">
+    <Card className="overflow-hidden border border-border/50 shadow-sm dark:border-border/40">
+      <CardHeader className="border-b border-border/40 bg-muted/20 pb-4 dark:bg-muted/10">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-semibold">Watchlist</CardTitle>
-            <CardDescription className="mt-0.5">
+            <CardTitle className="text-[17px] font-semibold tracking-tight">
+              Watchlist
+            </CardTitle>
+            <CardDescription className="mt-0.5 text-[13px]">
               {items.length} {items.length === 1 ? "ticker" : "tickers"} tracked
             </CardDescription>
           </div>
@@ -134,11 +136,11 @@ export function WatchlistTable({
       <CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow className="border-b border-border/40 bg-muted/20 hover:bg-muted/20">
+            <TableRow className="border-b border-border/40 bg-muted/15 hover:bg-muted/15 dark:bg-muted/8">
               <TableHead className="h-9 pl-5">
                 <button
                   type="button"
-                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60"
                   onClick={() => {
                     onSort("ticker");
                   }}
@@ -152,31 +154,31 @@ export function WatchlistTable({
                 </button>
               </TableHead>
               <TableHead className="h-9">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                   List
                 </span>
               </TableHead>
               {caseMap ? (
                 <TableHead className="h-9">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                     Case
                   </span>
                 </TableHead>
               ) : null}
               <TableHead className="h-9 max-w-[200px]">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                   Note
                 </span>
               </TableHead>
               <TableHead className="h-9">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                   Tags
                 </span>
               </TableHead>
               <TableHead className="h-9">
                 <button
                   type="button"
-                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60"
                   onClick={() => {
                     onSort("addedAt");
                   }}
@@ -196,10 +198,10 @@ export function WatchlistTable({
             {items.map((item) => (
               <TableRow
                 key={item.ticker}
-                className="group/row border-b border-border/30 transition-colors hover:bg-muted/30"
+                className="group/row border-b border-border/25 transition-colors hover:bg-muted/30 dark:border-border/20"
               >
                 <TableCell className="pl-5">
-                  <span className="inline-flex items-center rounded-md bg-foreground/[0.04] px-2 py-0.5 font-mono text-[13px] font-semibold tracking-wide text-foreground dark:bg-foreground/[0.06]">
+                  <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-[13px] font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
                     {item.ticker}
                   </span>
                 </TableCell>

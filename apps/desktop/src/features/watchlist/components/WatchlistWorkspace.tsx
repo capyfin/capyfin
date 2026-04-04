@@ -220,7 +220,7 @@ export function WatchlistWorkspace({
           />
 
           {items.length < WATCHLIST_NEAR_EMPTY_THRESHOLD && (
-            <p className="text-center text-sm text-muted-foreground py-8">
+            <p className="py-8 text-center text-[13px] text-muted-foreground/60">
               {WATCHLIST_NEAR_EMPTY_TEXT}
             </p>
           )}

@@ -1,5 +1,6 @@
 import {
   BookOpenIcon,
+  BrainIcon,
   MessageSquareIcon,
   RocketIcon,
   StickyNoteIcon,
@@ -23,20 +24,31 @@ export function BrainKnowledgeWorkspace({
 }: BrainKnowledgeWorkspaceProps) {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6">
-      <p className="text-[13px] leading-relaxed text-muted-foreground">
-        Your research memory — references, notes, and context that inform your
-        assistant.
-      </p>
-
-      <section className="rounded-lg border border-blue-400/20 bg-blue-500/5">
-        <div className="flex items-center gap-2.5 px-4 py-3 lg:px-5">
-          <BookOpenIcon className="size-4 text-blue-400" />
-          <h2 className="text-[14px] font-semibold text-foreground">
-            References
+      {/* Page header with icon accent */}
+      <div className="flex items-start gap-3.5">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/[0.08] ring-1 ring-violet-500/10">
+          <BrainIcon className="size-5 text-violet-500" />
+        </div>
+        <div className="min-w-0 pt-0.5">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Brain
           </h2>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
+            Your research memory — references, notes, and context that inform
+            your assistant.
+          </p>
+        </div>
+      </div>
+
+      <section className="overflow-hidden rounded-xl border border-blue-400/20 bg-gradient-to-b from-blue-500/[0.04] to-card/50">
+        <div className="flex items-center gap-2.5 border-b border-blue-400/15 px-4 py-3.5 lg:px-5">
+          <BookOpenIcon className="size-4 text-blue-400" />
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-blue-400">
+            References
+          </h3>
         </div>
 
-        <div className="border-t border-blue-400/20 px-4 py-8 lg:px-5">
+        <div className="px-4 py-8 lg:px-5">
           {references.length === 0 ? (
             <EmptyState
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
@@ -69,13 +81,15 @@ export function BrainKnowledgeWorkspace({
         </div>
       </section>
 
-      <section className="rounded-lg border border-amber-400/20 bg-amber-500/5">
-        <div className="flex items-center gap-2.5 px-4 py-3 lg:px-5">
+      <section className="overflow-hidden rounded-xl border border-amber-400/20 bg-gradient-to-b from-amber-500/[0.04] to-card/50">
+        <div className="flex items-center gap-2.5 border-b border-amber-400/15 px-4 py-3.5 lg:px-5">
           <StickyNoteIcon className="size-4 text-amber-400" />
-          <h2 className="text-[14px] font-semibold text-foreground">Notes</h2>
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-amber-400">
+            Notes
+          </h3>
         </div>
 
-        <div className="border-t border-amber-400/20 px-4 py-8 lg:px-5">
+        <div className="px-4 py-8 lg:px-5">
           {notes.length === 0 ? (
             <EmptyState
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types

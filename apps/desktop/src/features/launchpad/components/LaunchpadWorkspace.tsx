@@ -6,10 +6,12 @@ import { resolveCard } from "../resolve-card";
 import type { ActionCard } from "../types";
 import { useFmpConnected } from "../use-fmp-connected";
 import { ActionCardItem } from "./ActionCardItem";
+import { AttentionDashboard } from "./AttentionDashboard";
 import { CardSection } from "./CardSection";
 import { LaunchpadHeroBar } from "./LaunchpadHeroBar";
 import { RecentActivitySection } from "./RecentActivitySection";
 import { SuggestionsSection } from "./SuggestionsSection";
+import { WorkflowsSection } from "./WorkflowsSection";
 
 interface LaunchpadWorkspaceProps {
   client: SidecarClient | null;
@@ -46,17 +48,21 @@ export function LaunchpadWorkspace({
         onOpenCommandPalette={onOpenCommandPalette}
       />
 
-      {resolvedSections.map((section) => (
-        <CardSection key={section.id} title={section.title}>
-          {section.cards.map((card) => (
-            <ActionCardItem
-              key={card.id}
-              card={card}
-              onCardClick={onCardClick}
-            />
-          ))}
-        </CardSection>
-      ))}
+      <AttentionDashboard client={client} onCardClick={onCardClick} />
+
+      <WorkflowsSection>
+        {resolvedSections.map((section) => (
+          <CardSection key={section.id} title={section.title}>
+            {section.cards.map((card) => (
+              <ActionCardItem
+                key={card.id}
+                card={card}
+                onCardClick={onCardClick}
+              />
+            ))}
+          </CardSection>
+        ))}
+      </WorkflowsSection>
 
       <RecentActivitySection
         sessions={sessions}

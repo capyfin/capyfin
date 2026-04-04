@@ -1,0 +1,393 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import type { InvestmentCase, WatchlistItem } from "@capyfin/contracts";
+import {
+  daysBetween,
+  computeStaleCases,
+  computeConfidenceChanges,
+  extractCatalysts,
+  computeWatchlistSignals,
+  computeAttentionMetrics,
+} from "./attention-utils";
+
+// ---------------------------------------------------------------------------
+// Helpers — factory for minimal InvestmentCase test data
+// ---------------------------------------------------------------------------
+
+function makeCase(overrides: Partial<InvestmentCase> = {}): InvestmentCase {
+  return {
+    id: "case-1",
+    ticker: "AAPL",
+    companyName: "Apple Inc.",
+    stance: "bullish",
+    confidence: "HIGH",
+    lastReviewedAt: "2026-03-01T00:00:00Z",
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-03-01T00:00:00Z",
+    sections: [],
+    keyAssumptions: [],
+    invalidationSignals: [],
+    nextActions: [],
+    history: [],
+    tags: [],
+    ...overrides,
+  };
+}
+
+function makeWatchlistItem(
+  overrides: Partial<WatchlistItem> = {},
+): WatchlistItem {
+  return {
+    ticker: "AAPL",
+    list: "watching",
+    addedAt: "2026-01-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// daysBetween
+// ---------------------------------------------------------------------------
+
+void test("daysBetween returns correct number of days", () => {
+  const now = new Date("2026-04-04T12:00:00Z");
+  assert.equal(daysBetween("2026-04-04T00:00:00Z", now), 0);
+  assert.equal(daysBetween("2026-04-03T00:00:00Z", now), 1);
+  assert.equal(daysBetween("2026-03-05T00:00:00Z", now), 30);
+});
+
+// ---------------------------------------------------------------------------
+// computeStaleCases
+// ---------------------------------------------------------------------------
+
+void test("computeStaleCases returns cases older than threshold", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const cases = [
+    makeCase({
+      id: "stale",
+      ticker: "MSFT",
+      lastReviewedAt: "2026-02-01T00:00:00Z",
+    }),
+    makeCase({
+      id: "fresh",
+      ticker: "GOOG",
+      lastReviewedAt: "2026-04-01T00:00:00Z",
+    }),
+  ];
+  const stale = computeStaleCases(cases, 30, now);
+  assert.equal(stale.length, 1);
+  const first = stale[0];
+  assert.ok(first);
+  assert.equal(first.ticker, "MSFT");
+  assert.ok(first.daysSinceReview >= 30);
+});
+
+void test("computeStaleCases sorts by staleness descending", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const cases = [
+    makeCase({
+      id: "a",
+      ticker: "A",
+      lastReviewedAt: "2026-02-15T00:00:00Z",
+    }),
+    makeCase({
+      id: "b",
+      ticker: "B",
+      lastReviewedAt: "2026-01-01T00:00:00Z",
+    }),
+  ];
+  const stale = computeStaleCases(cases, 30, now);
+  assert.equal(stale.length, 2);
+  const [first, second] = stale;
+  assert.ok(first);
+  assert.ok(second);
+  assert.equal(first.ticker, "B");
+  assert.equal(second.ticker, "A");
+});
+
+void test("computeStaleCases returns empty array when all cases are fresh", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const cases = [makeCase({ lastReviewedAt: "2026-04-01T00:00:00Z" })];
+  assert.equal(computeStaleCases(cases, 30, now).length, 0);
+});
+
+// ---------------------------------------------------------------------------
+// computeConfidenceChanges
+// ---------------------------------------------------------------------------
+
+void test("computeConfidenceChanges counts cases with recent confidence changes", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const cases = [
+    makeCase({
+      id: "changed",
+      history: [
+        {
+          id: "h1",
+          date: "2026-03-20T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Refreshed",
+          priorConfidence: "HIGH",
+          newConfidence: "MEDIUM",
+        },
+      ],
+    }),
+    makeCase({
+      id: "unchanged",
+      history: [
+        {
+          id: "h2",
+          date: "2026-03-20T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Refreshed",
+          priorConfidence: "HIGH",
+          newConfidence: "HIGH",
+        },
+      ],
+    }),
+  ];
+  assert.equal(computeConfidenceChanges(cases, 30, now), 1);
+});
+
+void test("computeConfidenceChanges ignores changes older than threshold", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const cases = [
+    makeCase({
+      history: [
+        {
+          id: "h1",
+          date: "2026-01-01T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Old change",
+          priorConfidence: "HIGH",
+          newConfidence: "LOW",
+        },
+      ],
+    }),
+  ];
+  assert.equal(computeConfidenceChanges(cases, 30, now), 0);
+});
+
+void test("computeConfidenceChanges counts each case at most once", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const cases = [
+    makeCase({
+      history: [
+        {
+          id: "h1",
+          date: "2026-03-20T00:00:00Z",
+          eventType: "refreshed",
+          summary: "First",
+          priorConfidence: "HIGH",
+          newConfidence: "MEDIUM",
+        },
+        {
+          id: "h2",
+          date: "2026-03-25T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Second",
+          priorConfidence: "MEDIUM",
+          newConfidence: "LOW",
+        },
+      ],
+    }),
+  ];
+  assert.equal(computeConfidenceChanges(cases, 30, now), 1);
+});
+
+// ---------------------------------------------------------------------------
+// extractCatalysts
+// ---------------------------------------------------------------------------
+
+void test("extractCatalysts finds cases with Catalysts section", () => {
+  const cases = [
+    makeCase({
+      id: "c1",
+      ticker: "NVDA",
+      companyName: "NVIDIA Corp.",
+      sections: [
+        {
+          id: "s1",
+          title: "Catalysts",
+          content: "Q2 earnings on Aug 28",
+          confidence: "HIGH",
+          citations: [],
+        },
+      ],
+    }),
+    makeCase({
+      id: "c2",
+      ticker: "AAPL",
+      sections: [
+        {
+          id: "s2",
+          title: "Risks",
+          content: "China exposure",
+          confidence: "MEDIUM",
+          citations: [],
+        },
+      ],
+    }),
+  ];
+  const catalysts = extractCatalysts(cases);
+  assert.equal(catalysts.length, 1);
+  const entry = catalysts[0];
+  assert.ok(entry);
+  assert.equal(entry.ticker, "NVDA");
+  assert.equal(entry.description, "Q2 earnings on Aug 28");
+});
+
+void test("extractCatalysts respects limit parameter", () => {
+  const cases = Array.from({ length: 10 }, (_, i) =>
+    makeCase({
+      id: "c" + String(i),
+      ticker: "T" + String(i),
+      sections: [
+        {
+          id: "s" + String(i),
+          title: "Catalysts",
+          content: "Catalyst " + String(i),
+          confidence: "HIGH",
+          citations: [],
+        },
+      ],
+    }),
+  );
+  assert.equal(extractCatalysts(cases, 3).length, 3);
+});
+
+void test("extractCatalysts skips sections with empty content", () => {
+  const cases = [
+    makeCase({
+      sections: [
+        {
+          id: "s1",
+          title: "Catalysts",
+          content: "  ",
+          confidence: "HIGH",
+          citations: [],
+        },
+      ],
+    }),
+  ];
+  assert.equal(extractCatalysts(cases).length, 0);
+});
+
+void test("extractCatalysts is case-insensitive for section title", () => {
+  const cases = [
+    makeCase({
+      sections: [
+        {
+          id: "s1",
+          title: "catalysts",
+          content: "Upcoming IPO",
+          confidence: "HIGH",
+          citations: [],
+        },
+      ],
+    }),
+  ];
+  assert.equal(extractCatalysts(cases).length, 1);
+});
+
+// ---------------------------------------------------------------------------
+// computeWatchlistSignals
+// ---------------------------------------------------------------------------
+
+void test("computeWatchlistSignals counts watchlist tickers with recent case activity", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const watchlist = [
+    makeWatchlistItem({ ticker: "AAPL" }),
+    makeWatchlistItem({ ticker: "MSFT" }),
+  ];
+  const cases = [
+    makeCase({
+      id: "c1",
+      ticker: "AAPL",
+      history: [
+        {
+          id: "h1",
+          date: "2026-04-01T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Fresh",
+        },
+      ],
+    }),
+    makeCase({
+      id: "c2",
+      ticker: "GOOG",
+      history: [
+        {
+          id: "h2",
+          date: "2026-04-01T00:00:00Z",
+          eventType: "created",
+          summary: "New",
+        },
+      ],
+    }),
+  ];
+  assert.equal(computeWatchlistSignals(watchlist, cases, 7, now), 1);
+});
+
+void test("computeWatchlistSignals returns 0 when no watchlist items have case activity", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const watchlist = [makeWatchlistItem({ ticker: "TSLA" })];
+  const cases = [
+    makeCase({
+      ticker: "AAPL",
+      history: [
+        {
+          id: "h1",
+          date: "2026-04-01T00:00:00Z",
+          eventType: "refreshed",
+          summary: "x",
+        },
+      ],
+    }),
+  ];
+  assert.equal(computeWatchlistSignals(watchlist, cases, 7, now), 0);
+});
+
+// ---------------------------------------------------------------------------
+// computeAttentionMetrics
+// ---------------------------------------------------------------------------
+
+void test("computeAttentionMetrics aggregates all counts", () => {
+  const cases = [
+    makeCase({
+      id: "stale",
+      ticker: "AAPL",
+      lastReviewedAt: "2025-01-01T00:00:00Z",
+      history: [
+        {
+          id: "h1",
+          date: new Date().toISOString(),
+          eventType: "refreshed",
+          summary: "Recent",
+          priorConfidence: "HIGH",
+          newConfidence: "LOW",
+        },
+      ],
+      sections: [
+        {
+          id: "s1",
+          title: "Catalysts",
+          content: "Earnings soon",
+          confidence: "HIGH",
+          citations: [],
+        },
+      ],
+    }),
+  ];
+  const watchlist = [makeWatchlistItem({ ticker: "AAPL" })];
+  const metrics = computeAttentionMetrics(cases, watchlist);
+  assert.ok(metrics.staleCaseCount >= 1);
+  assert.ok(metrics.confidenceChangeCount >= 1);
+  assert.ok(metrics.watchlistSignalCount >= 1);
+});
+
+void test("computeAttentionMetrics handles empty data", () => {
+  const metrics = computeAttentionMetrics([], []);
+  assert.equal(metrics.staleCaseCount, 0);
+  assert.equal(metrics.confidenceChangeCount, 0);
+  assert.equal(metrics.watchlistSignalCount, 0);
+});

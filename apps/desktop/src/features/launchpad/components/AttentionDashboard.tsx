@@ -96,23 +96,23 @@ export function AttentionDashboard({
   const cases = data?.cases ?? [];
   const watchlist = data?.watchlist ?? [];
   const portfolio = data?.portfolio ?? null;
+  const hasCases = cases.length > 0;
 
-  if (cases.length === 0) {
-    return <AttentionEmptyState onCardClick={onCardClick} />;
-  }
-
-  const metrics = computeAttentionMetrics(cases, watchlist);
-  const staleCases = computeStaleCases(cases);
-  const catalysts = extractCatalysts(cases);
+  const metrics = hasCases ? computeAttentionMetrics(cases, watchlist) : null;
+  const staleCases = hasCases ? computeStaleCases(cases) : [];
+  const catalysts = hasCases ? extractCatalysts(cases) : [];
   const watchlistChanges = computeWatchlistChanges(watchlist, cases);
   const portfolioRisks = computePortfolioRisks(portfolio, cases);
 
   return (
     <div className="space-y-6">
-      <AttentionSummary metrics={metrics} />
+      {hasCases && metrics && <AttentionSummary metrics={metrics} />}
+      {!hasCases && <AttentionEmptyState onCardClick={onCardClick} />}
       <MarketContext />
-      <NeedsReview staleCases={staleCases} onCardClick={onCardClick} />
-      <UpcomingCatalysts catalysts={catalysts} />
+      {hasCases && (
+        <NeedsReview staleCases={staleCases} onCardClick={onCardClick} />
+      )}
+      {hasCases && <UpcomingCatalysts catalysts={catalysts} />}
       <WatchlistChanges changes={watchlistChanges} />
       {portfolioRisks && <PortfolioRisks risks={portfolioRisks} />}
       <QuickActions onCardClick={onCardClick} />

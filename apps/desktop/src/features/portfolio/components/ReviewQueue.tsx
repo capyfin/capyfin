@@ -100,10 +100,12 @@ export function ReviewQueue({
   if (reviewItems.length === 0) return null;
 
   return (
-    <Card className="border border-border/70 bg-card/92 shadow-[0_22px_70px_-42px_rgba(15,23,42,0.4)]">
+    <Card className="border-border/50 shadow-sm dark:border-border/30">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold">Review Queue</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-[17px] font-semibold tracking-tight">
+          Review Queue
+        </CardTitle>
+        <CardDescription className="text-[13px]">
           Holdings that need attention — stale or missing investment cases.
         </CardDescription>
       </CardHeader>
@@ -115,7 +117,7 @@ export function ReviewQueue({
               className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
             >
               <div className="flex items-center gap-3">
-                <span className="inline-flex items-center rounded-md bg-foreground/[0.04] px-2 py-0.5 font-mono text-[13px] font-semibold tracking-wide text-foreground dark:bg-foreground/[0.06]">
+                <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-[13px] font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
                   {item.ticker}
                 </span>
                 {item.name ? (

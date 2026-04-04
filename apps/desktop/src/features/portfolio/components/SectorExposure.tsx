@@ -24,10 +24,12 @@ const COLORS = [
 
 export function SectorExposure({ sectors }: SectorExposureProps) {
   return (
-    <Card className="border border-border/70 bg-card/92 shadow-[0_22px_70px_-42px_rgba(15,23,42,0.4)]">
+    <Card className="border-border/50 shadow-sm dark:border-border/30">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold">Sector Exposure</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-[17px] font-semibold tracking-tight">
+          Sector Exposure
+        </CardTitle>
+        <CardDescription className="text-[13px]">
           Allocation breakdown by sector, based on cost basis.
         </CardDescription>
       </CardHeader>

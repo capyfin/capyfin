@@ -10,6 +10,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import type { AuthOverview, CardOutput, ChatBootstrap } from "@/app/types";
 import {
   formatModelId,
@@ -73,6 +74,10 @@ import { createChatTransport } from "@/features/chat/transport";
 import { SidecarClient } from "@/lib/sidecar/client";
 import { deriveSessionLabel } from "@/features/chat/session-label";
 import { tryParseCardOutput } from "@/features/chat/structured-output";
+import {
+  isDeepDiveOutput,
+  mapCardOutputToCase,
+} from "@/features/chat/case-mapper";
 import { ReportView } from "@/components/report";
 import { WatchlistItemDialog } from "@/features/watchlist/components/WatchlistItemDialog";
 import type { PendingCardPrompt } from "@/app/state/app-state";
@@ -265,6 +270,8 @@ function ChatSessionView({
   const hasCustomLabelRef = useRef(bootstrap.messages.length > 0);
   const didMountRef = useRef(false);
   const [watchlistTicker, setWatchlistTicker] = useState<string | null>(null);
+  const createdCasesRef = useRef<Set<string>>(new Set());
+  const lastCreatedCaseIdRef = useRef<string | null>(null);
 
   // Re-use existing Chat instance if one exists (preserves streaming state)
   const chat = useMemo(() => {
@@ -369,6 +376,47 @@ function ChatSessionView({
     [bootstrap.session.id, client, onSessionLabelUpdate, sendMessage],
   );
 
+  const handleAutoCreateCase = useCallback(
+    (messageId: string, cardOutput: CardOutput) => {
+      if (!client || createdCasesRef.current.has(messageId)) {
+        return;
+      }
+      if (!isDeepDiveOutput(cardOutput)) {
+        return;
+      }
+      const request = mapCardOutputToCase(cardOutput);
+      if (!request) {
+        return;
+      }
+      createdCasesRef.current.add(messageId);
+
+      void (async () => {
+        try {
+          const created = await client.createCase(request);
+          lastCreatedCaseIdRef.current = created.id;
+          // Also save to Library
+          void client.saveReport({
+            cardOutput,
+            workflowType: "deep-dive",
+            subject: cardOutput.subject,
+          });
+          toast.success("Investment case created", {
+            action: {
+              label: "View Case",
+              onClick: () => {
+                window.location.hash = `#cases/${created.id}`;
+              },
+            },
+          });
+        } catch {
+          createdCasesRef.current.delete(messageId);
+          toast.error("Failed to create investment case");
+        }
+      })();
+    },
+    [client],
+  );
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Agent/provider bar */}
@@ -459,6 +507,10 @@ function ChatSessionView({
                 isStreaming={isStreaming && latestMessage?.id === message.id}
                 message={message}
                 onFollowUp={(text) => {
+                  if (text === "View Case" && lastCreatedCaseIdRef.current) {
+                    window.location.hash = `#cases/${lastCreatedCaseIdRef.current}`;
+                    return;
+                  }
                   handleSubmit({ text });
                 }}
                 onAddToWatchlist={
@@ -479,6 +531,7 @@ function ChatSessionView({
                       }
                     : undefined
                 }
+                onAutoCreateCase={handleAutoCreateCase}
               />
             ))
           )}
@@ -604,6 +657,7 @@ function ChatMessage({
   onFollowUp,
   onAddToWatchlist,
   onSaveToLibrary,
+  onAutoCreateCase,
 }: {
   displayLabel?: string | undefined;
   isStreaming: boolean;
@@ -611,6 +665,9 @@ function ChatMessage({
   onFollowUp?: (text: string) => void;
   onAddToWatchlist?: ((ticker: string) => void) | undefined;
   onSaveToLibrary?: ((cardOutput: CardOutput) => void) | undefined;
+  onAutoCreateCase?:
+    | ((messageId: string, cardOutput: CardOutput) => void)
+    | undefined;
 }) {
   const activityParts = getActivityParts(message);
   const reasoningText = getReasoningText(message);
@@ -621,6 +678,21 @@ function ChatMessage({
     message.role === "assistant" &&
     isStreaming &&
     activityParts.some((activity) => activity.status === "active");
+
+  // Structured output detection (only for completed assistant messages)
+  const parsed =
+    message.role === "assistant" && fullText && !isStreaming
+      ? tryParseCardOutput(fullText)
+      : null;
+
+  // Auto-create Investment Case for deep-dive outputs (all hooks before early returns)
+  const autoCaseTriggeredRef = useRef(false);
+  useEffect(() => {
+    if (parsed && !autoCaseTriggeredRef.current && onAutoCreateCase) {
+      autoCaseTriggeredRef.current = true;
+      onAutoCreateCase(message.id, parsed.cardOutput);
+    }
+  }, [parsed, onAutoCreateCase, message.id]);
 
   if (message.role === "user") {
     const imageParts = fileParts.filter((f) =>
@@ -684,9 +756,6 @@ function ChatMessage({
       </Message>
     );
   }
-
-  // Only attempt structured output detection when the message is not still streaming
-  const parsed = fullText && !isStreaming ? tryParseCardOutput(fullText) : null;
 
   return (
     <Message from="assistant">

@@ -106,3 +106,49 @@ void test("handles CardOutput with optional fields", () => {
 void test("returns null for empty text", () => {
   assert.equal(tryParseCardOutput(""), null);
 });
+
+void test("parses CardOutput with case-specific fields (deep-dive)", () => {
+  const deepDiveOutput = {
+    ...validCardOutput,
+    cardId: "deep-dive",
+    subject: "NVDA",
+    companyName: "NVIDIA Corporation",
+    stance: "bullish",
+    confidence: "HIGH",
+    keyAssumptions: [
+      "Data center revenue grows above 40% annually",
+      "AI training demand remains robust",
+    ],
+    invalidationSignals: [
+      "Two consecutive quarters of data center revenue decline",
+      "Major customer builds competing chips",
+    ],
+  };
+  const json = JSON.stringify(deepDiveOutput, null, 2);
+  const text = `Here is your analysis:\n\`\`\`json\n${json}\n\`\`\`\nData as of: 2025-03-20`;
+  const result = tryParseCardOutput(text);
+  assert.ok(result);
+  assert.equal(result.cardOutput.companyName, "NVIDIA Corporation");
+  assert.equal(result.cardOutput.stance, "bullish");
+  assert.equal(result.cardOutput.confidence, "HIGH");
+  assert.deepEqual(result.cardOutput.keyAssumptions, [
+    "Data center revenue grows above 40% annually",
+    "AI training demand remains robust",
+  ]);
+  assert.deepEqual(result.cardOutput.invalidationSignals, [
+    "Two consecutive quarters of data center revenue decline",
+    "Major customer builds competing chips",
+  ]);
+});
+
+void test("parses CardOutput without case-specific fields (backward compat)", () => {
+  const json = JSON.stringify(validCardOutput, null, 2);
+  const text = `\`\`\`json\n${json}\n\`\`\``;
+  const result = tryParseCardOutput(text);
+  assert.ok(result);
+  assert.equal(result.cardOutput.companyName, undefined);
+  assert.equal(result.cardOutput.stance, undefined);
+  assert.equal(result.cardOutput.confidence, undefined);
+  assert.equal(result.cardOutput.keyAssumptions, undefined);
+  assert.equal(result.cardOutput.invalidationSignals, undefined);
+});

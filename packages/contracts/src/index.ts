@@ -527,6 +527,12 @@ export const cardOutputSchema = z.object({
   dataAsOf: z.string().min(1),
   improvementNote: z.string().min(1).optional(),
   followUps: z.array(z.string().min(1)).optional(),
+  // Optional case-specific fields for Deep Dive → Investment Case creation
+  companyName: z.string().min(1).optional(),
+  stance: z.enum(["bullish", "bearish", "neutral", "watching"]).optional(),
+  confidence: confidenceSchema.optional(),
+  keyAssumptions: z.array(z.string().min(1)).optional(),
+  invalidationSignals: z.array(z.string().min(1)).optional(),
 });
 
 // ---------------------------------------------------------------------------

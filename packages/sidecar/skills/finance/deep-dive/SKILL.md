@@ -271,57 +271,126 @@ Synthesize all prior sections into a concise, actionable assessment. This is the
 
 ## Output Template
 
-Structure your output in exactly this order, with these exact section headers:
+Your output has three parts, in this exact order:
 
+1. **Conversational prefix** — A short introductory paragraph (2-3 sentences) for the user, in plain text (no JSON). Example: "Here's my comprehensive analysis of {COMPANY NAME} ({TICKER}). I've reviewed SEC filings, financial data, and recent developments to build this initial investment case."
+
+2. **Structured CardOutput JSON block** — A single fenced JSON code block containing a valid `CardOutput` object. This is the primary output and is parsed by the app to create an Investment Case. See the schema below.
+
+3. **Suffix text** — The Data Freshness Footer and optional Tier 0 Provider Nudge, in plain text after the JSON block.
+
+### CardOutput JSON Schema
+
+The JSON block must be a single object with these fields:
+
+```json
+{
+  "cardId": "deep-dive",
+  "subject": "{TICKER}",
+  "companyName": "{Full Company Name}",
+  "title": "Deep Dive: {COMPANY NAME} ({TICKER})",
+  "summary": "[1-paragraph synthesis tying together moat, financials, developments, and risks. 4-6 sentences. This becomes the case overview.]",
+  "stance": "bullish | bearish | neutral | watching",
+  "confidence": "HIGH | MEDIUM | LOW",
+  "sections": [
+    {
+      "id": "thesis",
+      "title": "Thesis",
+      "confidence": "HIGH | MEDIUM | LOW",
+      "content": "[Synthesized from Business Overview + Moat Assessment. Cover: what the company does, revenue segments with %, business model, competitive moat (5-dimension framework with table), moat trend, core investment logic, durable drivers, and key business quality factors. Use full markdown with tables.]",
+      "citations": [{ "label": "...", "source": "...", "date": "YYYY-MM-DD" }]
+    },
+    {
+      "id": "valuation",
+      "title": "Valuation",
+      "confidence": "HIGH | MEDIUM | LOW",
+      "content": "[From Financial Health analysis. Cover: 5-year financial trends table (revenue, margins, FCF, debt/equity), capital efficiency (ROE, ROIC), current valuation context, margin trends, red flags. Use full markdown with tables.]",
+      "citations": [{ "label": "...", "source": "...", "date": "YYYY-MM-DD" }]
+    },
+    {
+      "id": "risks",
+      "title": "Risks",
+      "confidence": "HIGH | MEDIUM | LOW",
+      "content": "[From Key Risks analysis. Cover: categorized risks (Competitive, Regulatory, Financial, Operational, Macro) with severity ratings (Critical/Significant/Moderate). Use risk table format. Include real, company-specific risks — not boilerplate.]",
+      "citations": [{ "label": "...", "source": "...", "date": "YYYY-MM-DD" }]
+    },
+    {
+      "id": "catalysts",
+      "title": "Catalysts",
+      "confidence": "HIGH | MEDIUM | LOW",
+      "content": "[From Recent Developments + forward-looking items. Cover: material events from last 90 days (earnings, SEC filings, management changes, analyst actions, M&A), upcoming catalysts, events that could trigger re-evaluation. Bulleted list with dates and sources.]",
+      "citations": [{ "label": "...", "source": "...", "date": "YYYY-MM-DD" }]
+    },
+    {
+      "id": "whatChanged",
+      "title": "What Changed",
+      "confidence": "HIGH | MEDIUM | LOW",
+      "content": "Initial case — no prior review. This is the baseline thesis established from a comprehensive analysis of SEC filings, financial data, and recent developments.",
+      "citations": []
+    }
+  ],
+  "keyAssumptions": [
+    "[3-5 key assumptions the thesis depends on — specific, falsifiable statements]"
+  ],
+  "invalidationSignals": [
+    "[3-5 concrete conditions that would break the thesis — specific triggers, not generic risks]"
+  ],
+  "scores": {
+    "Moat": "None | Narrow | Wide",
+    "Financial Health": "[A-F or descriptive]",
+    "Confidence": "HIGH | MEDIUM | LOW"
+  },
+  "keyRisks": ["[Top 3-5 one-line risk summaries]"],
+  "challengeSummary": "[The strongest counterargument to the thesis — what could go most wrong]",
+  "dataTier": "0 | 1",
+  "sourcesUsed": ["SEC EDGAR", "..."],
+  "dataAsOf": "YYYY-MM-DD",
+  "followUps": [
+    "View Case",
+    "Add to Watchlist",
+    "Compare with Peer",
+    "Review Valuation"
+  ]
+}
 ```
-## Deep Dive: {COMPANY NAME} ({TICKER})
 
-### Business Overview
-[What the company does, revenue segments with %, key customers, geographic mix, business model]
+### Section Content Guidelines
 
-### Moat Assessment
+Each section's `content` field should contain **rich markdown** — tables, bullet lists, bold text, headers. Write as if this content will be read as a standalone section in an investment case tab. Be thorough and specific.
 
-| Dimension | Rating | Evidence |
-|-----------|--------|----------|
-| Network Effects | None / Narrow / Wide | [specific evidence] |
-| Switching Costs | None / Narrow / Wide | [specific evidence] |
-| Cost Advantages | None / Narrow / Wide | [specific evidence] |
-| Intangible Assets | None / Narrow / Wide | [specific evidence] |
-| Efficient Scale | None / Narrow / Wide | [specific evidence] |
+- **thesis**: This is the core section. Combine business overview and moat assessment into a cohesive investment narrative. Include the moat dimension table.
+- **valuation**: Present the 5-year financial data table, margin analysis, FCF analysis, leverage metrics, and capital efficiency. Flag any red flags.
+- **risks**: Use a risk table (Risk | Category | Severity | Evidence). Distinguish boilerplate from company-specific risks.
+- **catalysts**: Recent developments with dates, plus forward-looking catalysts. Each item should cite a source.
+- **whatChanged**: For initial Deep Dives, always use the baseline text. This section is updated in future reviews.
 
-**Overall Moat: [None / Narrow / Wide]** — [1-sentence justification]
-**Moat Trend: [Strengthening / Stable / Eroding]** — [evidence]
+### Stance Selection
 
-### Financial Health
+Choose the stance based on the overall verdict:
 
-| Metric | FY {Y-4} | FY {Y-3} | FY {Y-2} | FY {Y-1} | FY {Y} | Trend |
-|--------|----------|----------|----------|----------|--------|-------|
-| Revenue ($B) | | | | | | |
-| Revenue Growth % | | | | | | |
-| Gross Margin % | | | | | | |
-| Operating Margin % | | | | | | |
-| Net Margin % | | | | | | |
-| Free Cash Flow ($B) | | | | | | |
-| Debt/Equity | | | | | | |
+- **bullish**: Strong business quality, durable moat, healthy financials, manageable risks
+- **bearish**: Significant fundamental concerns, eroding moat, deteriorating financials
+- **neutral**: Mixed signals, balanced bull/bear cases, unclear direction
+- **watching**: Interesting but insufficient data, need to see specific catalysts play out
 
-[Commentary on financial trajectory, red flags, comparison to sector]
+### Key Assumptions
 
-### Recent Developments (Last 90 Days)
-[Bulleted list of material events with dates and sources]
+List 3-5 specific, falsifiable assumptions. Good examples:
 
-### Key Risks
+- "Revenue growth remains above 15% as cloud migration accelerates"
+- "Gross margins hold above 60% despite competitive pricing pressure"
 
-| Risk | Category | Severity | Evidence |
-|------|----------|----------|----------|
-| [Description] | Competitive / Regulatory / Financial / Operational / Macro | Critical / Significant / Moderate | [Source] |
+Bad examples (too generic):
 
-### Verdict
+- "The company continues to grow"
+- "Management executes well"
 
-[1-paragraph synthesis with confidence level]
+### Invalidation Signals
 
-**Confidence: [HIGH / MEDIUM / LOW]** — [rationale]
-**Key Question:** [the single question that matters most]
-```
+List 3-5 concrete conditions that would break the thesis. Good examples:
+
+- "Two consecutive quarters of revenue deceleration below 10%"
+- "Loss of a top-3 customer representing >10% of revenue"
 
 ---
 
@@ -337,18 +406,19 @@ Before presenting the Deep Dive, verify each item:
 6. **Specificity check**: The analysis must be specific to THIS company. Read the verdict — if it could apply to any company in the sector with minor word changes, it is too generic. Rewrite with company-specific evidence.
 7. **Data tier disclosure**: State which data tier was used and what would improve with better data.
 8. **Recency**: Recent developments cover the last 90 days. Any stale data is flagged.
+9. **JSON validity**: The JSON block must be valid JSON and match the CardOutput schema exactly. Double-check that all required fields are present and all strings are properly escaped.
 
 ---
 
 ## Tier 0 Provider Nudge
 
-When operating at Tier 0 (no FMP configured), include this single line at the very end of the output, before the data footer:
+When operating at Tier 0 (no FMP configured), include this single line in the **suffix text** (after the JSON block), before the data footer:
 
 > 💡 Connect FMP in Settings → Providers for structured financial statements and faster results. It's free.
 
 Rules for the nudge:
 
-- Include it once per report, at the bottom — never inline or mid-content
+- Include it once per report, in the suffix text — never inside the JSON block
 - This is NOT an error, NOT a locked-feature badge — it is a gentle enhancement suggestion
 - Do NOT include the nudge if FMP is already configured and providing Tier 1 data
 - Keep it to a single line
@@ -357,7 +427,7 @@ Rules for the nudge:
 
 ## Data Freshness Footer
 
-Every Deep Dive ends with this footer:
+Every Deep Dive ends with this footer in the **suffix text** (after the JSON block):
 
 ```
 ---

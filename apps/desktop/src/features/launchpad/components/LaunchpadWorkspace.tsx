@@ -42,7 +42,7 @@ export function LaunchpadWorkspace({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 pb-8">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-8">
       <LaunchpadHeroBar
         onCardClick={onCardClick}
         onOpenCommandPalette={onOpenCommandPalette}

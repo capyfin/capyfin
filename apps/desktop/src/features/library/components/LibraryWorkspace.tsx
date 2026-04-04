@@ -205,17 +205,20 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
           ))}
         </div>
       ) : (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
-            <SearchXIcon className="size-5 text-muted-foreground" />
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
+          <div className="relative">
+            <div className="absolute -inset-3 rounded-2xl bg-muted/30 blur-xl" />
+            <div className="relative flex size-12 items-center justify-center rounded-xl border border-border/40 bg-muted/50">
+              <SearchXIcon className="size-5 text-muted-foreground/60" />
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             No matching reports found.
           </p>
           {hasActiveFilters ? (
             <button
               type="button"
-              className="text-xs text-primary hover:underline"
+              className="text-[12px] font-medium text-primary transition-colors hover:text-primary/80 hover:underline"
               onClick={() => {
                 setFilters(INITIAL_FILTER_STATE);
               }}

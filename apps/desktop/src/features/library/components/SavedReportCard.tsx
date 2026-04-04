@@ -63,7 +63,7 @@ export function SavedReportCard({
   return (
     <Card
       size="sm"
-      className="cursor-pointer transition-colors hover:bg-muted/40"
+      className="cursor-pointer border-border/50 transition-all hover:-translate-y-0.5 hover:border-border/70 hover:bg-muted/30 hover:shadow-md hover:shadow-black/[0.03] dark:border-border/30 dark:hover:border-border/50 dark:hover:shadow-black/20"
       onClick={() => {
         onOpen(report);
       }}

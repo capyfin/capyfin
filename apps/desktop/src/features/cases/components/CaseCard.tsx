@@ -26,15 +26,17 @@ export function CaseCard({ investmentCase, onClick, selected }: CaseCardProps) {
 
   return (
     <Card
-      className={`cursor-pointer transition-colors hover:bg-muted/50 ${selected === true ? "ring-2 ring-primary" : ""} ${selected === false ? "opacity-60" : ""}`}
+      className={`cursor-pointer border-border/50 transition-all hover:-translate-y-0.5 hover:border-border/70 hover:bg-muted/30 hover:shadow-md hover:shadow-black/[0.03] dark:border-border/30 dark:hover:border-border/50 dark:hover:shadow-black/20 ${selected === true ? "ring-2 ring-primary" : ""} ${selected === false ? "opacity-60" : ""}`}
       onClick={onClick}
     >
       <CardHeader>
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
-            <CardTitle className="flex items-center gap-2">
-              <span className="font-semibold">{investmentCase.ticker}</span>
-              <span className="text-sm font-normal text-muted-foreground">
+            <CardTitle className="flex items-center gap-2.5">
+              <span className="font-mono text-[15px] font-bold tracking-wide">
+                {investmentCase.ticker}
+              </span>
+              <span className="text-[13px] font-normal text-muted-foreground">
                 {investmentCase.companyName}
               </span>
             </CardTitle>
@@ -47,11 +49,11 @@ export function CaseCard({ investmentCase, onClick, selected }: CaseCardProps) {
       </CardHeader>
       <CardContent>
         {snippet ? (
-          <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">
+          <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-2">
             {snippet}
           </p>
         ) : null}
-        <p className="mt-2 text-xs text-muted-foreground/70">
+        <p className="mt-2.5 text-[11px] text-muted-foreground/60">
           Last reviewed {formattedDate}
         </p>
       </CardContent>

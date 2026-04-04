@@ -1,7 +1,12 @@
 import type { Confidence, InvestmentCase } from "@capyfin/contracts";
+import {
+  AlertTriangleIcon,
+  CheckCircle2Icon,
+  ListChecksIcon,
+  ShieldAlertIcon,
+} from "lucide-react";
 import { ConfidenceBadge } from "@/components/report/ConfidenceBadge";
 import { MessageResponse } from "@/components/ai-elements/message";
-import { StanceBadge } from "./StanceBadge";
 
 interface OverviewTabProps {
   investmentCase: InvestmentCase;
@@ -11,12 +16,7 @@ export function OverviewTab({ investmentCase }: OverviewTabProps) {
   const thesisSection = investmentCase.sections.find((s) => s.id === "thesis");
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <StanceBadge stance={investmentCase.stance} />
-        <ConfidenceBadge confidence={investmentCase.confidence} />
-      </div>
-
+    <div className="flex flex-col gap-5">
       {thesisSection ? (
         <OverviewSection
           title="Thesis Summary"
@@ -29,14 +29,17 @@ export function OverviewTab({ investmentCase }: OverviewTabProps) {
       ) : null}
 
       {investmentCase.keyAssumptions.length > 0 ? (
-        <OverviewSection title="Key Assumptions">
-          <ul className="space-y-1.5">
+        <OverviewSection
+          title="Key Assumptions"
+          icon={<CheckCircle2Icon className="size-4 text-emerald-500" />}
+        >
+          <ul className="space-y-2">
             {investmentCase.keyAssumptions.map((assumption, i) => (
               <li
                 key={`assumption-${String(i)}`}
-                className="flex items-start gap-2 text-sm text-muted-foreground"
+                className="flex items-start gap-2.5 text-sm text-muted-foreground"
               >
-                <span className="mt-1.5 block size-1.5 shrink-0 rounded-full bg-foreground/30" />
+                <span className="mt-1.5 block size-1.5 shrink-0 rounded-full bg-emerald-500/40" />
                 {assumption}
               </li>
             ))}
@@ -45,14 +48,18 @@ export function OverviewTab({ investmentCase }: OverviewTabProps) {
       ) : null}
 
       {investmentCase.invalidationSignals.length > 0 ? (
-        <OverviewSection title="Invalidation Signals">
-          <ul className="space-y-1.5">
+        <OverviewSection
+          title="Invalidation Signals"
+          icon={<ShieldAlertIcon className="size-4 text-red-500/80" />}
+          accentClass="border-red-500/10"
+        >
+          <ul className="space-y-2">
             {investmentCase.invalidationSignals.map((signal, i) => (
               <li
                 key={`signal-${String(i)}`}
-                className="flex items-start gap-2 text-sm text-muted-foreground"
+                className="flex items-start gap-2.5 text-sm text-muted-foreground"
               >
-                <span className="mt-1.5 block size-1.5 shrink-0 rounded-full bg-red-500/50" />
+                <AlertTriangleIcon className="mt-0.5 size-3.5 shrink-0 text-red-500/50" />
                 {signal}
               </li>
             ))}
@@ -61,12 +68,16 @@ export function OverviewTab({ investmentCase }: OverviewTabProps) {
       ) : null}
 
       {investmentCase.nextActions.length > 0 ? (
-        <OverviewSection title="Next Actions">
-          <ul className="space-y-1.5">
+        <OverviewSection
+          title="Next Actions"
+          icon={<ListChecksIcon className="size-4 text-blue-500/80" />}
+          accentClass="border-blue-500/10"
+        >
+          <ul className="space-y-2">
             {investmentCase.nextActions.map((action, i) => (
               <li
                 key={`action-${String(i)}`}
-                className="flex items-start gap-2 text-sm text-muted-foreground"
+                className="flex items-start gap-2.5 text-sm text-muted-foreground"
               >
                 <span className="mt-1.5 block size-1.5 shrink-0 rounded-full bg-blue-500/50" />
                 {action}
@@ -82,16 +93,25 @@ export function OverviewTab({ investmentCase }: OverviewTabProps) {
 function OverviewSection({
   title,
   confidence,
+  icon,
+  accentClass,
   children,
 }: {
   title: string;
   confidence?: Confidence;
+  icon?: React.ReactNode;
+  accentClass?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <h3 className="text-sm font-semibold">{title}</h3>
+    <div
+      className={`rounded-lg border border-border/60 bg-card p-4 ${accentClass ?? ""}`}
+    >
+      <div className="mb-3 flex items-center gap-2">
+        {icon}
+        <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {title}
+        </h3>
         {confidence ? <ConfidenceBadge confidence={confidence} /> : null}
       </div>
       {children}

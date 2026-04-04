@@ -1,6 +1,7 @@
 import type { InvestmentCase } from "@capyfin/contracts";
 import {
   ArrowLeftIcon,
+  CalendarIcon,
   GitCompareArrowsIcon,
   LoaderCircleIcon,
   RefreshCwIcon,
@@ -101,12 +102,12 @@ export function CaseDetailPage({
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6">
       {/* Back navigation */}
       <Button
         variant="ghost"
         size="sm"
-        className="w-fit -ml-2"
+        className="w-fit -ml-2 text-muted-foreground hover:text-foreground"
         onClick={() => {
           window.location.hash = "#cases";
         }}
@@ -115,99 +116,114 @@ export function CaseDetailPage({
         Cases
       </Button>
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold">{investmentCase.ticker}</h1>
-            <span className="text-lg text-muted-foreground">
-              {investmentCase.companyName}
-            </span>
+      {/* Header card */}
+      <div className="relative overflow-hidden rounded-xl border border-border/60 bg-card p-5">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-transparent" />
+        <div className="relative flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-baseline gap-3">
+              <h1 className="text-2xl font-bold tracking-tight">
+                {investmentCase.ticker}
+              </h1>
+              <span className="text-base text-muted-foreground">
+                {investmentCase.companyName}
+              </span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <StanceBadge stance={investmentCase.stance} />
+              <ConfidenceBadge confidence={investmentCase.confidence} />
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground/70">
+                <CalendarIcon className="size-3" />
+                Reviewed {formattedDate}
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <StanceBadge stance={investmentCase.stance} />
-            <ConfidenceBadge confidence={investmentCase.confidence} />
-            <span className="text-xs text-muted-foreground">
-              Last reviewed {formattedDate}
-            </span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-background/60 backdrop-blur-sm"
+                >
+                  <GitCompareArrowsIcon className="size-3.5" />
+                  Compare
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => {
+                    window.location.hash = `#cases/compare?left=${investmentCase.id}`;
+                  }}
+                >
+                  Compare with another case...
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    window.location.hash = `#cases/compare?left=${investmentCase.id}&mode=prior`;
+                  }}
+                >
+                  Compare with Prior
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-background/60 backdrop-blur-sm"
+              onClick={() => {
+                if (onRefresh) {
+                  onRefresh(investmentCase.ticker);
+                }
+              }}
+            >
+              <RefreshCwIcon className="size-3.5" />
+              Refresh Case
+            </Button>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <GitCompareArrowsIcon className="size-3.5" />
-                Compare
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => {
-                  window.location.hash = `#cases/compare?left=${investmentCase.id}`;
-                }}
-              >
-                Compare with another case...
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  window.location.hash = `#cases/compare?left=${investmentCase.id}&mode=prior`;
-                }}
-              >
-                Compare with Prior
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (onRefresh) {
-                onRefresh(investmentCase.ticker);
-              }
-            }}
-          >
-            <RefreshCwIcon className="size-3.5" />
-            Refresh Case
-          </Button>
         </div>
       </div>
 
       {/* Tabbed content */}
       <Tabs defaultValue="overview" className="flex-1">
-        <TabsList>
+        <TabsList className="w-full justify-start border-b border-border/60 bg-transparent p-0 rounded-none h-auto">
           {CASE_DETAIL_TABS.map((tab) => (
-            <TabsTrigger key={tab.id} value={tab.id}>
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[13px] font-medium text-muted-foreground transition-colors data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+            >
               {tab.label}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-5">
           <OverviewTab investmentCase={investmentCase} />
         </TabsContent>
 
-        <TabsContent value="thesis" className="mt-4">
+        <TabsContent value="thesis" className="mt-5">
           <SectionTab
             section={investmentCase.sections.find((s) => s.id === "thesis")}
             emptyMessage="No thesis content available."
           />
         </TabsContent>
 
-        <TabsContent value="valuation" className="mt-4">
+        <TabsContent value="valuation" className="mt-5">
           <SectionTab
             section={investmentCase.sections.find((s) => s.id === "valuation")}
             emptyMessage="No valuation content available."
           />
         </TabsContent>
 
-        <TabsContent value="risks" className="mt-4">
+        <TabsContent value="risks" className="mt-5">
           <SectionTab
             section={investmentCase.sections.find((s) => s.id === "risks")}
             emptyMessage="No risks content available."
           />
         </TabsContent>
 
-        <TabsContent value="whatChanged" className="mt-4">
+        <TabsContent value="whatChanged" className="mt-5">
           <SectionTab
             section={investmentCase.sections.find(
               (s) => s.id === "whatChanged",
@@ -216,14 +232,14 @@ export function CaseDetailPage({
           />
         </TabsContent>
 
-        <TabsContent value="catalysts" className="mt-4">
+        <TabsContent value="catalysts" className="mt-5">
           <SectionTab
             section={investmentCase.sections.find((s) => s.id === "catalysts")}
             emptyMessage="No catalysts content available."
           />
         </TabsContent>
 
-        <TabsContent value="history" className="mt-4">
+        <TabsContent value="history" className="mt-5">
           <HistoryTab history={investmentCase.history} />
         </TabsContent>
       </Tabs>

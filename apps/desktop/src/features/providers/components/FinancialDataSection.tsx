@@ -70,27 +70,32 @@ export function FinancialDataSection({ client }: FinancialDataSectionProps) {
   }
 
   return (
-    <section data-testid="financial-data-section">
-      <div className="mb-3">
-        <h2 className="text-[14px] font-semibold text-foreground">
+    <section
+      data-testid="financial-data-section"
+      className="overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-blue-500/[0.03] to-card"
+    >
+      <div className="border-b border-border/40 px-4 py-3.5 lg:px-5">
+        <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
           Financial Data
-        </h2>
-        <p className="mt-0.5 text-[12px] text-muted-foreground">
+        </h3>
+        <p className="mt-0.5 text-[12px] text-muted-foreground/60">
           Connect data providers for richer analysis. None are required — all
           skills work without them.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-8">
+        <div className="flex items-center justify-center py-10">
           <LoaderCircleIcon className="size-4 animate-spin text-muted-foreground" />
         </div>
       ) : error ? (
-        <div className="rounded-lg border border-warning/20 bg-warning/8 px-3.5 py-2.5 text-[13px] text-warning-foreground">
-          {error}
+        <div className="px-4 py-4 lg:px-5">
+          <div className="rounded-lg border border-warning/20 bg-warning/8 px-3.5 py-2.5 text-[13px] text-warning-foreground">
+            {error}
+          </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-px bg-border/30 p-px">
           {providers.map((provider) => (
             <DataProviderRow
               key={provider.id}

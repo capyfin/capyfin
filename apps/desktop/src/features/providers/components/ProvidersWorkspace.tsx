@@ -3,6 +3,7 @@ import {
   CheckIcon,
   LoaderCircleIcon,
   RefreshCcwIcon,
+  SettingsIcon,
   Trash2Icon,
 } from "lucide-react";
 import type {
@@ -14,7 +15,6 @@ import type {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FeedbackBanner } from "@/components/FeedbackBanner";
-import { Separator } from "@/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -160,6 +160,21 @@ export function ProvidersWorkspace({
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6">
+      {/* Page header with icon accent */}
+      <div className="flex items-start gap-3.5">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/[0.08] ring-1 ring-primary/10">
+          <SettingsIcon className="size-5 text-primary" />
+        </div>
+        <div className="min-w-0 pt-0.5">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Providers
+          </h2>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
+            Manage AI provider connections, models, and financial data sources.
+          </p>
+        </div>
+      </div>
+
       {errorMessage ? (
         <FeedbackBanner tone="error">{errorMessage}</FeedbackBanner>
       ) : null}
@@ -169,16 +184,14 @@ export function ProvidersWorkspace({
       ) : null}
 
       {/* AI Models section */}
-      <section data-testid="ai-models-section" className="min-w-0">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-[14px] font-semibold text-foreground">
-              AI Models
-            </h2>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
-              Manage AI provider connections, models, and credentials.
-            </p>
-          </div>
+      <section
+        data-testid="ai-models-section"
+        className="min-w-0 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-primary/[0.03] to-card"
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3.5 lg:px-5">
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+            AI Models
+          </h3>
           <Button
             type="button"
             variant="ghost"
@@ -195,54 +208,50 @@ export function ProvidersWorkspace({
         </div>
 
         {storedConnections.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border/60 bg-card px-5 py-8 text-center text-[13px] text-muted-foreground">
+          <div className="px-5 py-10 text-center text-[13px] text-muted-foreground">
             No saved connections yet.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-border/60 bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border/60 hover:bg-transparent">
-                  <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
-                    Provider
-                  </TableHead>
-                  <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
-                    Connection
-                  </TableHead>
-                  <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
-                    Model
-                  </TableHead>
-                  <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
-                    Updated
-                  </TableHead>
-                  <TableHead className="text-right text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {storedConnections.map((connection) => (
-                  <ConnectionRow
-                    key={connection.profileId}
-                    connection={connection}
-                    isBusy={isBusy}
-                    isUpdatingModel={
-                      modelBusyProviderId === connection.providerId
-                    }
-                    modelCatalog={modelCatalogs[connection.providerId]}
-                    onDelete={handleDelete}
-                    onSelectDefault={handleSelectDefault}
-                    onSetModel={handleSetModel}
-                    providers={authOverview?.providers}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border/40 hover:bg-transparent">
+                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                  Provider
+                </TableHead>
+                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                  Connection
+                </TableHead>
+                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                  Model
+                </TableHead>
+                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                  Updated
+                </TableHead>
+                <TableHead className="text-right text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {storedConnections.map((connection) => (
+                <ConnectionRow
+                  key={connection.profileId}
+                  connection={connection}
+                  isBusy={isBusy}
+                  isUpdatingModel={
+                    modelBusyProviderId === connection.providerId
+                  }
+                  modelCatalog={modelCatalogs[connection.providerId]}
+                  onDelete={handleDelete}
+                  onSelectDefault={handleSelectDefault}
+                  onSetModel={handleSetModel}
+                  providers={authOverview?.providers}
+                />
+              ))}
+            </TableBody>
+          </Table>
         )}
       </section>
-
-      <Separator className="bg-border/40" />
 
       {/* Financial Data section */}
       <FinancialDataSection client={client} />
@@ -277,7 +286,7 @@ function ConnectionRow({
       : "");
 
   return (
-    <TableRow className="border-border/60 transition-colors hover:bg-muted/20">
+    <TableRow className="border-border/40 transition-colors hover:bg-muted/20">
       <TableCell className="text-[12px] font-medium">
         {getProviderDisplayName(
           connection.providerId,

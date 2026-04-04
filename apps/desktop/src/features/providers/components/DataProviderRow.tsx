@@ -79,7 +79,7 @@ export function DataProviderRow({
   return (
     <div
       data-testid={`data-provider-row-${provider.id}`}
-      className="flex flex-col gap-2 rounded-lg border border-border/60 bg-card px-4 py-3"
+      className="flex flex-col gap-2 bg-card px-4 py-3.5 transition-colors hover:bg-muted/20 lg:px-5"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-start gap-3">

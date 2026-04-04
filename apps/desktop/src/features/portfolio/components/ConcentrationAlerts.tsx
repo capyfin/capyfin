@@ -8,10 +8,12 @@ interface ConcentrationAlertsProps {
 
 export function ConcentrationAlerts({ alerts }: ConcentrationAlertsProps) {
   return (
-    <Card className="border border-amber-500/30 bg-amber-500/5">
-      <CardContent className="flex flex-col gap-2 p-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-400">
-          <AlertTriangleIcon className="size-4" />
+    <Card className="border-amber-500/20 bg-amber-500/[0.03] dark:border-amber-500/15 dark:bg-amber-500/[0.05]">
+      <CardContent className="flex flex-col gap-2.5 p-4">
+        <div className="flex items-center gap-2 text-[13px] font-semibold text-amber-700 dark:text-amber-400">
+          <div className="flex size-7 items-center justify-center rounded-md bg-amber-500/10">
+            <AlertTriangleIcon className="size-3.5" />
+          </div>
           Concentration Alerts
         </div>
         <ul className="flex flex-col gap-1">

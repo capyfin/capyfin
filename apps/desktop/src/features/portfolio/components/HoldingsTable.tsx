@@ -45,17 +45,19 @@ export function HoldingsTable({
   onTickerAction,
 }: HoldingsTableProps) {
   return (
-    <Card className="border border-border/70 bg-card/92 shadow-[0_22px_70px_-42px_rgba(15,23,42,0.4)]">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold">Holdings</CardTitle>
-        <CardDescription>
+    <Card className="overflow-hidden border-border/50 shadow-sm dark:border-border/30">
+      <CardHeader className="border-b border-border/40 bg-muted/20 dark:bg-muted/10">
+        <CardTitle className="text-[17px] font-semibold tracking-tight">
+          Holdings
+        </CardTitle>
+        <CardDescription className="text-[13px]">
           Positions sorted by portfolio weight. Cost-basis-derived values.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="overflow-hidden rounded-2xl border border-border/70">
+      <CardContent className="p-0">
+        <div>
           <Table>
-            <TableHeader className="bg-muted/45">
+            <TableHeader className="bg-muted/15 dark:bg-muted/8">
               <TableRow>
                 <TableHead>Ticker</TableHead>
                 <TableHead>Shares</TableHead>

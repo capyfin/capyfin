@@ -27,9 +27,9 @@ export function PortfolioOverviewPanel({
   const sectorCount = portfolio.sectorExposure.length;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-[17px] font-semibold tracking-tight text-foreground">
           Portfolio Overview
         </h2>
         <div className="flex gap-2">
@@ -45,40 +45,50 @@ export function PortfolioOverviewPanel({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="border border-border/70 bg-card/92">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-              <BriefcaseIcon className="size-4 text-primary" />
+        <Card className="border-border/50 dark:border-border/30">
+          <CardContent className="flex items-center gap-3.5 p-4">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 ring-2 ring-primary/[0.06]">
+              <BriefcaseIcon className="size-4.5 text-primary" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total Value</p>
-              <p className="text-lg font-semibold">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                Total Value
+              </p>
+              <p className="text-[18px] font-semibold tabular-nums tracking-tight">
                 {formatCurrency(portfolio.totalValue)}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-border/70 bg-card/92">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500/10">
-              <LayersIcon className="size-4 text-blue-500" />
+        <Card className="border-border/50 dark:border-border/30">
+          <CardContent className="flex items-center gap-3.5 p-4">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-blue-500/10 ring-2 ring-blue-500/[0.06]">
+              <LayersIcon className="size-4.5 text-blue-500" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Positions</p>
-              <p className="text-lg font-semibold">{positionCount}</p>
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                Positions
+              </p>
+              <p className="text-[18px] font-semibold tabular-nums tracking-tight">
+                {positionCount}
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-border/70 bg-card/92">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-500/10">
-              <LayersIcon className="size-4 text-emerald-500" />
+        <Card className="border-border/50 dark:border-border/30">
+          <CardContent className="flex items-center gap-3.5 p-4">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-500/10 ring-2 ring-emerald-500/[0.06]">
+              <LayersIcon className="size-4.5 text-emerald-500" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Sectors</p>
-              <p className="text-lg font-semibold">{sectorCount}</p>
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                Sectors
+              </p>
+              <p className="text-[18px] font-semibold tabular-nums tracking-tight">
+                {sectorCount}
+              </p>
             </div>
           </CardContent>
         </Card>

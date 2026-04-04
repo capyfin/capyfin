@@ -499,14 +499,14 @@ function ChatSessionView({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Agent/provider bar */}
-      <div className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5 lg:px-6">
+      <div className="flex items-center gap-3 border-b border-border/40 bg-card/30 px-4 py-2 lg:px-6">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/[0.08] px-2 py-0.5 text-[11px] font-medium text-primary">
             <BotIcon className="size-3" />
             {getAgentDisplayName(bootstrap.agent.name)}
           </span>
           {providerName ? (
-            <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+            <span className="rounded-md bg-muted/60 px-2 py-0.5 text-[11px] text-muted-foreground/70">
               {providerName}
               {bootstrap.resolvedModelId
                 ? ` / ${formatModelId(bootstrap.resolvedModelId)}`
@@ -514,7 +514,7 @@ function ChatSessionView({
             </span>
           ) : null}
           {hasPortfolio ? (
-            <span className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-0.5 text-xs font-medium text-success">
+            <span className="inline-flex items-center gap-1 rounded-md bg-success/[0.08] px-2 py-0.5 text-[11px] font-medium text-success">
               <BriefcaseIcon className="size-3" />
               Portfolio
             </span>
@@ -529,25 +529,25 @@ function ChatSessionView({
       >
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6">
           {messages.length === 0 ? (
-            <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
+            <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-10 py-8 text-center">
               <div className="space-y-4">
                 <div className="relative mx-auto w-fit">
-                  <div className="absolute -inset-3 rounded-2xl bg-primary/[0.06] blur-xl dark:bg-primary/[0.08]" />
-                  <div className="relative flex size-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.08] text-primary dark:bg-primary/[0.1]">
+                  <div className="absolute -inset-4 rounded-full bg-primary/[0.05] blur-2xl" />
+                  <div className="relative flex size-14 items-center justify-center rounded-2xl border border-primary/15 bg-primary/[0.06] text-primary ring-1 ring-primary/[0.06]">
                     <SparklesIcon className="size-6" />
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <h1 className="text-[20px] font-semibold tracking-tight text-foreground">
+                <div className="space-y-2">
+                  <h1 className="text-xl font-semibold tracking-tight text-foreground">
                     Start a conversation
                   </h1>
-                  <p className="text-[14px] leading-relaxed text-muted-foreground">
+                  <p className="mx-auto max-w-sm text-[13px] leading-relaxed text-muted-foreground/80">
                     {CHAT_EMPTY_STATE_SUBTITLE}
                   </p>
                 </div>
               </div>
 
-              <div className="grid w-full gap-2 sm:grid-cols-3">
+              <div className="grid w-full gap-2.5 sm:grid-cols-3">
                 {starterPrompts.map((prompt) => {
                   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- fallback guaranteed
                   const accent = (suggestionAccent[prompt.color] ??
@@ -566,7 +566,7 @@ function ChatSessionView({
                       >
                         <prompt.icon className={`size-4 ${accent.iconText}`} />
                       </div>
-                      <span className="text-muted-foreground">
+                      <span className="text-muted-foreground/90">
                         {prompt.text}
                       </span>
                     </button>
@@ -639,7 +639,7 @@ function ChatSessionView({
       </div>
 
       {/* Chat input */}
-      <div className="border-t border-border/60 px-4 py-3 lg:px-6">
+      <div className="border-t border-border/40 bg-card/20 px-4 py-3 lg:px-6">
         <PromptInput
           accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.jsx,.ts,.tsx,.py,.rb,.go,.rs,.java,.c,.cpp,.h,.hpp,.cs,.swift,.kt,.sh,.bash,.zsh,.yaml,.yml,.toml,.xml,.html,.css,.scss,.sql,.r,.lua,.php,.pl,.ex,.exs,.hs,.ml,.scala,.clj,.dart,.vue,.svelte,.astro,.log,.env,.ini,.cfg,.conf,.diff,.patch"
           globalDrop
@@ -670,8 +670,8 @@ function ChatSessionView({
 
       {/* Financial disclaimer */}
       {messages.length > 0 ? (
-        <div className="px-4 py-1.5 lg:px-6">
-          <p className="mx-auto max-w-3xl text-center text-[11px] leading-tight text-muted-foreground/60">
+        <div className="bg-card/20 px-4 pb-2 pt-0 lg:px-6">
+          <p className="mx-auto max-w-3xl text-center text-[10px] leading-tight tracking-wide text-muted-foreground/40">
             Not financial advice. AI-generated analysis may contain errors.
             Always verify data and consult a qualified advisor before making
             investment decisions.

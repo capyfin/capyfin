@@ -28,6 +28,7 @@ void test("vite proxy config includes all sidecar API routes", async () => {
     "/automations",
     "/delivery-channels",
     "/portfolio",
+    "/cases",
   ];
 
   for (const route of requiredRoutes) {

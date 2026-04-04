@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 const VIEW_TITLES: Record<Exclude<AppView, "providers-add">, string> = {
   launchpad: "Home",
+  cases: "Cases",
   chat: "Chat",
   providers: "Providers",
   agents: "Agents",

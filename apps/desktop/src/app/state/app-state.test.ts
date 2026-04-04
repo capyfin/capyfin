@@ -173,6 +173,17 @@ void test("SET_HASH_VIEW accepts settings as a valid view", () => {
   assert.equal(next.hashView, "settings");
 });
 
+void test("SET_HASH_VIEW accepts cases as a valid view", () => {
+  const state = makeState();
+  const next = appReducer(state, { type: "SET_HASH_VIEW", view: "cases" });
+  assert.equal(next.hashView, "cases");
+});
+
+void test("createInitialState can initialize with cases view", () => {
+  const state = createInitialState(() => "cases");
+  assert.equal(state.hashView, "cases");
+});
+
 void test("createInitialState can initialize with new view types", () => {
   const state = createInitialState(() => "watchlist");
   assert.equal(state.hashView, "watchlist");

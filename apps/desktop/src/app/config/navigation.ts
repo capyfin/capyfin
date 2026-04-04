@@ -1,5 +1,6 @@
 import {
   BookOpenIcon,
+  BriefcaseIcon,
   HomeIcon,
   ListChecksIcon,
   MessageSquareIcon,
@@ -12,6 +13,11 @@ export const primaryNavigation = [
     title: "Home",
     href: "#launchpad",
     icon: HomeIcon,
+  },
+  {
+    title: "Cases",
+    href: "#cases",
+    icon: BriefcaseIcon,
   },
   {
     title: "Chat",

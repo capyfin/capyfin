@@ -20,6 +20,8 @@ import {
   SETTINGS_TABS,
   type SettingsTab,
 } from "@/features/settings/components/SettingsWorkspace";
+import { CaseDetailPage } from "@/features/cases/components/CaseDetailPage";
+import { CasesWorkspace } from "@/features/cases/components/CasesWorkspace";
 import { WatchlistWorkspace } from "@/features/watchlist/components/WatchlistWorkspace";
 import {
   buildCardPrompt,
@@ -256,6 +258,7 @@ export function App() {
   const currentView: Exclude<AppView, "providers-add"> = state.hashView;
   const activeSettingsTab =
     currentView === "settings" ? readSettingsTabFromHash() : undefined;
+  const activeCaseId = currentView === "cases" ? readCaseIdFromHash() : null;
 
   return (
     <SidebarProvider
@@ -344,6 +347,12 @@ export function App() {
                   void handleCardClick(card, ticker);
                 }}
               />
+            ) : currentView === "cases" ? (
+              activeCaseId ? (
+                <CaseDetailPage client={state.client} caseId={activeCaseId} />
+              ) : (
+                <CasesWorkspace client={state.client} />
+              )
             ) : currentView === "library" ? (
               <LibraryWorkspace client={state.client} />
             ) : currentView === "automation" ? (
@@ -426,6 +435,13 @@ function readViewFromHash(): AppView {
     return "library";
   }
 
+  if (
+    window.location.hash === "#cases" ||
+    window.location.hash.startsWith("#cases/")
+  ) {
+    return "cases";
+  }
+
   if (window.location.hash === "#automation") {
     return "automation";
   }
@@ -442,6 +458,11 @@ function readViewFromHash(): AppView {
   }
 
   return "launchpad";
+}
+
+function readCaseIdFromHash(): string | null {
+  const match = /^#cases\/(.+)$/.exec(window.location.hash);
+  return match?.[1] ?? null;
 }
 
 function readSettingsTabFromHash(): SettingsTab {

@@ -10,12 +10,18 @@ void test("primaryNavigation contains the correct items in order", () => {
   const titles = primaryNavigation.map((item) => item.title);
   assert.deepEqual(titles, [
     "Home",
+    "Cases",
     "Chat",
     "Watchlist",
     "Library",
     "Automation",
-    "Settings",
   ]);
+});
+
+void test("Cases nav item uses #cases href", () => {
+  const casesItem = primaryNavigation.find((item) => item.title === "Cases");
+  assert.ok(casesItem, "Cases item should exist");
+  assert.equal(casesItem.href, "#cases");
 });
 
 void test("each nav item has a hash-based href", () => {

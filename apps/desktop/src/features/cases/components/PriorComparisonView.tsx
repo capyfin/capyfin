@@ -30,26 +30,26 @@ export function PriorComparisonView({
   return (
     <div className="flex flex-col gap-5">
       {/* Summary card */}
-      <Card>
+      <Card className="border-border/60">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold">
+          <CardTitle className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
             Changes Since Prior Review
           </CardTitle>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[11px] tabular-nums text-muted-foreground/60">
             Last reviewed {formattedDate}
           </p>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+        <CardContent className="flex flex-col gap-5">
           {/* Stance transition */}
           {priorComparison.stanceChange !== "same" &&
           priorComparison.priorStance ? (
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
                 Stance
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <StanceBadge stance={priorComparison.priorStance} />
-                <ArrowRightIcon className="size-3.5 text-muted-foreground" />
+                <ArrowRightIcon className="size-3.5 text-muted-foreground/40" />
                 <StanceBadge stance={priorComparison.currentStance} />
                 <ChangeBadge change={priorComparison.stanceChange} />
               </div>
@@ -59,13 +59,13 @@ export function PriorComparisonView({
           {/* Confidence transition */}
           {priorComparison.confidenceChange !== "same" &&
           priorComparison.priorConfidence ? (
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
                 Confidence
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <ConfidenceBadge confidence={priorComparison.priorConfidence} />
-                <ArrowRightIcon className="size-3.5 text-muted-foreground" />
+                <ArrowRightIcon className="size-3.5 text-muted-foreground/40" />
                 <ConfidenceBadge
                   confidence={priorComparison.currentConfidence}
                 />
@@ -75,11 +75,11 @@ export function PriorComparisonView({
           ) : null}
 
           {/* History summary */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="flex flex-col gap-2">
+            <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
               Review Summary
             </span>
-            <p className="text-sm text-foreground">
+            <p className="text-[13px] leading-relaxed text-foreground">
               {priorComparison.historySummary}
             </p>
           </div>
@@ -88,9 +88,9 @@ export function PriorComparisonView({
 
       {/* What Changed section */}
       {whatChangedSection ? (
-        <Card>
+        <Card className="border-border/60">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+            <CardTitle className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
               What Changed
               <ConfidenceBadge confidence={whatChangedSection.confidence} />
             </CardTitle>
@@ -104,27 +104,29 @@ export function PriorComparisonView({
       ) : null}
 
       {/* Current state overview */}
-      <Card>
+      <Card className="border-border/60">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold">Current State</CardTitle>
+          <CardTitle className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Current State
+          </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex items-center gap-2.5">
             <StanceBadge stance={investmentCase.stance} />
             <ConfidenceBadge confidence={investmentCase.confidence} />
           </div>
           {investmentCase.keyAssumptions.length > 0 ? (
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
                 Key Assumptions
               </span>
-              <ul className="space-y-1">
+              <ul className="space-y-1.5">
                 {investmentCase.keyAssumptions.map((a, i) => (
                   <li
                     key={`assumption-${String(i)}`}
-                    className="flex items-start gap-2 text-sm text-muted-foreground"
+                    className="flex items-start gap-2.5 text-[13px] text-muted-foreground"
                   >
-                    <span className="mt-1.5 block size-1.5 shrink-0 rounded-full bg-foreground/30" />
+                    <span className="mt-1.5 block size-1.5 shrink-0 rounded-full bg-emerald-500/40" />
                     {a}
                   </li>
                 ))}

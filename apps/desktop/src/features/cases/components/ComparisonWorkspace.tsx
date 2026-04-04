@@ -188,12 +188,12 @@ export function ComparisonWorkspace({
     mode === "prior" ? "Prior" : (rightCase?.ticker ?? "Right");
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6">
       {/* Back navigation */}
       <Button
         variant="ghost"
         size="sm"
-        className="w-fit -ml-2"
+        className="w-fit -ml-2 text-muted-foreground hover:text-foreground"
         onClick={() => {
           window.location.hash = "#cases";
         }}
@@ -202,33 +202,37 @@ export function ComparisonWorkspace({
         Cases
       </Button>
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-bold">
-            {mode === "prior"
-              ? `${leftCase?.ticker ?? "Case"} — Compare with Prior`
-              : "Compare Cases"}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {mode === "prior"
-              ? "Current state versus the most recent review"
-              : "Side-by-side analysis of two investment cases"}
-          </p>
+      {/* Header card */}
+      <div className="relative overflow-hidden rounded-xl border border-border/60 bg-card p-5">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.03] via-transparent to-transparent" />
+        <div className="relative flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1.5">
+            <h1 className="text-xl font-bold tracking-tight">
+              {mode === "prior"
+                ? `${leftCase?.ticker ?? "Case"} — Compare with Prior`
+                : "Compare Cases"}
+            </h1>
+            <p className="text-[13px] text-muted-foreground">
+              {mode === "prior"
+                ? "Current state versus the most recent review"
+                : "Side-by-side analysis of two investment cases"}
+            </p>
+          </div>
+          {comparisonResult || priorResult ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-background/60 backdrop-blur-sm"
+              disabled={isSaving}
+              onClick={() => {
+                void handleSaveToLibrary();
+              }}
+            >
+              <SaveIcon className="size-3.5" />
+              {isSaving ? "Saving..." : "Save to Library"}
+            </Button>
+          ) : null}
         </div>
-        {comparisonResult || priorResult ? (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isSaving}
-            onClick={() => {
-              void handleSaveToLibrary();
-            }}
-          >
-            <SaveIcon className="size-3.5" />
-            {isSaving ? "Saving..." : "Save to Library"}
-          </Button>
-        ) : null}
       </div>
 
       {/* Case selector (only for case-vs-case mode) */}

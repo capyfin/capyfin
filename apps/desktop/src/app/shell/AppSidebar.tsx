@@ -1,7 +1,6 @@
 import type { AgentSession } from "@capyfin/contracts";
 import {
   ChevronRightIcon,
-  MessageSquareIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PlusIcon,
@@ -19,6 +18,10 @@ import {
 } from "@/features/settings/components/SettingsWorkspace";
 import { groupSessionsByDate } from "@/features/chat/session-grouping";
 import { formatSessionLabel } from "@/features/chat/session-label";
+import {
+  detectSessionType,
+  SESSION_TYPE_META,
+} from "@/features/chat/session-type";
 import { formatSessionTimestamp } from "@/features/chat/session-timestamp";
 import {
   Collapsible,
@@ -253,6 +256,10 @@ function SessionItem({
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const label = formatSessionLabel(session);
+  const sessionType = detectSessionType(label);
+  const typeMeta = SESSION_TYPE_META[sessionType];
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
+  const TypeIcon = typeMeta.icon;
 
   useEffect(() => {
     if (isEditing) {
@@ -268,11 +275,35 @@ function SessionItem({
     onStopEditing();
   }
 
+  const iconColorClass =
+    sessionType === "deep-dive"
+      ? "text-blue-500"
+      : sessionType === "morning-brief"
+        ? "text-amber-500"
+        : sessionType === "position-review"
+          ? "text-green-500"
+          : sessionType === "fair-value"
+            ? "text-emerald-500"
+            : "text-sidebar-foreground/70";
+
+  const borderColorClass =
+    sessionType === "deep-dive"
+      ? "border-l-blue-500/60"
+      : sessionType === "morning-brief"
+        ? "border-l-amber-500/60"
+        : sessionType === "position-review"
+          ? "border-l-green-500/60"
+          : sessionType === "fair-value"
+            ? "border-l-emerald-500/60"
+            : "";
+
+  const hasBorder = sessionType !== "general";
+
   if (isEditing) {
     return (
       <SidebarMenuItem>
         <div className="flex h-8 items-center gap-2 px-2">
-          <MessageSquareIcon className="size-4 shrink-0 text-sidebar-foreground/70" />
+          <TypeIcon className={`size-4 shrink-0 ${iconColorClass}`} />
           <input
             ref={inputRef}
             defaultValue={label}
@@ -296,12 +327,12 @@ function SessionItem({
       <SidebarMenuButton
         tooltip={label}
         isActive={isActive}
-        className="h-auto py-1.5"
+        className={`h-auto py-1.5 ${hasBorder ? `border-l-2 ${borderColorClass}` : ""}`}
         onClick={() => {
           onSelect?.(session.id);
         }}
       >
-        <MessageSquareIcon className="mt-0.5 self-start" />
+        <TypeIcon className={`mt-0.5 self-start ${iconColorClass}`} />
         <div className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-sm">{label}</span>
           <span className="text-[11px] leading-tight text-sidebar-foreground/45">

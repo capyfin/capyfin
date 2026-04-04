@@ -162,9 +162,9 @@ export function AppSidebar({
             <SidebarGroupContent>
               {sessionGroups.map((group) => (
                 <div key={group.label}>
-                  <p className="px-2 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/65 first:pt-1">
+                  <div className="px-3 py-1.5 mt-3 first:mt-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50">
                     {group.label}
-                  </p>
+                  </div>
                   <SidebarMenu>
                     {group.sessions.map((session) => (
                       <SessionItem

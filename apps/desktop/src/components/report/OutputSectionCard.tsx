@@ -16,10 +16,15 @@ interface OutputSectionCardProps {
 
 export function OutputSectionCard({ section }: OutputSectionCardProps) {
   return (
-    <Card size="sm">
+    <Card
+      size="sm"
+      className="border-border/50 transition-colors hover:border-border/70"
+    >
       <CardHeader>
         <div className="flex items-center gap-2">
-          <CardTitle>{section.title}</CardTitle>
+          <CardTitle className="text-[14px] font-semibold tracking-tight">
+            {section.title}
+          </CardTitle>
           <ConfidenceBadge confidence={section.confidence} />
         </div>
       </CardHeader>
@@ -35,20 +40,20 @@ export function OutputSectionCard({ section }: OutputSectionCardProps) {
                 {section.citations.length !== 1 ? "s" : ""}
               </AccordionTrigger>
               <AccordionContent>
-                <ul className="space-y-1.5">
+                <ul className="space-y-2 rounded-lg bg-muted/30 px-3.5 py-2.5">
                   {section.citations.map((citation, index) => (
                     <li
                       key={`${citation.source}-${String(index)}`}
                       className="flex items-start gap-1.5 text-xs text-muted-foreground"
                     >
-                      <ExternalLinkIcon className="mt-0.5 size-3 shrink-0" />
+                      <ExternalLinkIcon className="mt-0.5 size-3 shrink-0 text-primary/60" />
                       <span>
                         <span className="font-medium text-foreground">
                           {citation.label}
                         </span>
                         {" — "}
                         {citation.source}
-                        <span className="ml-1 text-muted-foreground/70">
+                        <span className="ml-1 tabular-nums text-muted-foreground/70">
                           ({citation.date})
                         </span>
                       </span>

@@ -20,12 +20,12 @@ export function ReportView({
   onAddToWatchlist,
 }: ReportViewProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Title & subject */}
-      <div className="space-y-1.5">
+      <div className="rounded-xl border border-border/60 bg-gradient-to-b from-primary/[0.04] to-card/50 px-5 py-4">
         <div className="flex items-center justify-between gap-2">
           {cardOutput.subject ? (
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-primary">
               {cardOutput.subject}
             </p>
           ) : null}
@@ -36,7 +36,7 @@ export function ReportView({
             />
           ) : null}
         </div>
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+        <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-foreground">
           {cardOutput.title}
         </h2>
       </div>
@@ -60,17 +60,18 @@ export function ReportView({
 
       {/* Key risks */}
       {cardOutput.keyRisks.length > 0 ? (
-        <div className="space-y-2">
-          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-            <AlertTriangleIcon className="size-4 text-amber-500" />
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] px-5 py-4">
+          <h3 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+            <AlertTriangleIcon className="size-4" />
             Key Risks
           </h3>
-          <ul className="space-y-1.5 pl-6">
+          <ul className="mt-3 space-y-2 pl-1">
             {cardOutput.keyRisks.map((risk, index) => (
               <li
                 key={`risk-${String(index)}`}
-                className="list-disc text-sm text-muted-foreground"
+                className="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground"
               >
+                <span className="mt-2 block size-1.5 shrink-0 rounded-full bg-amber-500/60" />
                 {risk}
               </li>
             ))}
@@ -80,12 +81,12 @@ export function ReportView({
 
       {/* Challenge summary */}
       {cardOutput.challengeSummary ? (
-        <div className="space-y-2">
-          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-            <ShieldAlertIcon className="size-4 text-muted-foreground" />
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-5 py-4">
+          <h3 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <ShieldAlertIcon className="size-4" />
             Challenge
           </h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {cardOutput.challengeSummary}
           </p>
         </div>

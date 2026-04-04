@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { InvestmentCase, WatchlistItem } from "@capyfin/contracts";
+import type { PortfolioOverview } from "@capyfin/contracts";
 import {
   daysBetween,
   computeStaleCases,
@@ -8,6 +9,8 @@ import {
   extractCatalysts,
   computeWatchlistSignals,
   computeAttentionMetrics,
+  computeWatchlistChanges,
+  computePortfolioRisks,
 } from "./attention-utils";
 
 // ---------------------------------------------------------------------------
@@ -390,4 +393,242 @@ void test("computeAttentionMetrics handles empty data", () => {
   assert.equal(metrics.staleCaseCount, 0);
   assert.equal(metrics.confidenceChangeCount, 0);
   assert.equal(metrics.watchlistSignalCount, 0);
+});
+
+// ---------------------------------------------------------------------------
+// computeWatchlistChanges
+// ---------------------------------------------------------------------------
+
+void test("computeWatchlistChanges detects stance changes for watchlist items", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const watchlist = [makeWatchlistItem({ ticker: "AAPL" })];
+  const cases = [
+    makeCase({
+      ticker: "AAPL",
+      history: [
+        {
+          id: "h1",
+          date: "2026-03-28T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Stance update",
+          priorStance: "bullish",
+          newStance: "neutral",
+        },
+      ],
+    }),
+  ];
+  const changes = computeWatchlistChanges(watchlist, cases, 14, now);
+  assert.equal(changes.length, 1);
+  const first = changes[0];
+  assert.ok(first);
+  assert.equal(first.changeType, "stance-changed");
+  assert.equal(first.ticker, "AAPL");
+});
+
+void test("computeWatchlistChanges detects confidence changes", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const watchlist = [makeWatchlistItem({ ticker: "MSFT" })];
+  const cases = [
+    makeCase({
+      ticker: "MSFT",
+      history: [
+        {
+          id: "h1",
+          date: "2026-04-01T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Confidence shift",
+          priorConfidence: "HIGH",
+          newConfidence: "MEDIUM",
+        },
+      ],
+    }),
+  ];
+  const changes = computeWatchlistChanges(watchlist, cases, 14, now);
+  assert.equal(changes.length, 1);
+  const first = changes[0];
+  assert.ok(first);
+  assert.equal(first.changeType, "confidence-changed");
+});
+
+void test("computeWatchlistChanges detects general case updates", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const watchlist = [makeWatchlistItem({ ticker: "GOOG" })];
+  const cases = [
+    makeCase({
+      ticker: "GOOG",
+      history: [
+        {
+          id: "h1",
+          date: "2026-04-02T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Earnings reviewed",
+        },
+      ],
+    }),
+  ];
+  const changes = computeWatchlistChanges(watchlist, cases, 14, now);
+  assert.equal(changes.length, 1);
+  const first = changes[0];
+  assert.ok(first);
+  assert.equal(first.changeType, "case-updated");
+  assert.equal(first.summary, "Earnings reviewed");
+});
+
+void test("computeWatchlistChanges ignores items older than threshold", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const watchlist = [makeWatchlistItem({ ticker: "AAPL" })];
+  const cases = [
+    makeCase({
+      ticker: "AAPL",
+      history: [
+        {
+          id: "h1",
+          date: "2026-01-01T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Old update",
+        },
+      ],
+    }),
+  ];
+  const changes = computeWatchlistChanges(watchlist, cases, 14, now);
+  assert.equal(changes.length, 0);
+});
+
+void test("computeWatchlistChanges returns empty for empty watchlist", () => {
+  const changes = computeWatchlistChanges([], [], 14);
+  assert.equal(changes.length, 0);
+});
+
+void test("computeWatchlistChanges sorts by most recent first", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const watchlist = [
+    makeWatchlistItem({ ticker: "AAPL" }),
+    makeWatchlistItem({ ticker: "MSFT" }),
+  ];
+  const cases = [
+    makeCase({
+      id: "c1",
+      ticker: "AAPL",
+      history: [
+        {
+          id: "h1",
+          date: "2026-03-25T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Older",
+        },
+      ],
+    }),
+    makeCase({
+      id: "c2",
+      ticker: "MSFT",
+      history: [
+        {
+          id: "h2",
+          date: "2026-04-02T00:00:00Z",
+          eventType: "refreshed",
+          summary: "Newer",
+        },
+      ],
+    }),
+  ];
+  const changes = computeWatchlistChanges(watchlist, cases, 14, now);
+  assert.equal(changes.length, 2);
+  const [first, second] = changes;
+  assert.ok(first);
+  assert.ok(second);
+  assert.equal(first.ticker, "MSFT");
+  assert.equal(second.ticker, "AAPL");
+});
+
+// ---------------------------------------------------------------------------
+// computePortfolioRisks
+// ---------------------------------------------------------------------------
+
+function makePortfolio(
+  overrides: Partial<PortfolioOverview> = {},
+): PortfolioOverview {
+  return {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 25,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "GOOG",
+        shares: 50,
+        costBasis: 140,
+        weight: 15,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 50000,
+    sectorExposure: [{ sector: "Technology", weight: 40 }],
+    concentrationAlerts: [],
+    ...overrides,
+  };
+}
+
+void test("computePortfolioRisks returns null for null portfolio", () => {
+  assert.equal(computePortfolioRisks(null, []), null);
+});
+
+void test("computePortfolioRisks returns null for empty holdings", () => {
+  const portfolio = makePortfolio({ holdings: [] });
+  assert.equal(computePortfolioRisks(portfolio, []), null);
+});
+
+void test("computePortfolioRisks identifies top holding", () => {
+  const portfolio = makePortfolio();
+  const result = computePortfolioRisks(portfolio, []);
+  assert.ok(result);
+  assert.equal(result.topHoldingTicker, "AAPL");
+  assert.equal(result.topHoldingWeight, 25);
+});
+
+void test("computePortfolioRisks passes through concentration alerts", () => {
+  const portfolio = makePortfolio({
+    concentrationAlerts: [{ type: "position", name: "AAPL", weight: 25 }],
+  });
+  const result = computePortfolioRisks(portfolio, []);
+  assert.ok(result);
+  assert.equal(result.concentrationAlerts.length, 1);
+  const alert = result.concentrationAlerts[0];
+  assert.ok(alert);
+  assert.equal(alert.name, "AAPL");
+});
+
+void test("computePortfolioRisks counts positions needing review", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const portfolio = makePortfolio();
+  const cases = [
+    makeCase({
+      ticker: "AAPL",
+      lastReviewedAt: "2026-02-01T00:00:00Z",
+    }),
+    makeCase({
+      id: "c2",
+      ticker: "GOOG",
+      lastReviewedAt: "2026-04-01T00:00:00Z",
+    }),
+  ];
+  const result = computePortfolioRisks(portfolio, cases, 30, now);
+  assert.ok(result);
+  assert.equal(result.positionsNeedingReview, 1);
+});
+
+void test("computePortfolioRisks ignores cases not in portfolio", () => {
+  const now = new Date("2026-04-04T00:00:00Z");
+  const portfolio = makePortfolio();
+  const cases = [
+    makeCase({
+      ticker: "TSLA",
+      lastReviewedAt: "2026-01-01T00:00:00Z",
+    }),
+  ];
+  const result = computePortfolioRisks(portfolio, cases, 30, now);
+  assert.ok(result);
+  assert.equal(result.positionsNeedingReview, 0);
 });

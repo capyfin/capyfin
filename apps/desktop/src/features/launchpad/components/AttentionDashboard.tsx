@@ -1,17 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
-import type { InvestmentCase, WatchlistItem } from "@capyfin/contracts";
+import type {
+  InvestmentCase,
+  PortfolioOverview,
+  WatchlistItem,
+} from "@capyfin/contracts";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import {
   computeAttentionMetrics,
+  computePortfolioRisks,
   computeStaleCases,
+  computeWatchlistChanges,
   extractCatalysts,
 } from "../attention-utils";
 import type { ActionCard } from "../types";
 import { AttentionEmptyState } from "./AttentionEmptyState";
 import { AttentionSummary } from "./AttentionSummary";
+import { MarketContext } from "./MarketContext";
 import { NeedsReview } from "./NeedsReview";
+import { PortfolioRisks } from "./PortfolioRisks";
 import { QuickActions } from "./QuickActions";
 import { UpcomingCatalysts } from "./UpcomingCatalysts";
+import { WatchlistChanges } from "./WatchlistChanges";
 
 interface AttentionDashboardProps {
   client: SidecarClient | null;
@@ -21,6 +30,7 @@ interface AttentionDashboardProps {
 interface DashboardData {
   cases: InvestmentCase[];
   watchlist: WatchlistItem[];
+  portfolio: PortfolioOverview | null;
 }
 
 export function AttentionDashboard({
@@ -41,15 +51,18 @@ export function AttentionDashboard({
       setLoading(true);
       setError(null);
 
-      const [casesRes, watchlistRes] = await Promise.allSettled([
+      const [casesRes, watchlistRes, portfolioRes] = await Promise.allSettled([
         client.listCases(),
         client.getWatchlist(),
+        client.getPortfolio(),
       ]);
 
       setData({
         cases: casesRes.status === "fulfilled" ? casesRes.value.cases : [],
         watchlist:
           watchlistRes.status === "fulfilled" ? watchlistRes.value.items : [],
+        portfolio:
+          portfolioRes.status === "fulfilled" ? portfolioRes.value : null,
       });
     } catch {
       setError("Failed to load dashboard data");
@@ -82,6 +95,7 @@ export function AttentionDashboard({
 
   const cases = data?.cases ?? [];
   const watchlist = data?.watchlist ?? [];
+  const portfolio = data?.portfolio ?? null;
 
   if (cases.length === 0) {
     return <AttentionEmptyState onCardClick={onCardClick} />;
@@ -90,12 +104,17 @@ export function AttentionDashboard({
   const metrics = computeAttentionMetrics(cases, watchlist);
   const staleCases = computeStaleCases(cases);
   const catalysts = extractCatalysts(cases);
+  const watchlistChanges = computeWatchlistChanges(watchlist, cases);
+  const portfolioRisks = computePortfolioRisks(portfolio, cases);
 
   return (
     <div className="space-y-6">
       <AttentionSummary metrics={metrics} />
+      <MarketContext />
       <NeedsReview staleCases={staleCases} onCardClick={onCardClick} />
       <UpcomingCatalysts catalysts={catalysts} />
+      <WatchlistChanges changes={watchlistChanges} />
+      {portfolioRisks && <PortfolioRisks risks={portfolioRisks} />}
       <QuickActions onCardClick={onCardClick} />
     </div>
   );

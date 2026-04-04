@@ -61,10 +61,10 @@ export function CaseSelector({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Left
+    <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border/60 bg-card p-4">
+      <div className="flex items-center gap-2.5">
+        <span className="flex size-5 items-center justify-center rounded-full bg-amber-500/10 text-[10px] font-bold text-amber-500">
+          A
         </span>
         <Select
           value={leftId ?? ""}
@@ -72,24 +72,29 @@ export function CaseSelector({
             onSelectionChange(v || null, rightId);
           }}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-[220px]">
             <SelectValue placeholder="Select a case..." />
           </SelectTrigger>
           <SelectContent>
             {cases.map((c) => (
               <SelectItem key={c.id} value={c.id}>
-                {c.ticker} — {c.companyName}
+                <span className="font-mono font-semibold">{c.ticker}</span>
+                <span className="ml-1.5 text-muted-foreground">
+                  {c.companyName}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      <span className="text-sm font-medium text-muted-foreground">vs</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/40">
+        vs
+      </span>
 
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Right
+      <div className="flex items-center gap-2.5">
+        <span className="flex size-5 items-center justify-center rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-500">
+          B
         </span>
         <Select
           value={rightId ?? ""}
@@ -97,13 +102,16 @@ export function CaseSelector({
             onSelectionChange(leftId, v || null);
           }}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-[220px]">
             <SelectValue placeholder="Select a case..." />
           </SelectTrigger>
           <SelectContent>
             {cases.map((c) => (
               <SelectItem key={c.id} value={c.id}>
-                {c.ticker} — {c.companyName}
+                <span className="font-mono font-semibold">{c.ticker}</span>
+                <span className="ml-1.5 text-muted-foreground">
+                  {c.companyName}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

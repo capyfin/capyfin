@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CASES_EMPTY_TEXT, CASE_DETAIL_TABS } from "./constants";
+import {
+  alignSections,
+  computeDifferences,
+  classifyChange,
+  computePriorComparison,
+} from "./comparison-utils";
 
 // ---------------------------------------------------------------------------
 // CasesWorkspace
@@ -98,4 +104,54 @@ void test("SectionTab exports a function component", async () => {
 void test("HistoryTab exports a function component", async () => {
   const mod = await import("./components/HistoryTab");
   assert.equal(typeof mod.HistoryTab, "function");
+});
+
+// ---------------------------------------------------------------------------
+// Comparison components
+// ---------------------------------------------------------------------------
+
+void test("ComparisonWorkspace exports a function component", async () => {
+  const mod = await import("./components/ComparisonWorkspace");
+  assert.equal(typeof mod.ComparisonWorkspace, "function");
+});
+
+void test("CaseSelector exports a function component", async () => {
+  const mod = await import("./components/CaseSelector");
+  assert.equal(typeof mod.CaseSelector, "function");
+});
+
+void test("DifferencesSummary exports a function component", async () => {
+  const mod = await import("./components/DifferencesSummary");
+  assert.equal(typeof mod.DifferencesSummary, "function");
+});
+
+void test("ComparisonGrid exports a function component", async () => {
+  const mod = await import("./components/ComparisonGrid");
+  assert.equal(typeof mod.ComparisonGrid, "function");
+});
+
+void test("ComparisonSectionRow exports a function component", async () => {
+  const mod = await import("./components/ComparisonSectionRow");
+  assert.equal(typeof mod.ComparisonSectionRow, "function");
+});
+
+void test("ChangeBadge exports a function component", async () => {
+  const mod = await import("./components/ChangeBadge");
+  assert.equal(typeof mod.ChangeBadge, "function");
+});
+
+void test("PriorComparisonView exports a function component", async () => {
+  const mod = await import("./components/PriorComparisonView");
+  assert.equal(typeof mod.PriorComparisonView, "function");
+});
+
+// ---------------------------------------------------------------------------
+// Comparison utilities (integrated tests)
+// ---------------------------------------------------------------------------
+
+void test("comparison-utils exports all required functions", () => {
+  assert.equal(typeof alignSections, "function");
+  assert.equal(typeof computeDifferences, "function");
+  assert.equal(typeof classifyChange, "function");
+  assert.equal(typeof computePriorComparison, "function");
 });

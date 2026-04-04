@@ -6,9 +6,10 @@ import { StanceBadge } from "./StanceBadge";
 interface CaseCardProps {
   investmentCase: InvestmentCase;
   onClick: () => void;
+  selected?: boolean | undefined;
 }
 
-export function CaseCard({ investmentCase, onClick }: CaseCardProps) {
+export function CaseCard({ investmentCase, onClick, selected }: CaseCardProps) {
   const thesisSection = investmentCase.sections.find((s) => s.id === "thesis");
   const snippet = thesisSection?.content
     ? thesisSection.content.length > 120
@@ -25,7 +26,7 @@ export function CaseCard({ investmentCase, onClick }: CaseCardProps) {
 
   return (
     <Card
-      className="cursor-pointer transition-colors hover:bg-muted/50"
+      className={`cursor-pointer transition-colors hover:bg-muted/50 ${selected === true ? "ring-2 ring-primary" : ""} ${selected === false ? "opacity-60" : ""}`}
       onClick={onClick}
     >
       <CardHeader>

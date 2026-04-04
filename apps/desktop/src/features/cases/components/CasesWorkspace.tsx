@@ -1,6 +1,7 @@
 import type { InvestmentCase } from "@capyfin/contracts";
-import { LoaderCircleIcon } from "lucide-react";
+import { GitCompareArrowsIcon, LoaderCircleIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import { CaseCard } from "./CaseCard";
@@ -19,6 +20,8 @@ export function CasesWorkspace({ client }: CasesWorkspaceProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<CasesSortBy>("lastReviewed");
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const fetchCases = useCallback(async () => {
     if (!client) return;
@@ -89,28 +92,71 @@ export function CasesWorkspace({ client }: CasesWorkspaceProps) {
         <>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Investment Cases</h2>
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              size="sm"
-              value={sortBy}
-              onValueChange={(v: string) => {
-                if (v) setSortBy(v as CasesSortBy);
-              }}
-            >
-              <ToggleGroupItem value="lastReviewed">Recent</ToggleGroupItem>
-              <ToggleGroupItem value="confidence">Confidence</ToggleGroupItem>
-              <ToggleGroupItem value="ticker">A-Z</ToggleGroupItem>
-            </ToggleGroup>
+            <div className="flex items-center gap-2">
+              {compareMode && selectedIds.length === 2 ? (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => {
+                    const [left, right] = selectedIds;
+                    window.location.hash = `#cases/compare?left=${String(left)}&right=${String(right)}`;
+                  }}
+                >
+                  <GitCompareArrowsIcon className="size-3.5" />
+                  Compare Selected
+                </Button>
+              ) : null}
+              <Button
+                variant={compareMode ? "secondary" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setCompareMode((prev) => !prev);
+                  setSelectedIds([]);
+                }}
+              >
+                <GitCompareArrowsIcon className="size-3.5" />
+                {compareMode ? "Cancel" : "Compare"}
+              </Button>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                size="sm"
+                value={sortBy}
+                onValueChange={(v: string) => {
+                  if (v) setSortBy(v as CasesSortBy);
+                }}
+              >
+                <ToggleGroupItem value="lastReviewed">Recent</ToggleGroupItem>
+                <ToggleGroupItem value="confidence">Confidence</ToggleGroupItem>
+                <ToggleGroupItem value="ticker">A-Z</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
+
+          {compareMode ? (
+            <p className="text-xs text-muted-foreground">
+              Select exactly 2 cases to compare them side by side.
+            </p>
+          ) : null}
 
           <div className="flex flex-col gap-3">
             {sortedCases.map((c) => (
               <CaseCard
                 key={c.id}
                 investmentCase={c}
+                selected={compareMode ? selectedIds.includes(c.id) : undefined}
                 onClick={() => {
-                  window.location.hash = `#cases/${c.id}`;
+                  if (compareMode) {
+                    setSelectedIds((prev) => {
+                      if (prev.includes(c.id)) {
+                        return prev.filter((id) => id !== c.id);
+                      }
+                      if (prev.length >= 2) return prev;
+                      return [...prev, c.id];
+                    });
+                  } else {
+                    window.location.hash = `#cases/${c.id}`;
+                  }
                 }}
               />
             ))}

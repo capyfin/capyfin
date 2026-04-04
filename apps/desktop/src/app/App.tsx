@@ -22,6 +22,7 @@ import {
 } from "@/features/settings/components/SettingsWorkspace";
 import { CaseDetailPage } from "@/features/cases/components/CaseDetailPage";
 import { CasesWorkspace } from "@/features/cases/components/CasesWorkspace";
+import { ComparisonWorkspace } from "@/features/cases/components/ComparisonWorkspace";
 import { WatchlistWorkspace } from "@/features/watchlist/components/WatchlistWorkspace";
 import {
   buildCardPrompt,
@@ -315,7 +316,10 @@ export function App() {
   const currentView: Exclude<AppView, "providers-add"> = state.hashView;
   const activeSettingsTab =
     currentView === "settings" ? readSettingsTabFromHash() : undefined;
-  const activeCaseId = currentView === "cases" ? readCaseIdFromHash() : null;
+  const isCompareMode = currentView === "cases" && isCompareRoute();
+  const activeCaseId =
+    currentView === "cases" && !isCompareMode ? readCaseIdFromHash() : null;
+  const compareParams = isCompareMode ? readCompareParamsFromHash() : null;
 
   return (
     <SidebarProvider
@@ -408,7 +412,14 @@ export function App() {
                 onRefreshCase={handleRefreshCase}
               />
             ) : currentView === "cases" ? (
-              activeCaseId ? (
+              isCompareMode ? (
+                <ComparisonWorkspace
+                  client={state.client}
+                  leftId={compareParams?.left ?? null}
+                  rightId={compareParams?.right ?? null}
+                  mode={compareParams?.mode ?? "case-vs-case"}
+                />
+              ) : activeCaseId ? (
                 <CaseDetailPage
                   client={state.client}
                   caseId={activeCaseId}
@@ -527,8 +538,29 @@ function readViewFromHash(): AppView {
   return "launchpad";
 }
 
+function isCompareRoute(): boolean {
+  return window.location.hash.startsWith("#cases/compare");
+}
+
+function readCompareParamsFromHash(): {
+  left: string | null;
+  right: string | null;
+  mode: "case-vs-case" | "prior";
+} {
+  const url = new URL(window.location.hash.slice(1), "http://placeholder");
+  const left = url.searchParams.get("left");
+  const right = url.searchParams.get("right");
+  const mode =
+    url.searchParams.get("mode") === "prior"
+      ? ("prior" as const)
+      : ("case-vs-case" as const);
+  return { left, right, mode };
+}
+
 function readCaseIdFromHash(): string | null {
-  const match = /^#cases\/(.+)$/.exec(window.location.hash);
+  if (isCompareRoute()) return null;
+  const hashBase = window.location.hash.split("?")[0] ?? "";
+  const match = /^#cases\/(.+)$/.exec(hashBase);
   return match?.[1] ?? null;
 }
 

@@ -1,8 +1,19 @@
 import type { InvestmentCase } from "@capyfin/contracts";
-import { ArrowLeftIcon, LoaderCircleIcon, RefreshCwIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  GitCompareArrowsIcon,
+  LoaderCircleIcon,
+  RefreshCwIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfidenceBadge } from "@/components/report/ConfidenceBadge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import { HistoryTab } from "./HistoryTab";
@@ -121,18 +132,44 @@ export function CaseDetailPage({
             </span>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            if (onRefresh) {
-              onRefresh(investmentCase.ticker);
-            }
-          }}
-        >
-          <RefreshCwIcon className="size-3.5" />
-          Refresh Case
-        </Button>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <GitCompareArrowsIcon className="size-3.5" />
+                Compare
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  window.location.hash = `#cases/compare?left=${investmentCase.id}`;
+                }}
+              >
+                Compare with another case...
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  window.location.hash = `#cases/compare?left=${investmentCase.id}&mode=prior`;
+                }}
+              >
+                Compare with Prior
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (onRefresh) {
+                onRefresh(investmentCase.ticker);
+              }
+            }}
+          >
+            <RefreshCwIcon className="size-3.5" />
+            Refresh Case
+          </Button>
+        </div>
       </div>
 
       {/* Tabbed content */}

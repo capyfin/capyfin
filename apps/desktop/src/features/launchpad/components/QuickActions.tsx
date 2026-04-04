@@ -4,6 +4,7 @@ import {
   RefreshCw,
   Newspaper,
   Plus,
+  GitCompareArrows,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,12 @@ const quickActionDefs: QuickActionDef[] = [
     label: "Run Morning Brief",
     icon: Newspaper,
     cardId: "morning-brief",
+  },
+  {
+    id: "compare-cases",
+    label: "Compare Cases",
+    icon: GitCompareArrows,
+    href: "#cases/compare",
   },
   {
     id: "add-watchlist",

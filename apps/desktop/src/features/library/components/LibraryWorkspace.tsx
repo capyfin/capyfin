@@ -1,4 +1,4 @@
-import type { SavedReport } from "@capyfin/contracts";
+import type { SavedReport, WatchlistItem } from "@capyfin/contracts";
 import { LoaderCircleIcon, SearchXIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { SidecarClient } from "@/lib/sidecar/client";
@@ -9,6 +9,7 @@ import {
 import {
   LibraryFilters,
   INITIAL_FILTER_STATE,
+  applyLibraryFilters,
   type LibraryFilterState,
 } from "./LibraryFilters";
 import { LibraryEmptyState } from "./LibraryEmptyState";
@@ -24,6 +25,7 @@ interface LibraryWorkspaceProps {
 
 export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
   const [reports, setReports] = useState<SavedReport[]>([]);
+  const [watchlistItems, setWatchlistItems] = useState<WatchlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] =
@@ -32,13 +34,17 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
     null,
   );
 
-  const fetchReports = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     if (!client) return;
     try {
       setIsLoading(true);
       setError(null);
-      const result = await client.listReports();
-      setReports(result.reports);
+      const [reportsResult, watchlistResult] = await Promise.all([
+        client.listReports(),
+        client.getWatchlist().catch(() => ({ items: [] as WatchlistItem[] })),
+      ]);
+      setReports(reportsResult.reports);
+      setWatchlistItems(watchlistResult.items);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load reports");
     } finally {
@@ -47,44 +53,30 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
   }, [client]);
 
   useEffect(() => {
-    void fetchReports();
-  }, [fetchReports]);
+    void fetchData();
+  }, [fetchData]);
 
   const workflowTypes = useMemo(() => {
     const types = new Set(reports.map((r) => r.workflowType));
     return [...types].sort();
   }, [reports]);
 
+  const companies = useMemo(() => {
+    const subjects = new Set(
+      reports.map((r) => r.subject).filter((s): s is string => s != null),
+    );
+    return [...subjects].sort();
+  }, [reports]);
+
+  const holdingTickers = useMemo(() => {
+    return new Set(
+      watchlistItems.filter((w) => w.list === "position").map((w) => w.ticker),
+    );
+  }, [watchlistItems]);
+
   const filteredReports = useMemo(() => {
-    let result = reports;
-
-    if (filters.search) {
-      const lower = filters.search.toLowerCase();
-      result = result.filter(
-        (r) =>
-          r.cardOutput.title.toLowerCase().includes(lower) ||
-          (r.subject?.toLowerCase().includes(lower) ?? false) ||
-          r.cardOutput.summary.toLowerCase().includes(lower),
-      );
-    }
-
-    if (filters.workflowType) {
-      result = result.filter((r) => r.workflowType === filters.workflowType);
-    }
-
-    if (filters.view === "pinned") {
-      result = result.filter((r) => r.pinnedAt !== null);
-    } else if (filters.view === "starred") {
-      result = result.filter((r) => r.starred);
-    }
-
-    // Sort: pinned first, then by savedAt descending
-    return result.sort((a, b) => {
-      if (a.pinnedAt && !b.pinnedAt) return -1;
-      if (!a.pinnedAt && b.pinnedAt) return 1;
-      return new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime();
-    });
-  }, [reports, filters]);
+    return applyLibraryFilters(reports, filters, holdingTickers);
+  }, [reports, filters, holdingTickers]);
 
   const handlePin = useCallback(
     async (report: SavedReport) => {
@@ -142,7 +134,10 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
   const hasActiveFilters =
     filters.search !== "" ||
     filters.workflowType !== "" ||
-    filters.view !== "all";
+    filters.view !== "all" ||
+    filters.company !== "" ||
+    filters.dateSort !== "newest" ||
+    filters.holdingStatus !== "all";
 
   if (!client) {
     return (
@@ -172,58 +167,14 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4">
-      {reports.length > 0 ? (
-        <>
-          <LibraryFilters
-            filters={filters}
-            workflowTypes={workflowTypes}
-            onChange={setFilters}
-          />
+      <LibraryFilters
+        filters={filters}
+        workflowTypes={workflowTypes}
+        companies={companies}
+        onChange={setFilters}
+      />
 
-          {filteredReports.length > 0 ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredReports.map((report) => (
-                <SavedReportCard
-                  key={report.id}
-                  report={report}
-                  onOpen={setSelectedReport}
-                  onPin={(r) => {
-                    void handlePin(r);
-                  }}
-                  onStar={(r) => {
-                    void handleStar(r);
-                  }}
-                  onDelete={(r) => {
-                    void handleDelete(r);
-                  }}
-                  onCopyMarkdown={handleCopyMarkdown}
-                  onDownloadMarkdown={handleDownloadMarkdown}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
-                <SearchXIcon className="size-5 text-muted-foreground" />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                No matching reports found.
-              </p>
-              {hasActiveFilters ? (
-                <button
-                  type="button"
-                  className="text-xs text-primary hover:underline"
-                  onClick={() => {
-                    setFilters(INITIAL_FILTER_STATE);
-                  }}
-                >
-                  Clear filters
-                </button>
-              ) : null}
-            </div>
-          )}
-        </>
-      ) : (
+      {reports.length === 0 && !hasActiveFilters ? (
         <LibraryEmptyState
           onGoToLaunchpad={() => {
             window.location.hash = "#launchpad";
@@ -232,6 +183,47 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
             window.location.hash = "#chat";
           }}
         />
+      ) : filteredReports.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredReports.map((report) => (
+            <SavedReportCard
+              key={report.id}
+              report={report}
+              onOpen={setSelectedReport}
+              onPin={(r) => {
+                void handlePin(r);
+              }}
+              onStar={(r) => {
+                void handleStar(r);
+              }}
+              onDelete={(r) => {
+                void handleDelete(r);
+              }}
+              onCopyMarkdown={handleCopyMarkdown}
+              onDownloadMarkdown={handleDownloadMarkdown}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
+            <SearchXIcon className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            No matching reports found.
+          </p>
+          {hasActiveFilters ? (
+            <button
+              type="button"
+              className="text-xs text-primary hover:underline"
+              onClick={() => {
+                setFilters(INITIAL_FILTER_STATE);
+              }}
+            >
+              Clear filters
+            </button>
+          ) : null}
+        </div>
       )}
 
       <ReportDetailDialog

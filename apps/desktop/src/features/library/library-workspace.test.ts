@@ -32,6 +32,9 @@ void test("INITIAL_FILTER_STATE has expected default values", async () => {
   assert.equal(mod.INITIAL_FILTER_STATE.search, "");
   assert.equal(mod.INITIAL_FILTER_STATE.workflowType, "");
   assert.equal(mod.INITIAL_FILTER_STATE.view, "all");
+  assert.equal(mod.INITIAL_FILTER_STATE.company, "");
+  assert.equal(mod.INITIAL_FILTER_STATE.dateSort, "newest");
+  assert.equal(mod.INITIAL_FILTER_STATE.holdingStatus, "all");
 });
 
 void test("cardOutputToMarkdown is exported from export-markdown", async () => {

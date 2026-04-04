@@ -1,8 +1,9 @@
-import type { WatchlistItem } from "@capyfin/contracts";
+import type { InvestmentCase, WatchlistItem } from "@capyfin/contracts";
 import { LoaderCircleIcon, PlusIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { buildCaseMap, getCaseStatus } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
@@ -19,18 +20,25 @@ export const WATCHLIST_NEAR_EMPTY_TEXT =
 
 export const WATCHLIST_NEAR_EMPTY_THRESHOLD = 5;
 
-type FilterValue = "all" | "position" | "watching";
+type FilterValue = "all" | "position" | "watching" | "needs-review";
 
 interface WatchlistWorkspaceProps {
   client: SidecarClient | null;
   onCardAction?: ((card: ActionCard, ticker: string) => void) | undefined;
+  onViewCase?: ((caseId: string) => void) | undefined;
+  onCreateCase?: ((ticker: string) => void) | undefined;
+  onRefreshCase?: ((ticker: string) => void) | undefined;
 }
 
 export function WatchlistWorkspace({
   client,
   onCardAction,
+  onViewCase,
+  onCreateCase,
+  onRefreshCase,
 }: WatchlistWorkspaceProps) {
   const [items, setItems] = useState<WatchlistItem[]>([]);
+  const [cases, setCases] = useState<InvestmentCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterValue>("all");
@@ -48,8 +56,18 @@ export function WatchlistWorkspace({
     try {
       setIsLoading(true);
       setError(null);
-      const result = await client.getWatchlist();
-      setItems(result.items);
+      const [watchlistResult, casesResult] = await Promise.allSettled([
+        client.getWatchlist(),
+        client.listCases(),
+      ]);
+      if (watchlistResult.status === "fulfilled") {
+        setItems(watchlistResult.value.items);
+      } else {
+        setError("Failed to load watchlist");
+      }
+      if (casesResult.status === "fulfilled") {
+        setCases(casesResult.value.cases);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load watchlist");
     } finally {
@@ -122,8 +140,17 @@ export function WatchlistWorkspace({
     );
   }
 
+  const caseMap = buildCaseMap(cases);
+
   const filteredItems =
-    filter === "all" ? items : items.filter((i) => i.list === filter);
+    filter === "all"
+      ? items
+      : filter === "needs-review"
+        ? items.filter((i) => {
+            const status = getCaseStatus(i.ticker, caseMap);
+            return !status.hasCase || status.isStale || status.isLowConfidence;
+          })
+        : items.filter((i) => i.list === filter);
 
   const sortedItems = [...filteredItems].sort((a, b) => {
     const mul = sortDir === "asc" ? 1 : -1;
@@ -158,6 +185,9 @@ export function WatchlistWorkspace({
               <ToggleGroupItem value="all">All</ToggleGroupItem>
               <ToggleGroupItem value="position">Positions</ToggleGroupItem>
               <ToggleGroupItem value="watching">Watching</ToggleGroupItem>
+              <ToggleGroupItem value="needs-review">
+                Needs Review
+              </ToggleGroupItem>
             </ToggleGroup>
 
             <Button
@@ -183,6 +213,10 @@ export function WatchlistWorkspace({
               setDeleteTarget(ticker);
             }}
             onCardAction={onCardAction}
+            caseMap={caseMap}
+            onViewCase={onViewCase}
+            onCreateCase={onCreateCase}
+            onRefreshCase={onRefreshCase}
           />
 
           {items.length < WATCHLIST_NEAR_EMPTY_THRESHOLD && (

@@ -1,4 +1,4 @@
-import type { PortfolioHolding } from "@capyfin/contracts";
+import type { InvestmentCase, PortfolioHolding } from "@capyfin/contracts";
 import { TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +16,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ConfidenceBadge } from "@/components/report/ConfidenceBadge";
+import { StanceBadge } from "@/features/cases/components/StanceBadge";
+import { getCaseStatus } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
 import { TickerLink } from "@/features/ticker-actions/TickerLink";
 
 interface HoldingsTableProps {
   holdings: PortfolioHolding[];
+  caseMap?: Map<string, InvestmentCase>;
   onRemove: (ticker: string) => void;
   onTickerAction?: (card: ActionCard, ticker: string) => void;
 }
@@ -36,6 +40,7 @@ function formatCurrency(value: number): string {
 
 export function HoldingsTable({
   holdings,
+  caseMap,
   onRemove,
   onTickerAction,
 }: HoldingsTableProps) {
@@ -58,6 +63,7 @@ export function HoldingsTable({
                 <TableHead>Value</TableHead>
                 <TableHead>Weight</TableHead>
                 <TableHead>Sector</TableHead>
+                {caseMap ? <TableHead>Case</TableHead> : null}
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
@@ -92,6 +98,36 @@ export function HoldingsTable({
                     <TableCell className="text-muted-foreground">
                       {holding.sector ?? "--"}
                     </TableCell>
+                    {caseMap ? (
+                      <TableCell>
+                        {(() => {
+                          const status = getCaseStatus(holding.ticker, caseMap);
+                          if (!status.hasCase) {
+                            return (
+                              <span className="text-[12px] text-muted-foreground/50">
+                                No case
+                              </span>
+                            );
+                          }
+                          return (
+                            <div className="flex items-center gap-1.5">
+                              {status.stance ? (
+                                <StanceBadge
+                                  stance={status.stance}
+                                  className="text-[10px] px-1.5 py-0"
+                                />
+                              ) : null}
+                              {status.confidence ? (
+                                <ConfidenceBadge
+                                  confidence={status.confidence}
+                                  className="text-[10px] px-1.5 py-0"
+                                />
+                              ) : null}
+                            </div>
+                          );
+                        })()}
+                      </TableCell>
+                    ) : null}
                     <TableCell>
                       <Button
                         size="icon"

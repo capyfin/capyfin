@@ -33,7 +33,10 @@ import {
   formatCaseForPrompt,
 } from "@/features/launchpad/case-context";
 import type { ActionCard } from "@/features/launchpad/types";
-import { portfolioCards } from "@/features/launchpad/card-registry";
+import {
+  actionCards,
+  portfolioCards,
+} from "@/features/launchpad/card-registry";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { initializeSidecarConnection } from "@/lib/runtime/connection";
 import { SidecarClient } from "@/lib/sidecar/client";
@@ -241,6 +244,20 @@ export function App() {
     [handleCardClick],
   );
 
+  const handleViewCase = useCallback((caseId: string) => {
+    window.location.hash = `#cases/${caseId}`;
+  }, []);
+
+  const handleCreateCase = useCallback(
+    (ticker: string) => {
+      const deepDiveCard = actionCards.find((c) => c.id === "deep-dive");
+      if (deepDiveCard) {
+        void handleCardClick(deepDiveCard, ticker);
+      }
+    },
+    [handleCardClick],
+  );
+
   const handlePaletteNavigate = useCallback((href: string) => {
     window.location.hash = href;
   }, []);
@@ -386,6 +403,9 @@ export function App() {
                 onCardAction={(card, ticker) => {
                   void handleCardClick(card, ticker);
                 }}
+                onViewCase={handleViewCase}
+                onCreateCase={handleCreateCase}
+                onRefreshCase={handleRefreshCase}
               />
             ) : currentView === "cases" ? (
               activeCaseId ? (
@@ -407,6 +427,9 @@ export function App() {
                 onCardClick={(card, input) => {
                   void handleCardClick(card, input);
                 }}
+                onViewCase={handleViewCase}
+                onCreateCase={handleCreateCase}
+                onRefreshCase={handleRefreshCase}
               />
             ) : currentView === "settings" ? (
               <SettingsWorkspace

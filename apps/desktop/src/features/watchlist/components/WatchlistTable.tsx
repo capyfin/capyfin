@@ -1,11 +1,14 @@
-import type { WatchlistItem } from "@capyfin/contracts";
+import type { InvestmentCase, WatchlistItem } from "@capyfin/contracts";
 import {
+  BookOpenIcon,
   CalculatorIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   FileBarChart2Icon,
   MoreHorizontalIcon,
   PencilIcon,
+  PlusCircleIcon,
+  RefreshCwIcon,
   ScaleIcon,
   SearchIcon,
   TrashIcon,
@@ -35,6 +38,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { ConfidenceBadge } from "@/components/report/ConfidenceBadge";
+import { StanceBadge } from "@/features/cases/components/StanceBadge";
+import { getCaseStatus } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
 import { WATCHLIST_CARD_ACTIONS } from "@/features/watchlist/get-watchlist-card-actions";
 
@@ -62,6 +68,10 @@ interface WatchlistTableProps {
   onEdit: (item: WatchlistItem) => void;
   onDelete: (ticker: string) => void;
   onCardAction?: ((card: ActionCard, ticker: string) => void) | undefined;
+  caseMap?: Map<string, InvestmentCase>;
+  onViewCase?: ((caseId: string) => void) | undefined;
+  onCreateCase?: ((ticker: string) => void) | undefined;
+  onRefreshCase?: ((ticker: string) => void) | undefined;
 }
 
 function formatDate(iso: string): string {
@@ -71,6 +81,12 @@ function formatDate(iso: string): string {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function formatReviewAge(days: number): string {
+  if (days === 0) return "today";
+  if (days === 1) return "1d ago";
+  return `${String(days)}d ago`;
 }
 
 function SortIndicator({
@@ -98,6 +114,10 @@ export function WatchlistTable({
   onEdit,
   onDelete,
   onCardAction,
+  caseMap,
+  onViewCase,
+  onCreateCase,
+  onRefreshCase,
 }: WatchlistTableProps) {
   return (
     <Card className="overflow-hidden border border-border/60 shadow-sm">
@@ -136,6 +156,13 @@ export function WatchlistTable({
                   List
                 </span>
               </TableHead>
+              {caseMap ? (
+                <TableHead className="h-9">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                    Case
+                  </span>
+                </TableHead>
+              ) : null}
               <TableHead className="h-9 max-w-[200px]">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Note
@@ -188,6 +215,43 @@ export function WatchlistTable({
                     {item.list === "position" ? "Position" : "Watching"}
                   </Badge>
                 </TableCell>
+                {caseMap ? (
+                  <TableCell>
+                    {(() => {
+                      const status = getCaseStatus(item.ticker, caseMap);
+                      if (!status.hasCase) {
+                        return (
+                          <span className="text-[12px] text-muted-foreground/50">
+                            No case
+                          </span>
+                        );
+                      }
+                      return (
+                        <div className="flex items-center gap-1.5">
+                          {status.stance ? (
+                            <StanceBadge
+                              stance={status.stance}
+                              className="text-[10px] px-1.5 py-0"
+                            />
+                          ) : null}
+                          {status.confidence ? (
+                            <ConfidenceBadge
+                              confidence={status.confidence}
+                              className="text-[10px] px-1.5 py-0"
+                            />
+                          ) : null}
+                          {status.daysSinceReview !== undefined ? (
+                            <span
+                              className={`text-[11px] ${status.isStale ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground/60"}`}
+                            >
+                              {formatReviewAge(status.daysSinceReview)}
+                            </span>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
+                  </TableCell>
+                ) : null}
                 <TableCell className="max-w-[200px]">
                   <span className="block truncate text-[13px] text-muted-foreground">
                     {item.note ?? "—"}
@@ -221,6 +285,54 @@ export function WatchlistTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
+                      {caseMap ? (
+                        <>
+                          <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground">
+                            Case Actions
+                          </DropdownMenuLabel>
+                          {(() => {
+                            const status = getCaseStatus(item.ticker, caseMap);
+                            const caseId = status.caseId;
+                            if (status.hasCase && caseId) {
+                              return (
+                                <>
+                                  {onViewCase ? (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        onViewCase(caseId);
+                                      }}
+                                    >
+                                      <BookOpenIcon className="size-3.5" />
+                                      View Case
+                                    </DropdownMenuItem>
+                                  ) : null}
+                                  {onRefreshCase ? (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        onRefreshCase(item.ticker);
+                                      }}
+                                    >
+                                      <RefreshCwIcon className="size-3.5" />
+                                      Refresh Case
+                                    </DropdownMenuItem>
+                                  ) : null}
+                                </>
+                              );
+                            }
+                            return onCreateCase ? (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  onCreateCase(item.ticker);
+                                }}
+                              >
+                                <PlusCircleIcon className="size-3.5" />
+                                Create Case
+                              </DropdownMenuItem>
+                            ) : null;
+                          })()}
+                          <DropdownMenuSeparator />
+                        </>
+                      ) : null}
                       {onCardAction && (
                         <>
                           <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground">

@@ -1,11 +1,13 @@
-import type { PortfolioOverview } from "@capyfin/contracts";
+import type { InvestmentCase, PortfolioOverview } from "@capyfin/contracts";
 import { LoaderCircleIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import type { SidecarClient } from "@/lib/sidecar/client";
+import { buildCaseMap } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
+import type { SidecarClient } from "@/lib/sidecar/client";
 import { PortfolioEmptyState } from "./PortfolioEmptyState";
 import { PortfolioOverviewPanel } from "./PortfolioOverviewPanel";
 import { HoldingsTable } from "./HoldingsTable";
+import { ReviewQueue } from "./ReviewQueue";
 import { SectorExposure } from "./SectorExposure";
 import { ConcentrationAlerts } from "./ConcentrationAlerts";
 import { PortfolioActions } from "./PortfolioActions";
@@ -18,13 +20,20 @@ export const PORTFOLIO_EMPTY_TEXT =
 interface PortfolioWorkspaceProps {
   client: SidecarClient | null;
   onCardClick: (card: ActionCard, input?: string) => void;
+  onViewCase?: ((caseId: string) => void) | undefined;
+  onCreateCase?: ((ticker: string) => void) | undefined;
+  onRefreshCase?: ((ticker: string) => void) | undefined;
 }
 
 export function PortfolioWorkspace({
   client,
   onCardClick,
+  onViewCase,
+  onCreateCase,
+  onRefreshCase,
 }: PortfolioWorkspaceProps) {
   const [portfolio, setPortfolio] = useState<PortfolioOverview | null>(null);
+  const [cases, setCases] = useState<InvestmentCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
@@ -35,8 +44,18 @@ export function PortfolioWorkspace({
     try {
       setIsLoading(true);
       setError(null);
-      const overview = await client.getPortfolio();
-      setPortfolio(overview);
+      const [portfolioResult, casesResult] = await Promise.allSettled([
+        client.getPortfolio(),
+        client.listCases(),
+      ]);
+      if (portfolioResult.status === "fulfilled") {
+        setPortfolio(portfolioResult.value);
+      } else {
+        setError("Failed to load portfolio");
+      }
+      if (casesResult.status === "fulfilled") {
+        setCases(casesResult.value.cases);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load portfolio");
     } finally {
@@ -98,6 +117,7 @@ export function PortfolioWorkspace({
   }
 
   const hasHoldings = portfolio !== null && portfolio.holdings.length > 0;
+  const caseMap = buildCaseMap(cases);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4">
@@ -119,12 +139,21 @@ export function PortfolioWorkspace({
 
           <HoldingsTable
             holdings={portfolio.holdings}
+            caseMap={caseMap}
             onRemove={(ticker) => {
               void handleRemoveHolding(ticker);
             }}
             onTickerAction={(card, ticker) => {
               onCardClick(card, ticker);
             }}
+          />
+
+          <ReviewQueue
+            holdings={portfolio.holdings}
+            caseMap={caseMap}
+            onViewCase={onViewCase}
+            onCreateCase={onCreateCase}
+            onRefreshCase={onRefreshCase}
           />
 
           {portfolio.sectorExposure.length > 0 ? (

@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isDeepDiveOutput, mapCardOutputToCase } from "./case-mapper.ts";
+import {
+  isDeepDiveOutput,
+  isPositionReviewOutput,
+  mapCardOutputToCase,
+  mapCardOutputToUpdateCase,
+} from "./case-mapper.ts";
 
 const baseCardOutput = {
   cardId: "deep-dive",
@@ -215,5 +220,179 @@ void test("mapCardOutputToCase derives confidence from sections when not set", (
   };
   const result = mapCardOutputToCase(withoutConfidence);
   assert.ok(result);
+  assert.equal(result.confidence, "LOW");
+});
+
+// ---------------------------------------------------------------------------
+// Position Review tests
+// ---------------------------------------------------------------------------
+
+const basePositionReviewOutput = {
+  cardId: "position-review",
+  subject: "AAPL",
+  companyName: "Apple Inc.",
+  title: "Position Review: Apple Inc. (AAPL)",
+  summary: "Thesis remains intact with minor changes.",
+  stance: "bullish" as const,
+  confidence: "HIGH" as const,
+  sections: [
+    {
+      id: "thesis",
+      title: "Prior Stance Summary",
+      confidence: "HIGH" as const,
+      content: "Prior stance was bullish with HIGH confidence.",
+      citations: [],
+    },
+    {
+      id: "whatChanged",
+      title: "What Changed",
+      confidence: "HIGH" as const,
+      content: "Revenue assumption reinforced by Q3 results.",
+      citations: [
+        { label: "Q3 Earnings", source: "SEC EDGAR", date: "2025-10-15" },
+      ],
+    },
+    {
+      id: "valuation",
+      title: "Evidence & Valuation Update",
+      confidence: "MEDIUM" as const,
+      content: "Price moved from $180 to $195.",
+      citations: [],
+    },
+    {
+      id: "risks",
+      title: "Risk Update",
+      confidence: "HIGH" as const,
+      content: "Regulatory risk slightly increased.",
+      citations: [],
+    },
+    {
+      id: "catalysts",
+      title: "Next Actions & Catalysts",
+      confidence: "MEDIUM" as const,
+      content: "Watch WWDC 2025 announcements.",
+      citations: [],
+    },
+  ],
+  keyAssumptions: [
+    "Services revenue grows above 15% annually",
+    "iPhone installed base continues expanding",
+  ],
+  invalidationSignals: ["Two consecutive quarters of iPhone revenue decline"],
+  scores: {
+    "Thesis Drift": "Minor",
+    "Evidence Quality": "Strong",
+    Confidence: "HIGH",
+  },
+  keyRisks: ["Antitrust regulation", "China revenue exposure"],
+  challengeSummary: "Valuation is stretched at 32x forward P/E.",
+  dataTier: "0" as const,
+  sourcesUsed: ["SEC EDGAR"],
+  dataAsOf: "2025-10-20",
+  followUps: [
+    "View Case",
+    "Compare with Prior",
+    "Update Valuation",
+    "Add to Watchlist",
+  ],
+};
+
+void test("isPositionReviewOutput returns true for position-review card with subject", () => {
+  assert.equal(isPositionReviewOutput(basePositionReviewOutput), true);
+});
+
+void test("isPositionReviewOutput returns false for non-position-review card", () => {
+  assert.equal(
+    isPositionReviewOutput({
+      ...basePositionReviewOutput,
+      cardId: "deep-dive",
+    }),
+    false,
+  );
+});
+
+void test("isPositionReviewOutput returns false when subject is missing", () => {
+  assert.equal(
+    isPositionReviewOutput({
+      ...basePositionReviewOutput,
+      subject: undefined,
+    } as unknown as typeof basePositionReviewOutput),
+    false,
+  );
+});
+
+void test("mapCardOutputToUpdateCase maps all fields from a position-review CardOutput", () => {
+  const result = mapCardOutputToUpdateCase(basePositionReviewOutput);
+  assert.ok(result);
+  assert.equal(result.stance, "bullish");
+  assert.equal(result.confidence, "HIGH");
+  assert.ok(result.lastReviewedAt);
+  assert.equal(result.sections?.length, 5);
+  assert.deepEqual(result.keyAssumptions, [
+    "Services revenue grows above 15% annually",
+    "iPhone installed base continues expanding",
+  ]);
+  assert.deepEqual(result.invalidationSignals, [
+    "Two consecutive quarters of iPhone revenue decline",
+  ]);
+  assert.deepEqual(result.nextActions, [
+    "View Case",
+    "Compare with Prior",
+    "Update Valuation",
+    "Add to Watchlist",
+  ]);
+  assert.deepEqual(result.tags, ["position-review"]);
+});
+
+void test("mapCardOutputToUpdateCase returns null for non-position-review card", () => {
+  const result = mapCardOutputToUpdateCase({
+    ...basePositionReviewOutput,
+    cardId: "deep-dive",
+  });
+  assert.equal(result, null);
+});
+
+void test("mapCardOutputToUpdateCase returns null when subject is missing", () => {
+  const result = mapCardOutputToUpdateCase({
+    ...basePositionReviewOutput,
+    subject: undefined,
+  } as unknown as typeof basePositionReviewOutput);
+  assert.equal(result, null);
+});
+
+void test("mapCardOutputToUpdateCase sets lastReviewedAt to now", () => {
+  const before = Date.now();
+  const result = mapCardOutputToUpdateCase(basePositionReviewOutput);
+  const after = Date.now();
+  assert.ok(result);
+  assert.ok(result.lastReviewedAt);
+  const reviewedTime = new Date(result.lastReviewedAt).getTime();
+  assert.ok(reviewedTime >= before && reviewedTime <= after);
+});
+
+void test("mapCardOutputToUpdateCase derives confidence from sections when not set", () => {
+  const withoutConfidence = {
+    ...basePositionReviewOutput,
+    confidence: undefined,
+    sections: [
+      {
+        id: "thesis",
+        title: "Prior Stance Summary",
+        confidence: "MEDIUM" as const,
+        content: "...",
+        citations: [],
+      },
+      {
+        id: "whatChanged",
+        title: "What Changed",
+        confidence: "LOW" as const,
+        content: "...",
+        citations: [],
+      },
+    ],
+  };
+  const result = mapCardOutputToUpdateCase(withoutConfidence);
+  assert.ok(result);
+  // LOW and MEDIUM both have count 1; LOW >= MEDIUM triggers LOW
   assert.equal(result.confidence, "LOW");
 });

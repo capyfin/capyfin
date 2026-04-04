@@ -163,14 +163,14 @@ export const portfolioCards: ActionCard[] = [
     title: "Position Review",
     promise:
       "Re-underwrite a specific holding — is the original thesis still intact?",
-    icon: "Search",
+    icon: "RefreshCw",
     category: "portfolio",
     input: "ticker",
     estimatedDuration: "deep",
-    skills: ["deep-dive"],
+    skills: ["position-review"],
     persona: "fundamental-analyst",
     prompt:
-      "Review my position in {ticker} from my portfolio. Read portfolio.csv for context on my cost basis and allocation. Assess whether the original investment thesis still holds, flag any new risks or catalysts, and recommend whether to hold, add, trim, or exit. Include current valuation context.",
+      "Perform a position review for {ticker}. Compare updated evidence against the existing investment case, highlight what changed for each key assumption, reassess risks and valuation, and provide an updated stance and confidence level.",
   },
   {
     id: "benchmark-comparison",

@@ -1,4 +1,8 @@
-import type { CardOutput, CreateCaseRequest } from "@capyfin/contracts";
+import type {
+  CardOutput,
+  CreateCaseRequest,
+  UpdateCaseRequest,
+} from "@capyfin/contracts";
 
 /**
  * Check whether a CardOutput represents a Deep Dive that should create an
@@ -6,6 +10,14 @@ import type { CardOutput, CreateCaseRequest } from "@capyfin/contracts";
  */
 export function isDeepDiveOutput(cardOutput: CardOutput): boolean {
   return cardOutput.cardId === "deep-dive" && Boolean(cardOutput.subject);
+}
+
+/**
+ * Check whether a CardOutput represents a Position Review that should update
+ * an existing Investment Case. Requires `cardId === "position-review"` and a `subject`.
+ */
+export function isPositionReviewOutput(cardOutput: CardOutput): boolean {
+  return cardOutput.cardId === "position-review" && Boolean(cardOutput.subject);
 }
 
 /**
@@ -39,6 +51,39 @@ export function mapCardOutputToCase(
       (cardOutput.keyRisks.length > 0 ? cardOutput.keyRisks : []),
     nextActions: cardOutput.followUps ?? [],
     tags: ["deep-dive"],
+  };
+}
+
+/**
+ * Map a Position Review CardOutput to an UpdateCaseRequest suitable for
+ * `sidecarClient.updateCase()`.
+ *
+ * Returns `null` if the output is not a valid position-review with a subject.
+ */
+export function mapCardOutputToUpdateCase(
+  cardOutput: CardOutput,
+): UpdateCaseRequest | null {
+  if (!isPositionReviewOutput(cardOutput) || !cardOutput.subject) {
+    return null;
+  }
+
+  return {
+    stance: cardOutput.stance ?? undefined,
+    confidence: cardOutput.confidence ?? deriveConfidence(cardOutput),
+    lastReviewedAt: new Date().toISOString(),
+    sections: cardOutput.sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      content: s.content,
+      confidence: s.confidence,
+      citations: s.citations,
+    })),
+    keyAssumptions: cardOutput.keyAssumptions ?? [],
+    invalidationSignals:
+      cardOutput.invalidationSignals ??
+      (cardOutput.keyRisks.length > 0 ? cardOutput.keyRisks : []),
+    nextActions: cardOutput.followUps ?? [],
+    tags: ["position-review"],
   };
 }
 

@@ -76,7 +76,9 @@ import { deriveSessionLabel } from "@/features/chat/session-label";
 import { tryParseCardOutput } from "@/features/chat/structured-output";
 import {
   isDeepDiveOutput,
+  isPositionReviewOutput,
   mapCardOutputToCase,
+  mapCardOutputToUpdateCase,
 } from "@/features/chat/case-mapper";
 import { ReportView } from "@/components/report";
 import { WatchlistItemDialog } from "@/features/watchlist/components/WatchlistItemDialog";
@@ -381,6 +383,83 @@ function ChatSessionView({
       if (!client || createdCasesRef.current.has(messageId)) {
         return;
       }
+
+      // Handle Position Review → update existing case
+      if (isPositionReviewOutput(cardOutput)) {
+        const updateRequest = mapCardOutputToUpdateCase(cardOutput);
+        const subject = cardOutput.subject;
+        if (!updateRequest || !subject) return;
+        createdCasesRef.current.add(messageId);
+
+        void (async () => {
+          try {
+            // Find the existing case by ticker
+            const { cases } = await client.listCases();
+            const ticker = subject.toUpperCase();
+            const existingCase = cases
+              .filter((c) => c.ticker.toUpperCase() === ticker)
+              .sort(
+                (a, b) =>
+                  new Date(b.lastReviewedAt).getTime() -
+                  new Date(a.lastReviewedAt).getTime(),
+              )[0];
+
+            if (!existingCase) {
+              toast.error(`No existing case found for ${ticker}`);
+              createdCasesRef.current.delete(messageId);
+              return;
+            }
+
+            const priorStance = existingCase.stance;
+            const priorConfidence = existingCase.confidence;
+
+            const updated = await client.updateCase(
+              existingCase.id,
+              updateRequest,
+            );
+            lastCreatedCaseIdRef.current = updated.id;
+
+            // Add history entry
+            const newStance = updated.stance;
+            const newConfidence = updated.confidence;
+            const stanceChanged = priorStance !== newStance;
+            const summary = stanceChanged
+              ? `Position reviewed — stance changed from ${priorStance} to ${newStance}`
+              : `Position reviewed — stance unchanged (${newStance})`;
+
+            void client.addCaseHistoryEntry(existingCase.id, {
+              eventType: "refreshed",
+              summary,
+              priorStance,
+              newStance,
+              priorConfidence,
+              newConfidence,
+            });
+
+            // Save to Library
+            void client.saveReport({
+              cardOutput,
+              workflowType: "position-review",
+              subject: cardOutput.subject,
+            });
+
+            toast.success("Investment case refreshed", {
+              action: {
+                label: "View Case",
+                onClick: () => {
+                  window.location.hash = `#cases/${updated.id}`;
+                },
+              },
+            });
+          } catch {
+            createdCasesRef.current.delete(messageId);
+            toast.error("Failed to refresh investment case");
+          }
+        })();
+        return;
+      }
+
+      // Handle Deep Dive → create new case
       if (!isDeepDiveOutput(cardOutput)) {
         return;
       }

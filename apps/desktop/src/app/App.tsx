@@ -28,7 +28,12 @@ import {
   buildDisplayLabel,
   makeUniqueLabel,
 } from "@/features/launchpad/prompt-builder";
+import {
+  findCaseByTicker,
+  formatCaseForPrompt,
+} from "@/features/launchpad/case-context";
 import type { ActionCard } from "@/features/launchpad/types";
+import { portfolioCards } from "@/features/launchpad/card-registry";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { initializeSidecarConnection } from "@/lib/runtime/connection";
 import { SidecarClient } from "@/lib/sidecar/client";
@@ -172,7 +177,30 @@ export function App() {
     async (card: ActionCard, input?: string) => {
       if (!state.client) return;
       try {
-        const prompt = buildCardPrompt(card, input);
+        let prompt = buildCardPrompt(card, input);
+
+        // For position-review, inject the existing case context into the prompt
+        if (card.id === "position-review" && input) {
+          const existingCase = await findCaseByTicker(state.client, input);
+          if (!existingCase) {
+            toast.error(
+              `No case found for ${input.toUpperCase()}. Run a Deep Dive first.`,
+              {
+                action: {
+                  label: "Deep Dive",
+                  onClick: () => {
+                    // Navigate to launchpad — user can trigger Deep Dive from there
+                    window.location.hash = "#launchpad";
+                  },
+                },
+              },
+            );
+            return;
+          }
+          const caseContext = formatCaseForPrompt(existingCase);
+          prompt = `${prompt}\n\n${caseContext}`;
+        }
+
         const baseLabel = buildDisplayLabel(card, input);
         const existingLabels = state.sessions
           .map((s) => s.label)
@@ -200,6 +228,18 @@ export function App() {
   const handleClearPendingPrompt = useCallback(() => {
     dispatch({ type: "CLEAR_PENDING_PROMPT" });
   }, []);
+
+  const handleRefreshCase = useCallback(
+    (ticker: string) => {
+      const positionReviewCard = portfolioCards.find(
+        (c) => c.id === "position-review",
+      );
+      if (positionReviewCard) {
+        void handleCardClick(positionReviewCard, ticker);
+      }
+    },
+    [handleCardClick],
+  );
 
   const handlePaletteNavigate = useCallback((href: string) => {
     window.location.hash = href;
@@ -349,7 +389,11 @@ export function App() {
               />
             ) : currentView === "cases" ? (
               activeCaseId ? (
-                <CaseDetailPage client={state.client} caseId={activeCaseId} />
+                <CaseDetailPage
+                  client={state.client}
+                  caseId={activeCaseId}
+                  onRefresh={handleRefreshCase}
+                />
               ) : (
                 <CasesWorkspace client={state.client} />
               )

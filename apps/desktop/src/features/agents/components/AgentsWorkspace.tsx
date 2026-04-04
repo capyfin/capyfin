@@ -1,6 +1,7 @@
 import { startTransition, useEffect, useMemo, useState } from "react";
 import {
   BotIcon,
+  CpuIcon,
   LoaderCircleIcon,
   PlusIcon,
   RefreshCcwIcon,
@@ -297,10 +298,21 @@ export function AgentsWorkspace({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4">
-      <p className="text-[13px] leading-relaxed text-muted-foreground">
-        {AGENTS_PAGE_SUBTITLE}
-      </p>
+    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5">
+      {/* Page header with icon accent */}
+      <div className="flex items-start gap-3.5">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/[0.08] ring-1 ring-primary/10">
+          <CpuIcon className="size-5 text-primary" />
+        </div>
+        <div className="min-w-0 pt-0.5">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Agents
+          </h2>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
+            {AGENTS_PAGE_SUBTITLE}
+          </p>
+        </div>
+      </div>
 
       {errorMessage ? (
         <div className="rounded-lg border border-warning/20 bg-warning/8 px-3.5 py-2.5 text-[13px] text-warning-foreground">
@@ -426,13 +438,13 @@ export function AgentsWorkspace({
         </Card>
       ) : null}
 
-      <section className="rounded-lg border border-border/60 bg-card">
-        <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-5">
+      <section className="overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-primary/[0.03] to-card">
+        <div className="flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3.5 lg:px-5">
           <div>
-            <h2 className="text-[14px] font-semibold text-foreground">
+            <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
               Agent library
             </h2>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
+            <p className="mt-0.5 text-[12px] text-muted-foreground/60">
               {formatAgentCount(agents.length)}
             </p>
           </div>
@@ -451,21 +463,23 @@ export function AgentsWorkspace({
 
         <div className="flex flex-col">
           {isLoading ? (
-            <div className="border-t border-border/60 px-4 py-8 lg:px-5">
-              <div className="flex items-center gap-2.5 text-[12px] text-muted-foreground">
+            <div className="px-4 py-10 lg:px-5">
+              <div className="flex items-center justify-center gap-2.5 text-[12px] text-muted-foreground">
                 <LoaderCircleIcon className="size-3.5 animate-spin" />
                 Loading agents...
               </div>
             </div>
           ) : agents.length === 0 ? (
-            <div className="border-t border-border/60 px-4 py-8 lg:px-5">
-              <div className="flex max-w-sm flex-col gap-2.5 rounded-lg border border-dashed border-border/60 bg-muted/20 p-5">
-                <BotIcon className="size-5 text-muted-foreground/40" />
+            <div className="px-4 py-10 lg:px-5">
+              <div className="mx-auto flex max-w-sm flex-col items-center gap-3 text-center">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-muted/50 ring-1 ring-border/60">
+                  <BotIcon className="size-5 text-muted-foreground/40" />
+                </div>
                 <div>
                   <h3 className="text-[13px] font-medium text-foreground">
                     No agents yet
                   </h3>
-                  <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground">
+                  <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
                     Create your first agent to start defining reusable finance
                     workflows.
                   </p>
@@ -486,82 +500,94 @@ export function AgentsWorkspace({
                 <article
                   key={agent.id}
                   className={cn(
-                    "grid gap-4 border-t border-border/60 px-4 py-3.5 transition-colors hover:bg-muted/20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-6 lg:px-5",
+                    "group flex gap-4 border-t border-border/40 px-4 py-4 transition-colors hover:bg-muted/20 lg:px-5",
                   )}
                 >
-                  <div className="max-w-md space-y-0.5">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <h3 className="text-[13px] font-medium text-foreground">
-                        {agent.name}
-                      </h3>
-                      {agent.isDefault ? (
-                        <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                          Default
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="text-[12px] leading-relaxed text-muted-foreground">
-                      {isDevDescription(agent.description)
-                        ? FALLBACK_AGENT_DESCRIPTION
-                        : agent.description}
-                    </p>
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] ring-1 ring-primary/10">
+                    <BotIcon className="size-4 text-primary" />
                   </div>
 
-                  <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-4 text-[12px] text-muted-foreground">
-                    <div className="grid gap-1">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
-                        Provider
-                      </span>
-                      <span className="text-[12px] text-foreground">
-                        {providerLabel(effectiveProviderId, connectedProviders)}
-                      </span>
-                    </div>
-
-                    <label className="grid gap-1">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
-                        Model
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <select
-                          className="h-8 w-full rounded-md border border-border bg-background px-2.5 text-[12px] text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
-                          disabled={
-                            busyAgentId === agent.id ||
-                            !effectiveProviderId ||
-                            !effectiveModelCatalog
-                          }
-                          value={agent.modelId ?? ""}
-                          onChange={(event) => {
-                            if (!effectiveProviderId) {
-                              return;
-                            }
-
-                            void handleUpdateAgentModel(
-                              agent,
-                              effectiveProviderId,
-                              event.target.value,
-                            );
-                          }}
-                        >
-                          <option value="">Provider default</option>
-                          {effectiveModelCatalog?.models.map((model) => (
-                            <option key={model.modelRef} value={model.modelId}>
-                              {formatModelId(model.modelId)}
-                            </option>
-                          ))}
-                        </select>
-                        {busyAgentId === agent.id ? (
-                          <LoaderCircleIcon className="size-3.5 animate-spin text-muted-foreground" />
+                  <div className="min-w-0 flex-1 space-y-3">
+                    <div className="space-y-0.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-[14px] font-semibold tracking-tight text-foreground">
+                          {agent.name}
+                        </h3>
+                        {agent.isDefault ? (
+                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary ring-1 ring-primary/20">
+                            Default
+                          </span>
                         ) : null}
                       </div>
-                    </label>
+                      <p className="text-[12px] leading-relaxed text-muted-foreground">
+                        {isDevDescription(agent.description)
+                          ? FALLBACK_AGENT_DESCRIPTION
+                          : agent.description}
+                      </p>
+                    </div>
 
-                    <div className="grid gap-1 text-right">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
-                        Updated
-                      </span>
-                      <span className="text-[12px] text-muted-foreground/60">
-                        {formatDate(agent.updatedAt)}
-                      </span>
+                    <div className="grid grid-cols-[1fr_1fr_auto] items-end gap-4 rounded-lg bg-muted/30 px-3.5 py-2.5 text-[12px] ring-1 ring-border/40">
+                      <div className="grid gap-1">
+                        <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+                          Provider
+                        </span>
+                        <span className="text-[12px] font-medium text-foreground">
+                          {providerLabel(
+                            effectiveProviderId,
+                            connectedProviders,
+                          )}
+                        </span>
+                      </div>
+
+                      <label className="grid gap-1">
+                        <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+                          Model
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <select
+                            className="h-7 w-full rounded-md border border-border bg-background px-2 text-[12px] text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                            disabled={
+                              busyAgentId === agent.id ||
+                              !effectiveProviderId ||
+                              !effectiveModelCatalog
+                            }
+                            value={agent.modelId ?? ""}
+                            onChange={(event) => {
+                              if (!effectiveProviderId) {
+                                return;
+                              }
+
+                              void handleUpdateAgentModel(
+                                agent,
+                                effectiveProviderId,
+                                event.target.value,
+                              );
+                            }}
+                          >
+                            <option value="">Provider default</option>
+                            {effectiveModelCatalog?.models.map((model) => (
+                              <option
+                                key={model.modelRef}
+                                value={model.modelId}
+                              >
+                                {formatModelId(model.modelId)}
+                              </option>
+                            ))}
+                          </select>
+                          {busyAgentId === agent.id ? (
+                            <LoaderCircleIcon className="size-3.5 animate-spin text-muted-foreground" />
+                          ) : null}
+                        </div>
+                      </label>
+
+                      <div className="grid gap-1 text-right">
+                        <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+                          Updated
+                        </span>
+                        <span className="tabular-nums text-[12px] text-muted-foreground/60">
+                          {formatDate(agent.updatedAt)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -571,7 +597,7 @@ export function AgentsWorkspace({
         </div>
 
         {!isLoading && agents.length === 1 ? (
-          <p className="px-4 pb-3.5 text-[12px] text-muted-foreground lg:px-5">
+          <p className="border-t border-border/40 px-4 py-3 text-[12px] text-muted-foreground lg:px-5">
             {SINGLE_AGENT_HINT}
           </p>
         ) : null}

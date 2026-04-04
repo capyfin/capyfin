@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { primaryNavigation } from "./navigation";
 
-void test("primaryNavigation has exactly 6 items", () => {
-  assert.equal(primaryNavigation.length, 6);
+void test("primaryNavigation has exactly 7 items", () => {
+  assert.equal(primaryNavigation.length, 7);
 });
 
 void test("primaryNavigation contains the correct items in order", () => {
@@ -13,9 +13,30 @@ void test("primaryNavigation contains the correct items in order", () => {
     "Cases",
     "Chat",
     "Watchlist",
+    "Portfolio",
     "Library",
     "Automation",
   ]);
+});
+
+void test("Portfolio nav item uses #portfolio href", () => {
+  const portfolioItem = primaryNavigation.find(
+    (item) => item.title === "Portfolio",
+  );
+  assert.ok(portfolioItem, "Portfolio item should exist");
+  assert.equal(portfolioItem.href, "#portfolio");
+});
+
+void test("Portfolio appears between Watchlist and Library", () => {
+  const titles = primaryNavigation.map((item) => item.title);
+  const watchlistIdx = titles.indexOf("Watchlist");
+  const portfolioIdx = titles.indexOf("Portfolio");
+  const libraryIdx = titles.indexOf("Library");
+  assert.ok(
+    portfolioIdx > watchlistIdx,
+    "Portfolio should come after Watchlist",
+  );
+  assert.ok(portfolioIdx < libraryIdx, "Portfolio should come before Library");
 });
 
 void test("Cases nav item uses #cases href", () => {

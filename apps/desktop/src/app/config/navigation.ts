@@ -4,6 +4,7 @@ import {
   HomeIcon,
   ListChecksIcon,
   MessageSquareIcon,
+  PieChartIcon,
   ZapIcon,
 } from "lucide-react";
 
@@ -28,6 +29,11 @@ export const primaryNavigation = [
     title: "Watchlist",
     href: "#watchlist",
     icon: ListChecksIcon,
+  },
+  {
+    title: "Portfolio",
+    href: "#portfolio",
+    icon: PieChartIcon,
   },
   {
     title: "Library",

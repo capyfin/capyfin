@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import type { SavedReport } from "@capyfin/contracts";
 import { Input } from "@/components/ui/input";
-import { ArrowDownUpIcon, SearchIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, SearchIcon } from "lucide-react";
 
 export interface LibraryFilterState {
   search: string;
@@ -106,6 +106,15 @@ export function applyLibraryFilters(
   });
 }
 
+export const TOOLBAR_CLASSES = "border-b border-border/40 pb-4 mb-2";
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
+export const SORT_ICONS = {
+  newest: ArrowDownIcon,
+  oldest: ArrowUpIcon,
+} as const;
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+
 const selectClass =
   "h-8 rounded-lg border border-input/70 bg-transparent px-2.5 text-[13px] text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 hover:border-input dark:border-input/50 dark:hover:border-input/70";
 
@@ -115,8 +124,11 @@ export function LibraryFilters({
   companies,
   onChange,
 }: LibraryFiltersProps) {
+  /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon type */
+  const SortIcon = SORT_ICONS[filters.dateSort];
+
   return (
-    <div className="flex flex-col gap-2">
+    <div className={`flex flex-col gap-2 ${TOOLBAR_CLASSES}`}>
       {/* Row 1: search + view toggle */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-[180px] flex-1">
@@ -216,7 +228,7 @@ export function LibraryFilters({
             });
           }}
         >
-          <ArrowDownUpIcon className="size-3.5" />
+          <SortIcon className="size-3.5" />
           {filters.dateSort === "newest" ? "Newest first" : "Oldest first"}
         </button>
       </div>

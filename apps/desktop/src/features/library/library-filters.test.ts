@@ -254,6 +254,22 @@ void test("applyLibraryFilters combines multiple filters", async () => {
   assert.equal(at(result, 0).workflowType, "deep-dive");
 });
 
+void test("LibraryFilters exports TOOLBAR_CLASSES with border-b for visual separation", async () => {
+  const mod = await import("./components/LibraryFilters");
+  assert.ok(typeof mod.TOOLBAR_CLASSES === "string");
+  assert.ok(
+    mod.TOOLBAR_CLASSES.includes("border-b"),
+    "TOOLBAR_CLASSES should include border-b for visual separation from content",
+  );
+});
+
+void test("LibraryFilters exports SORT_ICONS mapping for sort direction indicators", async () => {
+  const mod = await import("./components/LibraryFilters");
+  assert.ok(typeof mod.SORT_ICONS === "object");
+  assert.ok("newest" in mod.SORT_ICONS, "should have newest icon");
+  assert.ok("oldest" in mod.SORT_ICONS, "should have oldest icon");
+});
+
 void test("applyLibraryFilters pinned-first sort preserves within newest", async () => {
   const { applyLibraryFilters, INITIAL_FILTER_STATE } =
     await import("./components/LibraryFilters");

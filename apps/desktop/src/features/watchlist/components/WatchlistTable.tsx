@@ -201,7 +201,7 @@ export function WatchlistTable({
                 className="group/row border-b border-border/25 transition-colors hover:bg-muted/30 dark:border-border/20"
               >
                 <TableCell className="pl-5">
-                  <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-[13px] font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
+                  <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-sm font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
                     {item.ticker}
                   </span>
                 </TableCell>
@@ -222,9 +222,19 @@ export function WatchlistTable({
                     {(() => {
                       const status = getCaseStatus(item.ticker, caseMap);
                       if (!status.hasCase) {
-                        return (
+                        return onCreateCase ? (
+                          <button
+                            type="button"
+                            className="text-[12px] text-muted-foreground/50 transition-colors hover:text-foreground"
+                            onClick={() => {
+                              onCreateCase(item.ticker);
+                            }}
+                          >
+                            + Create case
+                          </button>
+                        ) : (
                           <span className="text-[12px] text-muted-foreground/50">
-                            No case
+                            + Create case
                           </span>
                         );
                       }
@@ -255,9 +265,21 @@ export function WatchlistTable({
                   </TableCell>
                 ) : null}
                 <TableCell className="max-w-[200px]">
-                  <span className="block truncate text-[13px] text-muted-foreground">
-                    {item.note ?? "—"}
-                  </span>
+                  {item.note ? (
+                    <span className="block truncate text-[13px] text-muted-foreground">
+                      {item.note}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="block truncate text-[12px] text-muted-foreground/40 transition-colors hover:text-foreground"
+                      onClick={() => {
+                        onEdit(item);
+                      }}
+                    >
+                      + Add note
+                    </button>
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
@@ -281,7 +303,7 @@ export function WatchlistTable({
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="size-7 text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100"
+                        className="size-7 text-muted-foreground opacity-40 transition-opacity group-hover/row:opacity-100"
                       >
                         <MoreHorizontalIcon className="size-3.5" />
                       </Button>

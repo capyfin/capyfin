@@ -32,22 +32,22 @@ export function RecentActivitySection({
       </div>
 
       {recentSessions.length === 0 ? (
-        <div className="flex items-center gap-3 rounded-xl border border-dashed border-border/60 px-5 py-6">
-          <Clock className="size-4 text-muted-foreground/50" />
-          <p className="text-[13px] text-muted-foreground/70">
-            No recent activity yet — try running a card above.
+        <div className="flex items-center gap-3 rounded-xl border border-dashed border-border/50 bg-muted/[0.02] px-5 py-6 dark:bg-muted/[0.04]">
+          <Clock className="size-4 text-muted-foreground/40" />
+          <p className="text-[13px] text-muted-foreground/60">
+            No recent activity yet — try running a workflow above.
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           {recentSessions.map((session) => (
             <button
               key={session.id}
               type="button"
               onClick={() => onSessionSelect?.(session.id)}
-              className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/50"
+              className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-left transition-all hover:border-border/40 hover:bg-muted/40"
             >
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.06] text-primary/70 dark:bg-primary/[0.08]">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.06] text-primary/60 transition-colors group-hover:bg-primary/[0.10] group-hover:text-primary/80 dark:bg-primary/[0.08]">
                 <MessageSquare className="size-3.5" />
               </div>
               <div className="min-w-0 flex-1">
@@ -55,7 +55,7 @@ export function RecentActivitySection({
                   {session.label ?? session.sessionKey}
                 </p>
               </div>
-              <span className="shrink-0 text-[11px] text-muted-foreground/60">
+              <span className="shrink-0 text-[11px] text-muted-foreground/50 transition-colors group-hover:text-muted-foreground">
                 {formatRelativeTime(session.updatedAt)}
               </span>
             </button>

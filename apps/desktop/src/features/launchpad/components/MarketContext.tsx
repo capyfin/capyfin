@@ -17,9 +17,9 @@ export function MarketContext() {
         <div className="h-px flex-1 bg-border/50" />
       </div>
 
-      <div className="rounded-xl border border-border/40 bg-gradient-to-br from-blue-500/[0.03] via-background to-indigo-500/[0.03] px-5 py-4">
+      <div className="rounded-xl border border-blue-500/15 bg-gradient-to-br from-blue-500/[0.04] via-background to-indigo-500/[0.03] px-5 py-4 dark:border-blue-500/10 dark:from-blue-500/[0.06] dark:to-indigo-500/[0.04]">
         <div className="flex items-start gap-3">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 ring-2 ring-blue-500/[0.06]">
             <Globe className="size-4 text-blue-600 dark:text-blue-400" />
           </div>
           <div className="min-w-0 flex-1 space-y-3">
@@ -28,7 +28,7 @@ export function MarketContext() {
               <p className="text-[13px] font-medium text-foreground">
                 Market regime data not yet connected
               </p>
-              <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground/80">
+              <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground/70">
                 Connect a data provider in Settings to receive live market
                 context including regime analysis, index levels, and sector
                 rotation signals.
@@ -36,22 +36,22 @@ export function MarketContext() {
             </div>
 
             {/* Signal placeholders */}
-            <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-1.5 rounded-md bg-muted/30 px-2.5 py-1.5">
-                <TrendingUp className="size-3 text-muted-foreground/50" />
-                <span className="text-[11px] text-muted-foreground/60">
+            <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 rounded-md border border-border/30 bg-muted/20 px-2.5 py-1.5 dark:bg-muted/10">
+                <TrendingUp className="size-3 text-muted-foreground/40" />
+                <span className="text-[11px] text-muted-foreground/50">
                   Index snapshot
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-md bg-muted/30 px-2.5 py-1.5">
-                <BarChart3 className="size-3 text-muted-foreground/50" />
-                <span className="text-[11px] text-muted-foreground/60">
+              <div className="flex items-center gap-1.5 rounded-md border border-border/30 bg-muted/20 px-2.5 py-1.5 dark:bg-muted/10">
+                <BarChart3 className="size-3 text-muted-foreground/40" />
+                <span className="text-[11px] text-muted-foreground/50">
                   Sector leadership
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-md bg-muted/30 px-2.5 py-1.5">
-                <TrendingDown className="size-3 text-muted-foreground/50" />
-                <span className="text-[11px] text-muted-foreground/60">
+              <div className="flex items-center gap-1.5 rounded-md border border-border/30 bg-muted/20 px-2.5 py-1.5 dark:bg-muted/10">
+                <TrendingDown className="size-3 text-muted-foreground/40" />
+                <span className="text-[11px] text-muted-foreground/50">
                   Sector weakness
                 </span>
               </div>

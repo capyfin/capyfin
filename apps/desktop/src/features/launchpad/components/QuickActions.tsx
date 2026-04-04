@@ -7,7 +7,6 @@ import {
   GitCompareArrows,
   type LucideIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { actionCards } from "../card-registry";
 import type { ActionCard } from "../types";
 
@@ -92,24 +91,27 @@ export function QuickActions({ onCardClick }: QuickActionsProps) {
         <div className="h-px flex-1 bg-border/50" />
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {quickActionDefs.map((def) => {
           /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
           const Icon = def.icon;
           /* eslint-enable @typescript-eslint/no-unsafe-assignment */
           return (
-            <Button
+            <button
               key={def.id}
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
+              type="button"
+              className="group/qa flex flex-col items-center gap-2 rounded-xl border border-border/40 bg-card/50 px-3 py-3.5 text-center transition-all hover:border-border/70 hover:bg-card hover:shadow-sm dark:bg-card/30 dark:hover:bg-card/60"
               onClick={() => {
                 handleAction(def);
               }}
             >
-              <Icon data-icon="inline-start" className="size-3.5" />
-              {def.label}
-            </Button>
+              <div className="flex size-8 items-center justify-center rounded-lg bg-primary/[0.06] text-primary/70 transition-colors group-hover/qa:bg-primary/[0.10] group-hover/qa:text-primary dark:bg-primary/[0.08]">
+                <Icon className="size-4" />
+              </div>
+              <span className="text-[12px] font-medium text-muted-foreground transition-colors group-hover/qa:text-foreground">
+                {def.label}
+              </span>
+            </button>
           );
         })}
       </div>

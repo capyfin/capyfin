@@ -154,7 +154,7 @@ export function SuggestionsSection({
         <div className="h-px flex-1 bg-border/50" />
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1">
         {suggestions.map((suggestion) => {
           /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
           const Icon = suggestion.icon;
@@ -164,15 +164,15 @@ export function SuggestionsSection({
               key={suggestion.id}
               type="button"
               onClick={suggestion.action}
-              className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/50"
+              className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-left transition-all hover:border-border/40 hover:bg-muted/40"
             >
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/[0.06] text-amber-500/70 dark:bg-amber-500/[0.08]">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/[0.06] text-amber-500/60 transition-colors group-hover:bg-amber-500/[0.10] group-hover:text-amber-500/80 dark:bg-amber-500/[0.08]">
                 <Icon className="size-3.5" />
               </div>
               <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">
                 {suggestion.label}
               </p>
-              <Lightbulb className="size-3 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity group-hover:opacity-100" />
+              <Lightbulb className="size-3 shrink-0 text-muted-foreground/30 opacity-0 transition-opacity group-hover:opacity-100" />
             </button>
           );
         })}

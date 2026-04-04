@@ -22,26 +22,43 @@ export function AttentionEmptyState({ onCardClick }: AttentionEmptyStateProps) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-primary/[0.03] via-background to-violet-500/[0.03] px-6 py-8 text-center dark:from-primary/[0.05] dark:to-violet-500/[0.05]">
-      <div className="pointer-events-none absolute -left-12 -top-12 size-48 rounded-full bg-primary/[0.04] blur-3xl" />
+    <div className="relative overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-primary/[0.04] via-background to-violet-500/[0.03] px-6 py-10 text-center dark:from-primary/[0.08] dark:to-violet-500/[0.06]">
+      {/* Ambient glow */}
+      <div className="pointer-events-none absolute -left-16 -top-16 size-56 rounded-full bg-primary/[0.05] blur-3xl dark:bg-primary/[0.08]" />
+      <div className="pointer-events-none absolute -bottom-16 -right-16 size-48 rounded-full bg-violet-500/[0.04] blur-3xl dark:bg-violet-500/[0.06]" />
 
-      <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-primary/10">
-        <Sparkles className="size-5 text-primary" />
+      {/* Dot grid pattern */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, currentColor 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+        }}
+      />
+
+      <div className="relative">
+        {/* Icon with ring */}
+        <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/[0.06] dark:ring-primary/[0.08]">
+          <Sparkles className="size-6 text-primary" />
+        </div>
+
+        <h3 className="mt-5 text-[18px] font-semibold tracking-tight text-foreground">
+          Welcome to your attention dashboard
+        </h3>
+        <p className="mx-auto mt-2.5 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
+          Build your first investment case to unlock stale-review alerts,
+          confidence tracking, catalyst monitoring, and watchlist signals.
+        </p>
+
+        <Button
+          className="mt-6 gap-2 px-5 shadow-sm"
+          onClick={handleCreateCase}
+        >
+          <Search data-icon="inline-start" className="size-3.5" />
+          Create Your First Case
+        </Button>
       </div>
-
-      <h3 className="mt-4 text-[16px] font-semibold text-foreground">
-        Welcome to your attention dashboard
-      </h3>
-      <p className="mx-auto mt-2 max-w-md text-[13px] leading-relaxed text-muted-foreground">
-        This is where you&apos;ll see what needs your attention — stale reviews,
-        confidence changes, upcoming catalysts, and watchlist signals. Create
-        your first investment case to get started.
-      </p>
-
-      <Button className="mt-5 gap-1.5" onClick={handleCreateCase}>
-        <Search data-icon="inline-start" className="size-3.5" />
-        Create Your First Case
-      </Button>
     </div>
   );
 }

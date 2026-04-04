@@ -1,5 +1,5 @@
 import type { Automation } from "@capyfin/contracts";
-import { LoaderCircleIcon, PlusIcon } from "lucide-react";
+import { LoaderCircleIcon, PlusIcon, ZapIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -128,7 +128,35 @@ export function AutomationWorkspace({ client }: AutomationWorkspaceProps) {
         );
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5">
+      {/* Page header with icon accent */}
+      <div className="flex items-start gap-3.5">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/[0.08] ring-1 ring-amber-500/10">
+          <ZapIcon className="size-5 text-amber-500" />
+        </div>
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              Automation
+            </h2>
+            {automations.length > 0 ? (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setShowCreateDialog(true);
+                }}
+              >
+                <PlusIcon className="size-3.5" />
+                New Automation
+              </Button>
+            ) : null}
+          </div>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
+            Schedule recurring research and delivery workflows.
+          </p>
+        </div>
+      </div>
+
       {automations.length === 0 ? (
         <AutomationEmptyState
           onCreate={() => {
@@ -137,7 +165,7 @@ export function AutomationWorkspace({ client }: AutomationWorkspaceProps) {
         />
       ) : (
         <>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <ToggleGroup
               type="single"
               variant="outline"
@@ -151,16 +179,10 @@ export function AutomationWorkspace({ client }: AutomationWorkspaceProps) {
               <ToggleGroupItem value="active">Active</ToggleGroupItem>
               <ToggleGroupItem value="paused">Paused</ToggleGroupItem>
             </ToggleGroup>
-
-            <Button
-              size="sm"
-              onClick={() => {
-                setShowCreateDialog(true);
-              }}
-            >
-              <PlusIcon className="size-3.5" />
-              New Automation
-            </Button>
+            <span className="text-[12px] text-muted-foreground/50">
+              {filteredAutomations.length}{" "}
+              {filteredAutomations.length === 1 ? "automation" : "automations"}
+            </span>
           </div>
 
           <AutomationList

@@ -82,27 +82,32 @@ export function AutomationList({
       {automations.map((auto) => (
         <Card
           key={auto.id}
-          className={`flex items-center gap-4 px-4 py-3 ${!auto.enabled ? "opacity-60" : ""}`}
+          className={`group flex items-center gap-4 border-border/60 px-4 py-3.5 transition-all hover:border-border/80 hover:bg-muted/20 ${!auto.enabled ? "opacity-60" : ""}`}
         >
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-            <ZapIcon className="size-4 text-muted-foreground" />
+          <div
+            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${auto.enabled ? "bg-amber-500/[0.08] ring-1 ring-amber-500/10" : "bg-muted"}`}
+          >
+            <ZapIcon
+              className={`size-4 ${auto.enabled ? "text-amber-500" : "text-muted-foreground"}`}
+            />
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <div className="flex items-center gap-2">
-              <span className="truncate text-sm font-medium text-foreground">
+              <span className="truncate text-[14px] font-semibold tracking-tight text-foreground">
                 {auto.cardTitle}
               </span>
               <Badge
                 variant={auto.enabled ? "default" : "secondary"}
-                className="text-[10px]"
+                className={`rounded-full text-[10px] ${auto.enabled ? "bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400" : ""}`}
               >
                 {auto.enabled ? "Active" : "Paused"}
               </Badge>
             </div>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-3 text-[12px] text-muted-foreground">
               <span>{formatScheduleSummary(auto.schedule)}</span>
-              <span>→ {DEST_LABELS[auto.destination] ?? auto.destination}</span>
+              <span className="text-muted-foreground/40">→</span>
+              <span>{DEST_LABELS[auto.destination] ?? auto.destination}</span>
             </div>
           </div>
 
@@ -110,7 +115,11 @@ export function AutomationList({
             {lastRunBadge(auto.lastRunStatus)}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                >
                   <EllipsisVerticalIcon className="size-4" />
                 </Button>
               </DropdownMenuTrigger>

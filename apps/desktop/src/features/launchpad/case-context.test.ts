@@ -35,6 +35,8 @@ const sampleCase = {
   nextActions: ["Review after Q4 earnings", "Compare with MSFT"],
   history: [],
   tags: ["deep-dive"],
+  monitoringEnabled: false,
+  staleDays: 30,
 };
 
 void test("formatCaseForPrompt includes the header and basic fields", () => {

@@ -268,3 +268,85 @@ void test("data persists across service instances", async () => {
     await rm(dir, { recursive: true });
   }
 });
+
+void test("listCases and getCase return computed attentionState", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    const created = await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+    });
+    assert.equal(created.attentionState, "healthy");
+
+    const fetched = await service.getCase(created.id);
+    assert.equal(fetched.attentionState, "healthy");
+
+    const listed = await service.listCases();
+    assert.equal(listed[0]?.attentionState, "healthy");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("new cases default monitoringEnabled=false and staleDays=30", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    const created = await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+    });
+    assert.equal(created.monitoringEnabled, false);
+    assert.equal(created.staleDays, 30);
+    assert.equal(created.nextCatalystDate, undefined);
+    assert.equal(created.nextCatalystDescription, undefined);
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("updateCase accepts monitoringEnabled, nextCatalystDate, nextCatalystDescription, staleDays", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    const created = await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+    });
+    const catalystDate = new Date(Date.now() + 5 * 86400000).toISOString();
+    const updated = await service.updateCase(created.id, {
+      monitoringEnabled: true,
+      nextCatalystDate: catalystDate,
+      nextCatalystDescription: "Q2 Earnings",
+      staleDays: 14,
+    });
+    assert.equal(updated.monitoringEnabled, true);
+    assert.equal(updated.nextCatalystDate, catalystDate);
+    assert.equal(updated.nextCatalystDescription, "Q2 Earnings");
+    assert.equal(updated.staleDays, 14);
+    assert.equal(updated.attentionState, "catalyst-upcoming");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("existing cases without new fields default gracefully", async () => {
+  const dir = await createTempDir();
+  try {
+    // Simulate old data without new fields by creating and verifying it loads
+    const service = new CasesService(dir);
+    const created = await service.createCase({
+      ticker: "MSFT",
+      companyName: "Microsoft",
+    });
+    // Re-load from disk via new service instance
+    const service2 = new CasesService(dir);
+    const fetched = await service2.getCase(created.id);
+    assert.equal(fetched.monitoringEnabled, false);
+    assert.equal(fetched.staleDays, 30);
+    assert.ok(fetched.attentionState !== undefined);
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});

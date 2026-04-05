@@ -33,6 +33,8 @@ function makeCase(overrides: Partial<InvestmentCase> = {}): InvestmentCase {
     nextActions: [],
     history: [],
     tags: [],
+    monitoringEnabled: false,
+    staleDays: 30,
     ...overrides,
   };
 }

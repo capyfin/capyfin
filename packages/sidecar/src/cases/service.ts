@@ -10,6 +10,7 @@ import {
   type InvestmentCase,
   type UpdateCaseRequest,
 } from "@capyfin/contracts";
+import { computeAttentionState } from "./attention.ts";
 
 interface CasesStore {
   version: 1;
@@ -23,9 +24,16 @@ export class CasesService {
     this.#storePath = join(stateDir, "cases.json");
   }
 
+  #enrichCase(investmentCase: InvestmentCase): InvestmentCase {
+    return {
+      ...investmentCase,
+      attentionState: computeAttentionState(investmentCase),
+    };
+  }
+
   async listCases(): Promise<InvestmentCase[]> {
     const store = await this.#load();
-    return store.cases;
+    return store.cases.map((c) => this.#enrichCase(c));
   }
 
   async getCase(id: string): Promise<InvestmentCase> {
@@ -34,7 +42,7 @@ export class CasesService {
     if (!found) {
       throw new Error(`Case not found: ${id}`);
     }
-    return found;
+    return this.#enrichCase(found);
   }
 
   async createCase(request: CreateCaseRequest): Promise<InvestmentCase> {
@@ -58,7 +66,7 @@ export class CasesService {
     });
     store.cases.push(investmentCase);
     await this.#save(store);
-    return investmentCase;
+    return this.#enrichCase(investmentCase);
   }
 
   async updateCase(
@@ -95,11 +103,23 @@ export class CasesService {
         ? { nextActions: partial.nextActions }
         : {}),
       ...(partial.tags !== undefined ? { tags: partial.tags } : {}),
+      ...(partial.monitoringEnabled !== undefined
+        ? { monitoringEnabled: partial.monitoringEnabled }
+        : {}),
+      ...(partial.nextCatalystDate !== undefined
+        ? { nextCatalystDate: partial.nextCatalystDate }
+        : {}),
+      ...(partial.nextCatalystDescription !== undefined
+        ? { nextCatalystDescription: partial.nextCatalystDescription }
+        : {}),
+      ...(partial.staleDays !== undefined
+        ? { staleDays: partial.staleDays }
+        : {}),
       updatedAt: new Date().toISOString(),
     });
     store.cases[index] = updated;
     await this.#save(store);
-    return updated;
+    return this.#enrichCase(updated);
   }
 
   async deleteCase(id: string): Promise<{ deleted: true }> {

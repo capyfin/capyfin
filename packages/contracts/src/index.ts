@@ -848,6 +848,16 @@ export const caseHistoryEventTypeSchema = z.enum([
   "earnings-update",
   "manual-edit",
   "comparison",
+  "drift-detected",
+]);
+
+export const attentionStateSchema = z.enum([
+  "healthy",
+  "review-soon",
+  "review-now",
+  "stale",
+  "catalyst-upcoming",
+  "drift-detected",
 ]);
 
 export const caseVersionSchema = z.object({
@@ -881,6 +891,11 @@ export const investmentCaseSchema = z.object({
   nextActions: z.array(z.string()),
   history: z.array(caseHistoryEntrySchema),
   tags: z.array(z.string()),
+  attentionState: attentionStateSchema.optional(),
+  monitoringEnabled: z.boolean().optional().default(false),
+  nextCatalystDate: z.string().optional(),
+  nextCatalystDescription: z.string().optional(),
+  staleDays: z.number().optional().default(30),
 });
 
 export const createCaseRequestSchema = z.object({
@@ -906,6 +921,10 @@ export const updateCaseRequestSchema = z.object({
   invalidationSignals: z.array(z.string()).optional(),
   nextActions: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
+  monitoringEnabled: z.boolean().optional(),
+  nextCatalystDate: z.string().optional(),
+  nextCatalystDescription: z.string().optional(),
+  staleDays: z.number().optional(),
 });
 
 export const caseListSchema = z.object({
@@ -925,6 +944,7 @@ export const addCaseHistoryEntryRequestSchema = z.object({
   newConfidence: confidenceSchema.optional(),
 });
 
+export type AttentionState = z.infer<typeof attentionStateSchema>;
 export type CaseStance = z.infer<typeof caseStanceSchema>;
 export type CaseSection = z.infer<typeof caseSectionSchema>;
 export type CaseHistoryEventType = z.infer<typeof caseHistoryEventTypeSchema>;

@@ -49,6 +49,8 @@ function makeCase(overrides: Partial<InvestmentCase> = {}): InvestmentCase {
     nextActions: ["Review after Q2 earnings"],
     history: [],
     tags: ["tech"],
+    monitoringEnabled: false,
+    staleDays: 30,
     ...overrides,
   };
 }

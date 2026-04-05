@@ -50,6 +50,26 @@ export class PortfolioService {
     return overview;
   }
 
+  async updateHoldingSector(
+    ticker: string,
+    sector: string,
+  ): Promise<PortfolioOverview> {
+    const store = await this.#load();
+    const upperTicker = ticker.toUpperCase();
+    const holding = store.holdings.find(
+      (h) => h.ticker.toUpperCase() === upperTicker,
+    );
+    if (!holding) {
+      throw new Error(`Holding not found: ${ticker}`);
+    }
+    holding.sector = sector;
+    const overview = this.#computeOverview(store.holdings);
+    store.holdings = overview.holdings;
+    await this.#save(store);
+    await this.#writeCsvToWorkspace(store.holdings);
+    return overview;
+  }
+
   async removeHolding(ticker: string): Promise<{ deleted: boolean }> {
     const store = await this.#load();
     const upperTicker = ticker.toUpperCase();

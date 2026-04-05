@@ -386,6 +386,9 @@ export type SectorExposure = z.infer<typeof sectorExposureSchema>;
 export type PortfolioOverview = z.infer<typeof portfolioOverviewSchema>;
 export type AddHoldingRequest = z.infer<typeof addHoldingRequestSchema>;
 export type RemoveHoldingResponse = z.infer<typeof removeHoldingResponseSchema>;
+export type UpdateHoldingSectorRequest = z.infer<
+  typeof updateHoldingSectorRequestSchema
+>;
 export type WatchlistItem = z.infer<typeof watchlistItemSchema>;
 export type WatchlistList = z.infer<typeof watchlistListSchema>;
 export type AddWatchlistItemRequest = z.infer<
@@ -647,6 +650,10 @@ export const addHoldingRequestSchema = z.object({
 
 export const removeHoldingResponseSchema = z.object({
   deleted: z.boolean(),
+});
+
+export const updateHoldingSectorRequestSchema = z.object({
+  sector: z.string().min(1),
 });
 
 // ---------------------------------------------------------------------------

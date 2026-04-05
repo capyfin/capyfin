@@ -20,6 +20,7 @@ import {
   portfolioStatusResponseSchema,
   portfolioUploadResponseSchema,
   removeHoldingResponseSchema,
+  updateHoldingSectorRequestSchema,
   removeSkillResponseSchema,
   saveDataProviderKeyRequestSchema,
   saveReportRequestSchema,
@@ -388,6 +389,23 @@ export class SidecarClient {
         body: JSON.stringify(addHoldingRequestSchema.parse(holding)),
         method: "POST",
       }),
+    );
+  }
+
+  async updateHoldingSector(
+    ticker: string,
+    sector: string,
+  ): Promise<PortfolioOverview> {
+    return portfolioOverviewSchema.parse(
+      await this.request(
+        `/portfolio/holding/${encodeURIComponent(ticker)}/sector`,
+        {
+          body: JSON.stringify(
+            updateHoldingSectorRequestSchema.parse({ sector }),
+          ),
+          method: "PATCH",
+        },
+      ),
     );
   }
 

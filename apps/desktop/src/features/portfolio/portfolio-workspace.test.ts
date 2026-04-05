@@ -280,3 +280,106 @@ void test("cardSections includes a portfolio section", async () => {
   assert.equal(section.title, "Portfolio");
   assert.equal(section.cards.length, 3);
 });
+
+// --- Inline sector editing tests ---
+
+void test("HoldingsTable accepts onSectorChange callback prop", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/HoldingsTable.tsx", import.meta.url),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("onSectorChange"),
+    "HoldingsTable should accept an onSectorChange callback prop",
+  );
+});
+
+void test("HoldingsTable uses DropdownMenu for sector editing", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/HoldingsTable.tsx", import.meta.url),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("DropdownMenu"),
+    "HoldingsTable should use DropdownMenu for inline sector editing",
+  );
+});
+
+void test("HoldingsTable includes GICS sector options", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/HoldingsTable.tsx", import.meta.url),
+    "utf-8",
+  );
+  const sectors = [
+    "Technology",
+    "Healthcare",
+    "Financials",
+    "Energy",
+    "Industrials",
+    "Materials",
+    "Real Estate",
+    "Utilities",
+    "Communication Services",
+  ];
+  for (const sector of sectors) {
+    assert.ok(
+      source.includes(sector),
+      `HoldingsTable should include sector option: ${sector}`,
+    );
+  }
+});
+
+void test("HoldingsTable renders clickable sector trigger for unset sectors", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/HoldingsTable.tsx", import.meta.url),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("DropdownMenuTrigger"),
+    "Should use DropdownMenuTrigger for clickable sector cell",
+  );
+});
+
+void test("PortfolioWorkspace passes onSectorChange to HoldingsTable", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioWorkspace.tsx", import.meta.url),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("onSectorChange"),
+    "PortfolioWorkspace should pass onSectorChange to HoldingsTable",
+  );
+});
+
+void test("PortfolioWorkspace uses updateHoldingSector from client", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioWorkspace.tsx", import.meta.url),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("updateHoldingSector"),
+    "PortfolioWorkspace should call updateHoldingSector on the sidecar client",
+  );
+});
+
+void test("SidecarClient exports updateHoldingSector method", async () => {
+  const mod = await import("../../lib/sidecar/client");
+  assert.ok(
+    "updateHoldingSector" in mod.SidecarClient.prototype,
+    "SidecarClient should have an updateHoldingSector method",
+  );
+});
+
+void test("contracts export updateHoldingSectorRequestSchema", async () => {
+  const mod = await import("@capyfin/contracts");
+  assert.ok(
+    "updateHoldingSectorRequestSchema" in mod,
+    "Contracts should export updateHoldingSectorRequestSchema",
+  );
+});

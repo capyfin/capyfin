@@ -1,5 +1,5 @@
 import type { InvestmentCase, PortfolioHolding } from "@capyfin/contracts";
-import { LayersIcon, TrashIcon } from "lucide-react";
+import { CheckIcon, LayersIcon, PencilIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,6 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -23,12 +31,27 @@ import { getCaseStatus } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
 import { TickerLink } from "@/features/ticker-actions/TickerLink";
 
+const GICS_SECTORS = [
+  "Technology",
+  "Healthcare",
+  "Financials",
+  "Consumer Discretionary",
+  "Consumer Staples",
+  "Energy",
+  "Industrials",
+  "Materials",
+  "Real Estate",
+  "Utilities",
+  "Communication Services",
+] as const;
+
 interface HoldingsTableProps {
   holdings: PortfolioHolding[];
   caseMap?: Map<string, InvestmentCase>;
   onRemove: (ticker: string) => void;
   onTickerAction?: (card: ActionCard, ticker: string) => void;
   onCreateCase?: ((ticker: string) => void) | undefined;
+  onSectorChange?: (ticker: string, sector: string) => void;
 }
 
 function formatCurrency(value: number): string {
@@ -52,6 +75,7 @@ export function HoldingsTable({
   onRemove,
   onTickerAction,
   onCreateCase,
+  onSectorChange,
 }: HoldingsTableProps) {
   return (
     <Card className="overflow-hidden rounded-xl border border-border/50 shadow-sm dark:border-border/40">
@@ -155,11 +179,40 @@ export function HoldingsTable({
                       {holding.weight.toFixed(1)}%
                     </TableCell>
                     <TableCell className="text-[13px] text-muted-foreground">
-                      {holding.sector ?? (
-                        <span className="italic text-muted-foreground/50">
-                          Not set
-                        </span>
-                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="group/sector inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted/60"
+                          >
+                            {holding.sector ? (
+                              <span>{holding.sector}</span>
+                            ) : (
+                              <span className="italic text-muted-foreground/50">
+                                Not set
+                              </span>
+                            )}
+                            <PencilIcon className="size-3 text-muted-foreground/40 opacity-0 transition-opacity group-hover/sector:opacity-100" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-52">
+                          <DropdownMenuLabel>Select sector</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {GICS_SECTORS.map((sector) => (
+                            <DropdownMenuItem
+                              key={sector}
+                              onClick={() => {
+                                onSectorChange?.(holding.ticker, sector);
+                              }}
+                            >
+                              <span className="flex-1">{sector}</span>
+                              {holding.sector === sector ? (
+                                <CheckIcon className="size-3.5 text-primary" />
+                              ) : null}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                     {caseMap ? (
                       <TableCell>

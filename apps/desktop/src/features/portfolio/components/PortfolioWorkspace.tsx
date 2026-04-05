@@ -93,6 +93,15 @@ export function PortfolioWorkspace({
     [client],
   );
 
+  const handleSectorChange = useCallback(
+    async (ticker: string, sector: string) => {
+      if (!client) return;
+      const updated = await client.updateHoldingSector(ticker, sector);
+      setPortfolio(updated);
+    },
+    [client],
+  );
+
   const hasHoldings = portfolio !== null && portfolio.holdings.length > 0;
   const caseMap = buildCaseMap(cases);
 
@@ -193,6 +202,9 @@ export function PortfolioWorkspace({
               onCardClick(card, ticker);
             }}
             onCreateCase={onCreateCase}
+            onSectorChange={(ticker, sector) => {
+              void handleSectorChange(ticker, sector);
+            }}
           />
 
           <PortfolioActions onCardClick={onCardClick} />

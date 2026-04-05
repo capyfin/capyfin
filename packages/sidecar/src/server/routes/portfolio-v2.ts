@@ -2,6 +2,7 @@ import {
   addHoldingRequestSchema,
   portfolioOverviewSchema,
   removeHoldingResponseSchema,
+  updateHoldingSectorRequestSchema,
 } from "@capyfin/contracts";
 import { Hono } from "hono";
 import type { SidecarRuntime } from "../context.ts";
@@ -26,6 +27,18 @@ export function createPortfolioV2Routes(runtime: SidecarRuntime): Hono {
   app.post("/holding", async (context) => {
     const payload = addHoldingRequestSchema.parse(await context.req.json());
     const overview = await runtime.portfolioService.addHolding(payload);
+    return context.json(portfolioOverviewSchema.parse(overview));
+  });
+
+  app.patch("/holding/:ticker/sector", async (context) => {
+    const { ticker } = context.req.param();
+    const payload = updateHoldingSectorRequestSchema.parse(
+      await context.req.json(),
+    );
+    const overview = await runtime.portfolioService.updateHoldingSector(
+      ticker,
+      payload.sector,
+    );
     return context.json(portfolioOverviewSchema.parse(overview));
   });
 

@@ -233,6 +233,60 @@ JPM,10,100,Financial`;
   }
 });
 
+void test("updateHoldingSector updates sector for existing holding", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new PortfolioService(dir, dir);
+    await service.addHolding({
+      ticker: "MSFT",
+      shares: 50,
+      costBasis: 320,
+    });
+    const overview = await service.updateHoldingSector("MSFT", "Technology");
+    const holding = first(overview.holdings);
+    assert.equal(holding.sector, "Technology");
+    // Sector exposure should reflect the update
+    assert.ok(overview.sectorExposure.some((s) => s.sector === "Technology"));
+    assert.ok(
+      !overview.sectorExposure.some((s) => s.sector === "Unclassified"),
+    );
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("updateHoldingSector throws for non-existent ticker", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new PortfolioService(dir, dir);
+    await assert.rejects(
+      () => service.updateHoldingSector("NOPE", "Technology"),
+      { message: /Holding not found/ },
+    );
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("updateHoldingSector persists change across reads", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new PortfolioService(dir, dir);
+    await service.addHolding({
+      ticker: "AAPL",
+      shares: 100,
+      costBasis: 150,
+    });
+    await service.updateHoldingSector("AAPL", "Technology");
+    // Read again to verify persistence
+    const overview = await service.getOverview();
+    const holding = first(overview.holdings);
+    assert.equal(holding.sector, "Technology");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
 void test("writes portfolio.csv to workspace dir on change", async () => {
   const stateDir = await createTempDir();
   const workspaceDir = await createTempDir();

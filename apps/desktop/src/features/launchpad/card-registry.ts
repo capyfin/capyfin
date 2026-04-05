@@ -210,6 +210,13 @@ export const incomeCards: ActionCard[] = [
   },
 ];
 
+/** Combined lookup array — use this when searching by card id across all categories. */
+export const allCards: ActionCard[] = [
+  ...actionCards,
+  ...portfolioCards,
+  ...incomeCards,
+];
+
 export const cardSections: CardSection[] = [
   {
     id: "today",

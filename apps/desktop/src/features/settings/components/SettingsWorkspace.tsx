@@ -26,17 +26,49 @@ export type SettingsTab =
 interface TabDefinition {
   id: SettingsTab;
   label: string;
+  description: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
 export const SETTINGS_TABS: TabDefinition[] = [
-  { id: "ai-models", label: "AI Models", icon: BotIcon },
-  { id: "financial-data", label: "Financial Data", icon: DatabaseIcon },
-  { id: "delivery-channels", label: "Delivery Channels", icon: SendIcon },
-  { id: "appearance", label: "Appearance", icon: PaletteIcon },
-  { id: "preferences", label: "Preferences", icon: SlidersHorizontalIcon },
-  { id: "advanced", label: "Advanced", icon: CodeIcon },
+  {
+    id: "ai-models",
+    label: "AI Models",
+    description:
+      "Configure AI provider connections and select preferred models",
+    icon: BotIcon,
+  },
+  {
+    id: "financial-data",
+    label: "Financial Data",
+    description: "Connect market data sources for live prices and fundamentals",
+    icon: DatabaseIcon,
+  },
+  {
+    id: "delivery-channels",
+    label: "Delivery Channels",
+    description: "Set up email, messaging, or webhook destinations for reports",
+    icon: SendIcon,
+  },
+  {
+    id: "appearance",
+    label: "Appearance",
+    description: "Customize theme, density, and display preferences",
+    icon: PaletteIcon,
+  },
+  {
+    id: "preferences",
+    label: "Preferences",
+    description: "Set your investing style, risk tolerance, and review cadence",
+    icon: SlidersHorizontalIcon,
+  },
+  {
+    id: "advanced",
+    label: "Advanced",
+    description: "Developer settings, API access, and diagnostics",
+    icon: CodeIcon,
+  },
 ];
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
@@ -75,7 +107,7 @@ export function SettingsWorkspace({
               {tabDef.label}
             </h1>
             <p className="text-[13px] text-muted-foreground">
-              Manage your settings
+              {tabDef.description}
             </p>
           </div>
         </div>

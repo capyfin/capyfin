@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { actionCards, incomeCards, cardSections } from "./card-registry";
+import {
+  actionCards,
+  incomeCards,
+  portfolioCards,
+  allCards,
+  cardSections,
+} from "./card-registry";
 
 // ---------------------------------------------------------------------------
 // Card registry — shape & completeness
@@ -198,9 +204,30 @@ void test("cardSections exports 5 sections", () => {
   assert.equal(cardSections.length, 5);
 });
 
+// ---------------------------------------------------------------------------
+// allCards — combined lookup array
+// ---------------------------------------------------------------------------
+
+void test("allCards includes every card from actionCards, portfolioCards, and incomeCards", () => {
+  const expectedIds = [
+    ...actionCards.map((c) => c.id),
+    ...portfolioCards.map((c) => c.id),
+    ...incomeCards.map((c) => c.id),
+  ];
+  const actualIds = allCards.map((c) => c.id);
+  assert.deepEqual(actualIds, expectedIds);
+});
+
+void test("allCards contains position-review card", () => {
+  const card = allCards.find((c) => c.id === "position-review");
+  assert.ok(card, "position-review must be findable in allCards");
+  assert.equal(card.input, "ticker");
+  assert.equal(card.category, "portfolio");
+});
+
 void test("no card exposes skill IDs, persona names, or prompt text to the user-facing fields", () => {
-  const allCards = [...actionCards, ...incomeCards];
-  for (const card of allCards) {
+  const allCardsCheck = [...actionCards, ...incomeCards];
+  for (const card of allCardsCheck) {
     assert.ok(
       !card.title.includes("SKILL"),
       `card ${card.id} title exposes internals`,

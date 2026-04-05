@@ -122,6 +122,19 @@ void test("PortfolioActions quick action cards have adequate padding", async () 
   );
 });
 
+void test("PortfolioWorkspace suppresses position alerts for single-position portfolios", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioWorkspace.tsx", import.meta.url),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("isSinglePosition") &&
+      source.includes('a.type === "position"'),
+    "PortfolioWorkspace should filter position-type concentration alerts when portfolio has a single holding",
+  );
+});
+
 void test("cardSections includes a portfolio section", async () => {
   const mod = await import("../launchpad/card-registry");
   const section = mod.cardSections.find(

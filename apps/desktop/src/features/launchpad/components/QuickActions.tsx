@@ -7,7 +7,7 @@ import {
   GitCompareArrows,
   type LucideIcon,
 } from "lucide-react";
-import { actionCards } from "../card-registry";
+import { allCards } from "../card-registry";
 import type { ActionCard } from "../types";
 import { TickerInputDialog } from "./TickerInputDialog";
 
@@ -80,7 +80,7 @@ export function QuickActions({ onCardClick }: QuickActionsProps) {
         return;
       }
       if (def.cardId) {
-        const card = actionCards.find((c) => c.id === def.cardId);
+        const card = allCards.find((c) => c.id === def.cardId);
         if (!card) return;
 
         if (card.input === "none") {

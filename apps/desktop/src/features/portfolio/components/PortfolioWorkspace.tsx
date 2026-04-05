@@ -135,8 +135,11 @@ export function PortfolioWorkspace({
             />
 
             {(() => {
+              const isSinglePosition = portfolio.holdings.length <= 1;
               const filtered = portfolio.concentrationAlerts.filter(
-                (a) => !(a.type === "sector" && a.name === "Unclassified"),
+                (a) =>
+                  !(a.type === "sector" && a.name === "Unclassified") &&
+                  !(isSinglePosition && a.type === "position"),
               );
               return filtered.length > 0 ? (
                 <div className="mt-4">

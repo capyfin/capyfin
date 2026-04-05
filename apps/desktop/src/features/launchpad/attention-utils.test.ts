@@ -659,3 +659,57 @@ void test("computePortfolioRisks keeps real sector alerts", () => {
   assert.ok(alert);
   assert.equal(alert.name, "Technology");
 });
+
+void test("computePortfolioRisks suppresses position alerts when portfolio has single position", () => {
+  const portfolio = makePortfolio({
+    holdings: [
+      {
+        ticker: "MSFT",
+        shares: 100,
+        costBasis: 300,
+        weight: 100,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    concentrationAlerts: [{ type: "position", name: "MSFT", weight: 100 }],
+  });
+  const result = computePortfolioRisks(portfolio, []);
+  assert.ok(result);
+  assert.equal(result.concentrationAlerts.length, 0);
+});
+
+void test("computePortfolioRisks keeps sector alerts even for single-position portfolio", () => {
+  const portfolio = makePortfolio({
+    holdings: [
+      {
+        ticker: "MSFT",
+        shares: 100,
+        costBasis: 300,
+        weight: 100,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    concentrationAlerts: [
+      { type: "position", name: "MSFT", weight: 100 },
+      { type: "sector", name: "Technology", weight: 100 },
+    ],
+  });
+  const result = computePortfolioRisks(portfolio, []);
+  assert.ok(result);
+  assert.equal(result.concentrationAlerts.length, 1);
+  const alert = result.concentrationAlerts[0];
+  assert.ok(alert);
+  assert.equal(alert.type, "sector");
+});
+
+void test("computePortfolioRisks keeps position alerts when portfolio has multiple positions", () => {
+  const portfolio = makePortfolio({
+    concentrationAlerts: [{ type: "position", name: "AAPL", weight: 60 }],
+  });
+  const result = computePortfolioRisks(portfolio, []);
+  assert.ok(result);
+  assert.equal(result.concentrationAlerts.length, 1);
+  const alert = result.concentrationAlerts[0];
+  assert.ok(alert);
+  assert.equal(alert.name, "AAPL");
+});

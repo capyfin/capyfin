@@ -205,46 +205,53 @@ export function AIModelsTab({
           No saved connections yet. Add a provider to get started.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border/40 bg-muted/[0.04] hover:bg-muted/[0.04]">
-                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                  Provider
-                </TableHead>
-                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                  Connection
-                </TableHead>
-                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                  Model
-                </TableHead>
-                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                  Updated
-                </TableHead>
-                <TableHead className="text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {storedConnections.map((connection) => (
-                <ConnectionRow
-                  key={connection.profileId}
-                  connection={connection}
-                  isBusy={isBusy}
-                  isUpdatingModel={
-                    modelBusyProviderId === connection.providerId
-                  }
-                  modelCatalog={modelCatalogs[connection.providerId]}
-                  onDelete={handleDelete}
-                  onSelectDefault={handleSelectDefault}
-                  onSetModel={handleSetModel}
-                  providers={authOverview?.providers}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <>
+          <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border/40 bg-muted/[0.04] hover:bg-muted/[0.04]">
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                    Provider
+                  </TableHead>
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                    Connection
+                  </TableHead>
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                    Model
+                  </TableHead>
+                  <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                    Updated
+                  </TableHead>
+                  <TableHead className="text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {storedConnections.map((connection) => (
+                  <ConnectionRow
+                    key={connection.profileId}
+                    connection={connection}
+                    isBusy={isBusy}
+                    isUpdatingModel={
+                      modelBusyProviderId === connection.providerId
+                    }
+                    modelCatalog={modelCatalogs[connection.providerId]}
+                    onDelete={handleDelete}
+                    onSelectDefault={handleSelectDefault}
+                    onSetModel={handleSetModel}
+                    providers={authOverview?.providers}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          {storedConnections.length <= 2 ? (
+            <p className="text-[12px] text-muted-foreground/60 mt-4">
+              Add more providers for model variety and fallback coverage.
+            </p>
+          ) : null}
+        </>
       )}
     </div>
   );

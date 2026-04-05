@@ -13,6 +13,45 @@ void test("SETTINGS_TABS contains all 6 settings sections", () => {
   assert.ok(ids.includes("advanced"));
 });
 
+// ---------------------------------------------------------------------------
+// Tab-specific descriptions
+// ---------------------------------------------------------------------------
+
+void test("Every settings tab has a unique description", () => {
+  for (const tab of SETTINGS_TABS) {
+    assert.ok(
+      typeof tab.description === "string" && tab.description.length > 0,
+      `Tab "${tab.id}" must have a non-empty description`,
+    );
+  }
+  const descriptions = SETTINGS_TABS.map((t) => t.description);
+  const unique = new Set(descriptions);
+  assert.equal(
+    unique.size,
+    SETTINGS_TABS.length,
+    "Descriptions must be unique",
+  );
+});
+
+void test("Tab descriptions are concise (under 80 characters)", () => {
+  for (const tab of SETTINGS_TABS) {
+    assert.ok(
+      tab.description.length <= 80,
+      `Tab "${tab.id}" description is ${String(tab.description.length)} chars, must be ≤80`,
+    );
+  }
+});
+
+void test("No tab description is the generic 'Manage your settings'", () => {
+  for (const tab of SETTINGS_TABS) {
+    assert.notEqual(
+      tab.description.toLowerCase(),
+      "manage your settings",
+      `Tab "${tab.id}" must not use generic subtitle`,
+    );
+  }
+});
+
 void test("SettingsWorkspace exports a function component", async () => {
   const mod = await import("./components/SettingsWorkspace");
   assert.equal(typeof mod.SettingsWorkspace, "function");

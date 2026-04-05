@@ -182,3 +182,19 @@ void test("QuickActions calls onCardClick directly for cards with no input", () 
     "QuickActions must call onCardClick directly for cards with input=none",
   );
 });
+
+// ---------------------------------------------------------------------------
+// QuickActions must search allCards so portfolio cards (position-review) resolve
+// ---------------------------------------------------------------------------
+
+void test("QuickActions imports allCards (not just actionCards) for card lookup", () => {
+  const src = readComponent("QuickActions.tsx");
+  assert.ok(
+    src.includes("allCards"),
+    "QuickActions must import allCards so position-review (a portfolioCard) can be found",
+  );
+  assert.ok(
+    !src.includes("actionCards.find"),
+    "QuickActions must not use actionCards.find — use allCards.find to cover all card arrays",
+  );
+});

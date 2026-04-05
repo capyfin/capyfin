@@ -45,36 +45,69 @@ export function HoldingsTable({
   onTickerAction,
 }: HoldingsTableProps) {
   return (
-    <Card className="overflow-hidden border-border/50 shadow-sm dark:border-border/30">
-      <CardHeader className="border-b border-border/40 bg-muted/20 dark:bg-muted/10">
-        <CardTitle className="text-[17px] font-semibold tracking-tight">
+    <Card className="overflow-hidden rounded-xl border border-border/50 shadow-sm dark:border-border/40">
+      <CardHeader className="border-b border-border/40 bg-muted/20 pb-4 dark:bg-muted/10">
+        <CardTitle className="text-[15px] font-semibold tracking-tight">
           Holdings
         </CardTitle>
-        <CardDescription className="text-[13px]">
+        <CardDescription className="mt-0.5 text-[13px]">
           Positions sorted by portfolio weight. Cost-basis-derived values.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <div>
           <Table>
-            <TableHeader className="bg-muted/15 dark:bg-muted/8">
-              <TableRow>
-                <TableHead>Ticker</TableHead>
-                <TableHead>Shares</TableHead>
-                <TableHead>Cost Basis</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Weight</TableHead>
-                <TableHead>Sector</TableHead>
-                {caseMap ? <TableHead>Case</TableHead> : null}
-                <TableHead className="w-10" />
+            <TableHeader>
+              <TableRow className="border-b border-border/40 bg-muted/15 hover:bg-muted/15 dark:bg-muted/8">
+                <TableHead className="h-9 pl-5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    Ticker
+                  </span>
+                </TableHead>
+                <TableHead className="h-9">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    Shares
+                  </span>
+                </TableHead>
+                <TableHead className="h-9">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    Cost Basis
+                  </span>
+                </TableHead>
+                <TableHead className="h-9">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    Value
+                  </span>
+                </TableHead>
+                <TableHead className="h-9">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    Weight
+                  </span>
+                </TableHead>
+                <TableHead className="h-9">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    Sector
+                  </span>
+                </TableHead>
+                {caseMap ? (
+                  <TableHead className="h-9">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                      Case
+                    </span>
+                  </TableHead>
+                ) : null}
+                <TableHead className="h-9 w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {[...holdings]
                 .sort((a, b) => b.weight - a.weight)
                 .map((holding) => (
-                  <TableRow key={holding.ticker}>
-                    <TableCell>
+                  <TableRow
+                    key={holding.ticker}
+                    className="group/row border-b border-border/25 transition-colors hover:bg-muted/30 dark:border-border/20"
+                  >
+                    <TableCell className="pl-5">
                       <div>
                         {onTickerAction ? (
                           <TickerLink
@@ -82,22 +115,30 @@ export function HoldingsTable({
                             onAction={onTickerAction}
                           />
                         ) : (
-                          <p className="font-medium">{holding.ticker}</p>
+                          <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-sm font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
+                            {holding.ticker}
+                          </span>
                         )}
                         {holding.name ? (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="mt-0.5 text-xs text-muted-foreground">
                             {holding.name}
                           </p>
                         ) : null}
                       </div>
                     </TableCell>
-                    <TableCell>{holding.shares}</TableCell>
-                    <TableCell>{formatCurrency(holding.costBasis)}</TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell className="tabular-nums">
+                      {holding.shares}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {formatCurrency(holding.costBasis)}
+                    </TableCell>
+                    <TableCell className="font-medium tabular-nums">
                       {formatCurrency(holding.shares * holding.costBasis)}
                     </TableCell>
-                    <TableCell>{holding.weight.toFixed(1)}%</TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="tabular-nums">
+                      {holding.weight.toFixed(1)}%
+                    </TableCell>
+                    <TableCell className="text-[13px] text-muted-foreground">
                       {holding.sector ?? "--"}
                     </TableCell>
                     {caseMap ? (
@@ -134,7 +175,7 @@ export function HoldingsTable({
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="size-7 text-muted-foreground hover:text-destructive"
+                        className="size-7 text-muted-foreground opacity-40 transition-opacity hover:text-destructive group-hover/row:opacity-100"
                         onClick={() => {
                           onRemove(holding.ticker);
                         }}

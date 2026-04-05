@@ -1,5 +1,11 @@
 import type { PortfolioOverview } from "@capyfin/contracts";
-import { BriefcaseIcon, LayersIcon, PlusIcon, UploadIcon } from "lucide-react";
+import {
+  BriefcaseIcon,
+  LayersIcon,
+  PieChartIcon,
+  PlusIcon,
+  UploadIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -29,9 +35,20 @@ export function PortfolioOverviewPanel({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-[17px] font-semibold tracking-tight text-foreground">
-          Portfolio Overview
-        </h2>
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/[0.08] text-emerald-500 ring-1 ring-emerald-500/10">
+            <PieChartIcon className="size-5" />
+          </div>
+          <div>
+            <h2 className="text-[17px] font-semibold tracking-tight text-foreground">
+              Portfolio Overview
+            </h2>
+            <p className="text-[13px] text-muted-foreground">
+              {positionCount} {positionCount === 1 ? "position" : "positions"}{" "}
+              across {sectorCount} {sectorCount === 1 ? "sector" : "sectors"}
+            </p>
+          </div>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={onImport}>
             <UploadIcon className="size-3.5" />

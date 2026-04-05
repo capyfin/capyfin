@@ -177,49 +177,69 @@ export function WatchlistWorkspace({
         />
       ) : (
         <>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-blue-500/[0.08] text-blue-500 ring-1 ring-blue-500/10">
-                <ListChecksIcon className="size-5" />
+          <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-blue-500/[0.05] via-background to-primary/[0.03] px-5 py-4 dark:from-blue-500/[0.10] dark:to-primary/[0.05]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-blue-500/[0.08] text-blue-500 ring-1 ring-blue-500/10">
+                  <ListChecksIcon className="size-5" />
+                </div>
+                <div>
+                  <h2 className="text-[17px] font-semibold tracking-tight">
+                    Watchlist
+                  </h2>
+                  <p className="text-[13px] text-muted-foreground">
+                    {items.length} {items.length === 1 ? "ticker" : "tickers"}{" "}
+                    tracked
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-[17px] font-semibold tracking-tight">
-                  Watchlist
-                </h2>
-                <p className="text-[13px] text-muted-foreground">
-                  {items.length} {items.length === 1 ? "ticker" : "tickers"}{" "}
-                  tracked
-                </p>
-              </div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setShowAddDialog(true);
+                }}
+              >
+                <PlusIcon className="size-3.5" />
+                Add Ticker
+              </Button>
             </div>
-            <Button
-              size="sm"
-              onClick={() => {
-                setShowAddDialog(true);
-              }}
-            >
-              <PlusIcon className="size-3.5" />
-              Add Ticker
-            </Button>
-          </div>
 
-          <div className="flex items-center">
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              size="sm"
-              value={filter}
-              onValueChange={(v: string) => {
-                if (v) setFilter(v as FilterValue);
-              }}
-            >
-              <ToggleGroupItem value="all">All</ToggleGroupItem>
-              <ToggleGroupItem value="position">Positions</ToggleGroupItem>
-              <ToggleGroupItem value="watching">Watching</ToggleGroupItem>
-              <ToggleGroupItem value="needs-review">
-                Needs Review
-              </ToggleGroupItem>
-            </ToggleGroup>
+            <div className="mt-3 flex items-center">
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                size="sm"
+                value={filter}
+                onValueChange={(v: string) => {
+                  if (v) setFilter(v as FilterValue);
+                }}
+              >
+                <ToggleGroupItem
+                  value="all"
+                  className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                >
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="position"
+                  className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                >
+                  Positions
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="watching"
+                  className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                >
+                  Watching
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="needs-review"
+                  className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                >
+                  Needs Review
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
 
           <WatchlistTable

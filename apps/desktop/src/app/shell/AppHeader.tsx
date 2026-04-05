@@ -43,9 +43,9 @@ export function AppHeader({
   const pageTitle = VIEW_TITLES[currentView];
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-20 border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="flex h-12 items-center gap-3 px-4 lg:px-5">
-        <SidebarTrigger className="-ml-1 text-muted-foreground/70 hover:text-foreground" />
+        <SidebarTrigger className="-ml-1 text-muted-foreground/60 hover:text-foreground" />
         <Separator
           orientation="vertical"
           className="hidden data-[orientation=vertical]:h-4 sm:block"

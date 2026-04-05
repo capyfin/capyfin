@@ -22,23 +22,23 @@ export function RightContextRail({
         isOpen ? "w-72 lg:w-80" : "w-0 overflow-hidden border-l-0",
       )}
     >
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/60 px-3">
-        <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/40 px-4">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           Context
         </h2>
         <Button
           size="icon"
           variant="ghost"
-          className="size-6 text-muted-foreground/70 hover:text-foreground"
+          className="size-6 text-muted-foreground/50 hover:text-foreground"
           onClick={onClose}
           title="Close panel"
         >
           <XIcon className="size-3.5" />
         </Button>
       </div>
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 overflow-y-auto p-4">
         {children ?? (
-          <p className="text-center text-[13px] text-muted-foreground/60">
+          <p className="text-center text-[13px] text-muted-foreground/50">
             No context available
           </p>
         )}

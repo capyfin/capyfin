@@ -14,13 +14,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -120,19 +114,7 @@ export function WatchlistTable({
   onRefreshCase,
 }: WatchlistTableProps) {
   return (
-    <Card className="overflow-hidden border border-border/50 shadow-sm dark:border-border/40">
-      <CardHeader className="border-b border-border/40 bg-muted/20 pb-4 dark:bg-muted/10">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-[17px] font-semibold tracking-tight">
-              Watchlist
-            </CardTitle>
-            <CardDescription className="mt-0.5 text-[13px]">
-              {items.length} {items.length === 1 ? "ticker" : "tickers"} tracked
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
+    <Card className="overflow-hidden rounded-xl border border-border/50 shadow-sm dark:border-border/40">
       <CardContent className="p-0">
         <Table>
           <TableHeader>

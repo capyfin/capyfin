@@ -1,5 +1,5 @@
 import type { InvestmentCase, WatchlistItem } from "@capyfin/contracts";
-import { LoaderCircleIcon, PlusIcon } from "lucide-react";
+import { ListChecksIcon, LoaderCircleIcon, PlusIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -173,6 +173,32 @@ export function WatchlistWorkspace({
       ) : (
         <>
           <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-blue-500/[0.08] text-blue-500 ring-1 ring-blue-500/10">
+                <ListChecksIcon className="size-5" />
+              </div>
+              <div>
+                <h2 className="text-[17px] font-semibold tracking-tight">
+                  Watchlist
+                </h2>
+                <p className="text-[13px] text-muted-foreground">
+                  {items.length} {items.length === 1 ? "ticker" : "tickers"}{" "}
+                  tracked
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                setShowAddDialog(true);
+              }}
+            >
+              <PlusIcon className="size-3.5" />
+              Add Ticker
+            </Button>
+          </div>
+
+          <div className="flex items-center">
             <ToggleGroup
               type="single"
               variant="outline"
@@ -189,16 +215,6 @@ export function WatchlistWorkspace({
                 Needs Review
               </ToggleGroupItem>
             </ToggleGroup>
-
-            <Button
-              size="sm"
-              onClick={() => {
-                setShowAddDialog(true);
-              }}
-            >
-              <PlusIcon className="size-3.5" />
-              Add Ticker
-            </Button>
           </div>
 
           <WatchlistTable

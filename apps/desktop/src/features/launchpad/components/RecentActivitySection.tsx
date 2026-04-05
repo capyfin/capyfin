@@ -29,10 +29,15 @@ export function RecentActivitySection({
   onSessionSelect,
 }: RecentActivitySectionProps) {
   const recentSessions = useMemo(() => {
-    const sorted = [...sessions].sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    );
+    const sorted = [...sessions]
+      .filter((s) => {
+        const raw = s.label ?? s.sessionKey;
+        return !isHexLike(raw.split(" ")[0] ?? "");
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
     return sorted.slice(0, MAX_ITEMS);
   }, [sessions]);
 

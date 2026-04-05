@@ -102,7 +102,7 @@ export function AppSidebar({
               size="lg"
               className="h-11 data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#launchpad">
+              <a href="#home">
                 <img
                   src={capyfinLogo}
                   alt="CapyFin"

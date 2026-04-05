@@ -12,6 +12,7 @@ import { useCommandPalette } from "@/features/command-palette/useCommandPalette"
 import { ProvidersWorkspace } from "@/features/providers/components/ProvidersWorkspace";
 import { ConnectionCenter } from "@/features/onboarding/components/ConnectionCenter";
 import { BrainKnowledgeWorkspace } from "@/features/brain/components/BrainKnowledgeWorkspace";
+import { HomeWorkspace } from "@/features/home/components/HomeWorkspace";
 import { LaunchpadWorkspace } from "@/features/launchpad/components/LaunchpadWorkspace";
 import { LibraryWorkspace } from "@/features/library/components/LibraryWorkspace";
 import { PortfolioWorkspace } from "@/features/portfolio/components/PortfolioWorkspace";
@@ -213,7 +214,7 @@ export function App() {
                   label: "Deep Dive",
                   onClick: () => {
                     // Navigate to launchpad — user can trigger Deep Dive from there
-                    window.location.hash = "#launchpad";
+                    window.location.hash = "#home";
                   },
                 },
               },
@@ -285,7 +286,7 @@ export function App() {
   const handlePaletteCardSelect = useCallback(
     (card: ActionCard) => {
       if (card.input === "ticker" || card.input === "tickers") {
-        window.location.hash = "#launchpad";
+        window.location.hash = "#home";
       } else {
         void handleCardClick(card);
       }
@@ -315,7 +316,7 @@ export function App() {
           }}
           onContinue={() => {
             dispatch({ type: "FINISH_ONBOARDING" });
-            window.location.hash = "#launchpad";
+            window.location.hash = "#home";
           }}
           onRetry={() => {
             dispatch({ type: "REQUEST_RETRY" });
@@ -386,7 +387,15 @@ export function App() {
           <div
             className={`flex min-h-0 min-w-0 flex-1 flex-col ${currentView === "chat" ? "" : "gap-4 overflow-y-auto p-4 lg:p-5"}`}
           >
-            {currentView === "launchpad" ? (
+            {currentView === "home" ? (
+              <HomeWorkspace
+                client={state.client}
+                onCardClick={(card, input) => {
+                  void handleCardClick(card, input);
+                }}
+                onOpenCase={handleViewCase}
+              />
+            ) : currentView === "launchpad" ? (
               <LaunchpadWorkspace
                 client={state.client}
                 sessions={state.sessions}
@@ -516,6 +525,13 @@ function readViewFromHash(): AppView {
     return "agents";
   }
 
+  if (
+    window.location.hash === "#home" ||
+    window.location.hash === "#launchpad"
+  ) {
+    return "home";
+  }
+
   if (window.location.hash === "#brain") {
     return "brain";
   }
@@ -554,7 +570,7 @@ function readViewFromHash(): AppView {
     return "portfolio";
   }
 
-  return "launchpad";
+  return "home";
 }
 
 function isCompareRoute(): boolean {

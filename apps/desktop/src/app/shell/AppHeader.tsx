@@ -14,6 +14,7 @@ import { useTheme, type Theme } from "@/hooks/theme-context";
 import { cn } from "@/lib/utils";
 
 const VIEW_TITLES: Record<Exclude<AppView, "providers-add">, string> = {
+  home: "Home",
   launchpad: "Home",
   cases: "Cases",
   chat: "Chat",

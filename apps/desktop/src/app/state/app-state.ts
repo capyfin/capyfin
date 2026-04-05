@@ -10,6 +10,7 @@ export type AppView =
   | "providers-add"
   | "chat"
   | "agents"
+  | "home"
   | "launchpad"
   | "brain"
   | "watchlist"

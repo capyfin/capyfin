@@ -54,6 +54,12 @@ void test("each nav item has a hash-based href", () => {
   }
 });
 
+void test("Home nav item uses #home href", () => {
+  const homeItem = primaryNavigation.find((item) => item.title === "Home");
+  assert.ok(homeItem, "Home item should exist");
+  assert.equal(homeItem.href, "#home");
+});
+
 void test("Agents, Brain, Providers are not in primary navigation", () => {
   const titles = primaryNavigation.map((item) => item.title);
   assert.ok(!titles.includes("Agents" as never));

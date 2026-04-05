@@ -189,6 +189,17 @@ void test("createInitialState can initialize with new view types", () => {
   assert.equal(state.hashView, "watchlist");
 });
 
+void test("SET_HASH_VIEW accepts home as a valid view", () => {
+  const state = makeState();
+  const next = appReducer(state, { type: "SET_HASH_VIEW", view: "home" });
+  assert.equal(next.hashView, "home");
+});
+
+void test("createInitialState can initialize with home view", () => {
+  const state = createInitialState(() => "home");
+  assert.equal(state.hashView, "home");
+});
+
 void test("after failure the retry-button disabled guard resolves correctly", () => {
   // Simulates the exact condition used in ConnectionCenter:
   //   disabled={(!client && !runtimeError) || isBusy || isLoading}

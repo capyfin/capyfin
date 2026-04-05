@@ -3,14 +3,14 @@ import test from "node:test";
 import { primaryNavigation } from "../../app/config/navigation";
 import { appReducer, createInitialState } from "../../app/state/app-state";
 
-void test("primaryNavigation includes a Home item pointing to #launchpad", () => {
-  const home = primaryNavigation.find((item) => item.href === "#launchpad");
+void test("primaryNavigation includes a Home item pointing to #home", () => {
+  const home = primaryNavigation.find((item) => item.href === "#home");
   assert.ok(home, "Home nav item not found");
   assert.equal(home.title, "Home");
 });
 
 void test("Home is the first item in primaryNavigation", () => {
-  assert.equal(primaryNavigation[0].href, "#launchpad");
+  assert.equal(primaryNavigation[0].href, "#home");
 });
 
 void test("SET_HASH_VIEW accepts launchpad as a valid view", () => {

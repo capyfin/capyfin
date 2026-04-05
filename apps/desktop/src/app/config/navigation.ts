@@ -12,7 +12,7 @@ import {
 export const primaryNavigation = [
   {
     title: "Home",
-    href: "#launchpad",
+    href: "#home",
     icon: HomeIcon,
   },
   {

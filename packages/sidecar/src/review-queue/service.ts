@@ -76,11 +76,9 @@ export class ReviewQueueService {
     const [cases, watchlistItems, portfolioResult] = await Promise.all([
       this.#casesService.listCases(),
       this.#watchlistService.getAll(),
-      this.#portfolioService
-        .getOverview()
-        .catch(() => ({
-          holdings: [] as { ticker: string; weight: number }[],
-        })),
+      this.#portfolioService.getOverview().catch(() => ({
+        holdings: [] as { ticker: string; weight: number }[],
+      })),
     ]);
 
     // Build lookup sets/maps

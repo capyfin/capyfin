@@ -13,10 +13,10 @@ export async function syncWatchlistToWorkspace(
   await mkdir(workspaceDir, { recursive: true });
 
   // Write watchlist.csv
-  const header = "ticker,list,note,thesis,targetZone,addedAt,tags";
+  const header = "ticker,list,companyName,note,thesis,targetZone,addedAt,tags";
   const rows = items.map(
     (item) =>
-      `${item.ticker},${item.list},${escapeCsv(item.note)},${escapeCsv(item.thesis)},${escapeCsv(item.targetZone)},${item.addedAt},${escapeCsv(item.tags?.join(";"))}`,
+      `${item.ticker},${item.list},${escapeCsv(item.companyName)},${escapeCsv(item.note)},${escapeCsv(item.thesis)},${escapeCsv(item.targetZone)},${item.addedAt},${escapeCsv(item.tags?.join(";"))}`,
   );
   const csv = [header, ...rows].join("\n") + "\n";
   await writeFile(join(workspaceDir, "watchlist.csv"), csv, "utf-8");

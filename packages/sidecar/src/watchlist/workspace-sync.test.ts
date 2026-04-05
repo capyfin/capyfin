@@ -35,7 +35,10 @@ void test("syncWatchlistToWorkspace writes watchlist.csv with correct format", a
     const csv = await readFile(join(dir, "watchlist.csv"), "utf-8");
     const lines = csv.trim().split("\n");
 
-    assert.equal(lines[0], "ticker,list,note,thesis,targetZone,addedAt,tags");
+    assert.equal(
+      lines[0],
+      "ticker,list,companyName,note,thesis,targetZone,addedAt,tags",
+    );
     assert.equal(lines.length, 3); // header + 2 items
     assert.ok(lines[1]?.startsWith("AAPL,position,"));
     assert.ok(lines[2]?.startsWith("MSFT,watching,"));
@@ -52,7 +55,10 @@ void test("syncWatchlistToWorkspace writes empty CSV with header when no items",
     const csv = await readFile(join(dir, "watchlist.csv"), "utf-8");
     const lines = csv.trim().split("\n");
 
-    assert.equal(lines[0], "ticker,list,note,thesis,targetZone,addedAt,tags");
+    assert.equal(
+      lines[0],
+      "ticker,list,companyName,note,thesis,targetZone,addedAt,tags",
+    );
     assert.equal(lines.length, 1); // header only
   } finally {
     await rm(dir, { recursive: true });

@@ -666,6 +666,7 @@ export const watchlistItemSchema = z.object({
   note: z.string().optional(),
   thesis: z.string().optional(),
   targetZone: z.string().optional(),
+  companyName: z.string().optional(),
   addedAt: z.string().min(1),
   tags: z.array(z.string().min(1)).optional(),
 });
@@ -680,6 +681,7 @@ export const addWatchlistItemRequestSchema = z.object({
   note: z.string().optional(),
   thesis: z.string().optional(),
   targetZone: z.string().optional(),
+  companyName: z.string().optional(),
   tags: z.array(z.string().min(1)).optional(),
 });
 
@@ -688,6 +690,7 @@ export const updateWatchlistItemRequestSchema = z.object({
   note: z.string().optional(),
   thesis: z.string().optional(),
   targetZone: z.string().optional(),
+  companyName: z.string().optional(),
   tags: z.array(z.string().min(1)).optional(),
 });
 

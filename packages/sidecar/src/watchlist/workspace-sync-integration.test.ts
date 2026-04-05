@@ -17,8 +17,12 @@ void test("WatchlistService writes watchlist.csv after add when workspaceDir is 
     await service.add({ ticker: "AAPL", list: "watching", note: "test note" });
 
     const csv = await readFile(join(workspaceDir, "watchlist.csv"), "utf-8");
-    assert.ok(csv.includes("ticker,list,note,thesis,targetZone,addedAt,tags"));
-    assert.ok(csv.includes("AAPL,watching,test note,"));
+    assert.ok(
+      csv.includes(
+        "ticker,list,companyName,note,thesis,targetZone,addedAt,tags",
+      ),
+    );
+    assert.ok(csv.includes("AAPL,watching,,test note,"));
   } finally {
     await rm(stateDir, { recursive: true });
     await rm(workspaceDir, { recursive: true });
@@ -34,7 +38,7 @@ void test("WatchlistService writes watchlist.csv after update", async () => {
     await service.update("MSFT", { list: "position", note: "Upgraded" });
 
     const csv = await readFile(join(workspaceDir, "watchlist.csv"), "utf-8");
-    assert.ok(csv.includes("MSFT,position,Upgraded,"));
+    assert.ok(csv.includes("MSFT,position,,Upgraded,"));
   } finally {
     await rm(stateDir, { recursive: true });
     await rm(workspaceDir, { recursive: true });

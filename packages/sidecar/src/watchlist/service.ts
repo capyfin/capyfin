@@ -40,6 +40,7 @@ export class WatchlistService {
       note: input.note,
       thesis: input.thesis,
       targetZone: input.targetZone,
+      companyName: input.companyName,
       addedAt: new Date().toISOString(),
       tags: input.tags,
     });
@@ -70,6 +71,9 @@ export class WatchlistService {
       ...(partial.thesis !== undefined ? { thesis: partial.thesis } : {}),
       ...(partial.targetZone !== undefined
         ? { targetZone: partial.targetZone }
+        : {}),
+      ...(partial.companyName !== undefined
+        ? { companyName: partial.companyName }
         : {}),
       ...(partial.tags !== undefined ? { tags: partial.tags } : {}),
     });

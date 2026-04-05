@@ -1,6 +1,7 @@
 import type { WatchlistItem } from "@capyfin/contracts";
 import { LoaderCircleIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { lookupCompanyName } from "@/features/watchlist/ticker-company-map";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -45,6 +46,7 @@ export function WatchlistItemDialog({
   const [note, setNote] = useState("");
   const [thesis, setThesis] = useState("");
   const [targetZone, setTargetZone] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [tags, setTags] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +57,7 @@ export function WatchlistItemDialog({
     setNote("");
     setThesis("");
     setTargetZone("");
+    setCompanyName("");
     setTags("");
     setError(null);
   }, []);
@@ -66,12 +69,15 @@ export function WatchlistItemDialog({
       setNote(editItem.note ?? "");
       setThesis(editItem.thesis ?? "");
       setTargetZone(editItem.targetZone ?? "");
+      setCompanyName(editItem.companyName ?? "");
       setTags(editItem.tags?.join(", ") ?? "");
       setError(null);
     } else if (open) {
       resetForm();
       if (prefillTicker) {
-        setTicker(prefillTicker.toUpperCase());
+        const upper = prefillTicker.toUpperCase();
+        setTicker(upper);
+        setCompanyName(lookupCompanyName(upper) ?? "");
       }
     }
   }, [open, editItem, prefillTicker, resetForm]);
@@ -92,6 +98,9 @@ export function WatchlistItemDialog({
       setIsSaving(true);
       setError(null);
 
+      const resolvedCompanyName =
+        companyName.trim() || lookupCompanyName(trimmedTicker);
+
       if (isEdit) {
         await client.updateWatchlistItem(trimmedTicker, {
           list,
@@ -102,6 +111,9 @@ export function WatchlistItemDialog({
           ...(targetZone.trim()
             ? { targetZone: targetZone.trim() }
             : { targetZone: undefined }),
+          ...(resolvedCompanyName
+            ? { companyName: resolvedCompanyName }
+            : { companyName: undefined }),
           ...(parsedTags.length > 0 ? { tags: parsedTags } : {}),
         });
       } else {
@@ -111,6 +123,7 @@ export function WatchlistItemDialog({
           ...(note.trim() ? { note: note.trim() } : {}),
           ...(thesis.trim() ? { thesis: thesis.trim() } : {}),
           ...(targetZone.trim() ? { targetZone: targetZone.trim() } : {}),
+          ...(resolvedCompanyName ? { companyName: resolvedCompanyName } : {}),
           ...(parsedTags.length > 0 ? { tags: parsedTags } : {}),
         });
       }
@@ -132,6 +145,7 @@ export function WatchlistItemDialog({
     note,
     thesis,
     targetZone,
+    companyName,
     tags,
     resetForm,
     onSave,
@@ -181,7 +195,31 @@ export function WatchlistItemDialog({
               value={ticker}
               disabled={isEdit}
               onChange={(e) => {
-                setTicker(e.target.value);
+                const val = e.target.value;
+                setTicker(val);
+                if (!isEdit) {
+                  const resolved = lookupCompanyName(val.trim());
+                  if (resolved) {
+                    setCompanyName(resolved);
+                  }
+                }
+              }}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor="wl-company"
+              className="text-xs font-medium text-muted-foreground"
+            >
+              Company Name
+            </label>
+            <Input
+              id="wl-company"
+              placeholder="e.g. Apple Inc."
+              value={companyName}
+              onChange={(e) => {
+                setCompanyName(e.target.value);
               }}
             />
           </div>

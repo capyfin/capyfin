@@ -231,9 +231,12 @@ export function WatchlistTable({
                       <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-sm font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
                         {item.ticker}
                       </span>
-                      {caseMap?.get(item.ticker.toUpperCase())?.companyName ? (
+                      {(item.companyName ??
+                      caseMap?.get(item.ticker.toUpperCase())?.companyName) ? (
                         <span className="text-[12px] text-muted-foreground/50">
-                          {caseMap.get(item.ticker.toUpperCase())?.companyName}
+                          {item.companyName ??
+                            caseMap?.get(item.ticker.toUpperCase())
+                              ?.companyName}
                         </span>
                       ) : null}
                     </div>
@@ -327,17 +330,38 @@ export function WatchlistTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {item.tags?.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="text-[11px]"
+                  {item.tags && item.tags.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-1">
+                      {item.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="text-[11px]"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                      <button
+                        type="button"
+                        className="ml-0.5 text-[12px] text-muted-foreground/40 transition-colors hover:text-foreground"
+                        onClick={() => {
+                          onEdit(item);
+                        }}
                       >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+                        +
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="text-[12px] text-muted-foreground/40 transition-colors hover:text-foreground"
+                      onClick={() => {
+                        onEdit(item);
+                      }}
+                    >
+                      + Add tag
+                    </button>
+                  )}
                 </TableCell>
                 <TableCell className="text-[13px] text-muted-foreground">
                   {formatDate(item.addedAt)}

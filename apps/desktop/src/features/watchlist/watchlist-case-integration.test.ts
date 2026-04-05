@@ -147,3 +147,109 @@ void test("Needs Review filter handles mixed items correctly", () => {
   assert.ok(tickers.includes("TSLA"));
   assert.ok(tickers.includes("MSFT"));
 });
+
+// ---------------------------------------------------------------------------
+// Valuation Interesting filter
+// ---------------------------------------------------------------------------
+
+function filterValuationInteresting(
+  items: WatchlistItem[],
+  caseMap: Map<string, InvestmentCase>,
+): WatchlistItem[] {
+  return items.filter((i) => {
+    const status = getCaseStatus(i.ticker, caseMap);
+    if (!status.hasCase) return false;
+    const c = caseMap.get(i.ticker.toUpperCase());
+    if (!c) return false;
+    if (c.attentionState === "valuation-interesting") return true;
+    if (
+      c.tags.some(
+        (t) =>
+          t.toLowerCase() === "undervalued" ||
+          t.toLowerCase() === "valuation-interesting",
+      )
+    )
+      return true;
+    if (c.sections.some((s) => s.title.toLowerCase().includes("valuation")))
+      return true;
+    return false;
+  });
+}
+
+void test("Valuation Interesting filter includes items with valuation-interesting attention state", () => {
+  const items = [makeWatchlistItem({ ticker: "AAPL" })];
+  const cases = [
+    makeCase({
+      ticker: "AAPL",
+      attentionState: "valuation-interesting",
+    }),
+  ];
+  const caseMap = buildCaseMap(cases);
+  const filtered = filterValuationInteresting(items, caseMap);
+  assert.equal(filtered.length, 1);
+  assert.equal(filtered[0]?.ticker, "AAPL");
+});
+
+void test("Valuation Interesting filter includes items with undervalued tag", () => {
+  const items = [makeWatchlistItem({ ticker: "GOOG" })];
+  const cases = [
+    makeCase({
+      ticker: "GOOG",
+      tags: ["undervalued", "tech"],
+    }),
+  ];
+  const caseMap = buildCaseMap(cases);
+  const filtered = filterValuationInteresting(items, caseMap);
+  assert.equal(filtered.length, 1);
+});
+
+void test("Valuation Interesting filter includes items with valuation section", () => {
+  const items = [makeWatchlistItem({ ticker: "MSFT" })];
+  const cases = [
+    makeCase({
+      ticker: "MSFT",
+      sections: [
+        {
+          id: "s1",
+          title: "Valuation Analysis",
+          content: "Fair value range...",
+          confidence: "MEDIUM",
+          citations: [],
+        },
+      ],
+    }),
+  ];
+  const caseMap = buildCaseMap(cases);
+  const filtered = filterValuationInteresting(items, caseMap);
+  assert.equal(filtered.length, 1);
+});
+
+void test("Valuation Interesting filter excludes items without valuation signals", () => {
+  const items = [makeWatchlistItem({ ticker: "TSLA" })];
+  const cases = [
+    makeCase({
+      ticker: "TSLA",
+      attentionState: "healthy",
+      tags: ["tech"],
+      sections: [
+        {
+          id: "s1",
+          title: "Thesis",
+          content: "...",
+          confidence: "HIGH",
+          citations: [],
+        },
+      ],
+    }),
+  ];
+  const caseMap = buildCaseMap(cases);
+  const filtered = filterValuationInteresting(items, caseMap);
+  assert.equal(filtered.length, 0);
+});
+
+void test("Valuation Interesting filter excludes items without a case", () => {
+  const items = [makeWatchlistItem({ ticker: "NVDA" })];
+  const caseMap = buildCaseMap([]);
+  const filtered = filterValuationInteresting(items, caseMap);
+  assert.equal(filtered.length, 0);
+});

@@ -886,6 +886,7 @@ export const attentionStateSchema = z.enum([
   "stale",
   "catalyst-upcoming",
   "drift-detected",
+  "valuation-interesting",
 ]);
 
 export const caseVersionSchema = z.object({

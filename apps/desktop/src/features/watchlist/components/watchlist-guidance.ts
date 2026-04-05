@@ -9,6 +9,7 @@ type FilterValue =
   | "watching"
   | "needs-review"
   | "catalyst-soon"
+  | "valuation-interesting"
   | "no-case";
 
 /**
@@ -31,6 +32,8 @@ export function getFilterGuidance(
         return "All caught up — no items need review right now.";
       case "catalyst-soon":
         return "No upcoming catalysts within the next 14 days.";
+      case "valuation-interesting":
+        return "No watchlist names with valuation signals right now. Cases with valuation sections or tags will appear here.";
       case "no-case":
         return "All watchlist items have an associated investment case.";
     }

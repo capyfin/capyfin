@@ -15,6 +15,8 @@ const attentionStyles: Record<AttentionState, string> = {
     "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/20",
   healthy:
     "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+  "valuation-interesting":
+    "bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/20",
 };
 
 const attentionLabels: Record<AttentionState, string> = {
@@ -24,6 +26,7 @@ const attentionLabels: Record<AttentionState, string> = {
   "catalyst-upcoming": "Catalyst",
   "review-soon": "Review Soon",
   healthy: "Healthy",
+  "valuation-interesting": "Val. Interesting",
 };
 
 interface AttentionBadgeProps {

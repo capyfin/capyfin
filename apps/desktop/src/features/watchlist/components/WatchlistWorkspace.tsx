@@ -32,6 +32,7 @@ type FilterValue =
   | "watching"
   | "needs-review"
   | "catalyst-soon"
+  | "valuation-interesting"
   | "no-case";
 
 interface WatchlistWorkspaceProps {
@@ -179,6 +180,24 @@ export function WatchlistWorkspace({
         const daysUntil = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         return daysUntil >= 0 && daysUntil <= 14;
       });
+    if (filter === "valuation-interesting")
+      return items.filter((i) => {
+        const key = i.ticker.toUpperCase();
+        const c = caseMap.get(key);
+        if (!c) return false;
+        if (c.attentionState === "valuation-interesting") return true;
+        if (
+          c.tags.some(
+            (t) =>
+              t.toLowerCase() === "undervalued" ||
+              t.toLowerCase() === "valuation-interesting",
+          )
+        )
+          return true;
+        if (c.sections.some((s) => s.title.toLowerCase().includes("valuation")))
+          return true;
+        return false;
+      });
     // no-case
     return items.filter((i) => {
       const status = getCaseStatus(i.ticker, caseMap);
@@ -272,6 +291,12 @@ export function WatchlistWorkspace({
                   className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
                 >
                   Catalyst Soon
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="valuation-interesting"
+                  className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                >
+                  Val. Interesting
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="no-case"

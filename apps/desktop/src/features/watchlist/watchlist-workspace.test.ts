@@ -111,3 +111,10 @@ void test("getFilterGuidance returns near-empty text when all filter has items b
   assertNonNull(result);
   assert.ok(result.includes("Add more tickers"));
 });
+
+void test("getFilterGuidance returns valuation-specific message when valuation-interesting filter has no results", () => {
+  const result = getFilterGuidance("valuation-interesting", 0, 4);
+  assertNonNull(result);
+  assert.ok(result.toLowerCase().includes("valuation"));
+  assert.ok(!result.includes("Add more tickers"));
+});

@@ -23,6 +23,8 @@ interface Suggestion {
   id: string;
   label: string;
   icon: LucideIcon;
+  iconBg: string;
+  iconColor: string;
   action: () => void;
 }
 
@@ -31,6 +33,8 @@ const FALLBACK_SUGGESTIONS: {
   id: string;
   label: string;
   icon: LucideIcon;
+  iconBg: string;
+  iconColor: string;
   cardId?: string;
   href?: string;
 }[] = [
@@ -38,18 +42,24 @@ const FALLBACK_SUGGESTIONS: {
     id: "start-morning-brief",
     label: "Start with a Morning Brief",
     icon: Newspaper,
+    iconBg: "bg-amber-500/[0.06] group-hover:bg-amber-500/[0.10]",
+    iconColor: "text-amber-500/60 group-hover:text-amber-500/80",
     cardId: "morning-brief",
   },
   {
     id: "add-watchlist",
     label: "Add tickers to your Watchlist",
     icon: Plus,
+    iconBg: "bg-blue-500/[0.06] group-hover:bg-blue-500/[0.10]",
+    iconColor: "text-blue-500/60 group-hover:text-blue-500/80",
     href: "#watchlist",
   },
   {
     id: "try-deep-dive",
     label: "Try a Deep Dive on any stock",
     icon: Play,
+    iconBg: "bg-violet-500/[0.06] group-hover:bg-violet-500/[0.10]",
+    iconColor: "text-violet-500/60 group-hover:text-violet-500/80",
     cardId: "deep-dive",
   },
 ];
@@ -71,26 +81,30 @@ export function SuggestionsSection({
 
   /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
   const suggestions: Suggestion[] = useMemo(() => {
+    const mapFallback = (fs: (typeof FALLBACK_SUGGESTIONS)[number]) => ({
+      id: fs.id,
+      label: fs.label,
+      icon: fs.icon,
+      iconBg: fs.iconBg,
+      iconColor: fs.iconColor,
+      action: () => {
+        if (fs.href) {
+          window.location.hash = fs.href;
+          return;
+        }
+        if (fs.cardId) {
+          const card = actionCards.find((c) => c.id === fs.cardId);
+          if (card?.input === "none") {
+            onCardClick?.(card);
+          } else if (card) {
+            setPendingCard(card);
+          }
+        }
+      },
+    });
+
     if (sessions.length === 0) {
-      return FALLBACK_SUGGESTIONS.map((fs) => ({
-        id: fs.id,
-        label: fs.label,
-        icon: fs.icon,
-        action: () => {
-          if (fs.href) {
-            window.location.hash = fs.href;
-            return;
-          }
-          if (fs.cardId) {
-            const card = actionCards.find((c) => c.id === fs.cardId);
-            if (card?.input === "none") {
-              onCardClick?.(card);
-            } else if (card) {
-              setPendingCard(card);
-            }
-          }
-        },
-      }));
+      return FALLBACK_SUGGESTIONS.map(mapFallback);
     }
 
     // Build contextual suggestions from session history
@@ -106,25 +120,7 @@ export function SuggestionsSection({
 
     // If no named sessions exist, fall through to fallback suggestions
     if (named.length === 0) {
-      return FALLBACK_SUGGESTIONS.map((fs) => ({
-        id: fs.id,
-        label: fs.label,
-        icon: fs.icon,
-        action: () => {
-          if (fs.href) {
-            window.location.hash = fs.href;
-            return;
-          }
-          if (fs.cardId) {
-            const card = actionCards.find((c) => c.id === fs.cardId);
-            if (card?.input === "none") {
-              onCardClick?.(card);
-            } else if (card) {
-              setPendingCard(card);
-            }
-          }
-        },
-      }));
+      return FALLBACK_SUGGESTIONS.map(mapFallback);
     }
 
     const result: Suggestion[] = [];
@@ -136,6 +132,8 @@ export function SuggestionsSection({
         id: `continue-${mostRecent.id}`,
         label: `Continue: ${formatSessionLabel(mostRecent)}`,
         icon: Play,
+        iconBg: "bg-blue-500/[0.06] group-hover:bg-blue-500/[0.10]",
+        iconColor: "text-blue-500/60 group-hover:text-blue-500/80",
         action: () => onSessionSelect?.(mostRecent.id),
       });
     }
@@ -147,6 +145,8 @@ export function SuggestionsSection({
         id: `rerun-${second.id}`,
         label: `Re-run: ${formatSessionLabel(second)}`,
         icon: RotateCcw,
+        iconBg: "bg-emerald-500/[0.06] group-hover:bg-emerald-500/[0.10]",
+        iconColor: "text-emerald-500/60 group-hover:text-emerald-500/80",
         action: () => onSessionSelect?.(second.id),
       });
     }
@@ -169,6 +169,8 @@ export function SuggestionsSection({
           id: "suggest-morning-brief",
           label: "You haven't run a Morning Brief this week",
           icon: Newspaper,
+          iconBg: "bg-amber-500/[0.06] group-hover:bg-amber-500/[0.10]",
+          iconColor: "text-amber-500/60 group-hover:text-amber-500/80",
           action: () => onCardClick?.(morningBriefCard),
         });
       }
@@ -199,8 +201,10 @@ export function SuggestionsSection({
               onClick={suggestion.action}
               className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-left transition-all hover:border-border/40 hover:bg-muted/40"
             >
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/[0.06] text-amber-500/60 transition-colors group-hover:bg-amber-500/[0.10] group-hover:text-amber-500/80 dark:bg-amber-500/[0.08]">
-                <Icon className="size-3.5" />
+              <div
+                className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors ${suggestion.iconBg}`}
+              >
+                <Icon className={`size-3.5 ${suggestion.iconColor}`} />
               </div>
               <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">
                 {suggestion.label}

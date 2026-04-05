@@ -1,5 +1,6 @@
 import type { AgentSession } from "@capyfin/contracts";
 import { primaryNavigation } from "@/app/config/navigation";
+import { formatSessionLabel } from "@/features/chat/session-label";
 import {
   actionCards,
   incomeCards,
@@ -38,10 +39,12 @@ export function getActionItems(): PaletteItem[] {
 }
 
 export function getSessionItems(sessions: AgentSession[]): PaletteItem[] {
-  return sessions.map((session) => ({
-    id: `session-${session.id}`,
-    label: session.label ?? `Chat ${session.id}`,
-    category: "Recent Sessions" as const,
-    sessionId: session.id,
-  }));
+  return sessions
+    .filter((session) => formatSessionLabel(session) !== "New conversation")
+    .map((session) => ({
+      id: `session-${session.id}`,
+      label: session.label ?? "",
+      category: "Recent Sessions" as const,
+      sessionId: session.id,
+    }));
 }

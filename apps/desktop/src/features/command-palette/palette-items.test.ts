@@ -117,12 +117,34 @@ void test("getSessionItems maps sessions correctly", () => {
   assert.equal(second.label, "Morning Brief");
 });
 
-void test("getSessionItems uses session id as fallback label", () => {
+void test("getSessionItems excludes sessions with no label", () => {
   const sessions = [makeSession({ id: "s1" })];
   const items = getSessionItems(sessions);
-  const first = items[0];
-  assert.ok(first, "First item should exist");
-  assert.equal(first.label, "Chat s1");
+  assert.equal(items.length, 0, "Should exclude sessions without a label");
+});
+
+void test("getSessionItems excludes sessions with hex ID labels", () => {
+  const sessions = [
+    makeSession({ id: "s1", label: "1f33e806 (2026-04-05)" }),
+    makeSession({ id: "s2", label: "14a22254 (2026-04-05)" }),
+    makeSession({ id: "s3", label: "49b3c285" }),
+  ];
+  const items = getSessionItems(sessions);
+  assert.equal(items.length, 0, "Should exclude all hex-ID sessions");
+});
+
+void test("getSessionItems keeps named sessions and excludes unnamed ones", () => {
+  const sessions = [
+    makeSession({ id: "s1", label: "Morning Brief (11)" }),
+    makeSession({ id: "s2", label: "1f33e806 (2026-04-05)" }),
+    makeSession({ id: "s3", label: "Deep Dive: AMZN" }),
+    makeSession({ id: "s4" }), // no label
+  ];
+  const items = getSessionItems(sessions);
+  assert.equal(items.length, 2, "Should only include named sessions");
+  const labels = items.map((i) => i.label);
+  assert.ok(labels.includes("Morning Brief (11)"));
+  assert.ok(labels.includes("Deep Dive: AMZN"));
 });
 
 void test("session items have category 'Recent Sessions'", () => {

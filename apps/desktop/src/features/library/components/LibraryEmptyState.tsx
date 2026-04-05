@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { LIBRARY_EMPTY_TEXT } from "./LibraryWorkspace";
 
 interface LibraryEmptyStateProps {
-  onGoToLaunchpad: () => void;
+  onGoToHome: () => void;
   onOpenChat: () => void;
 }
 
@@ -50,7 +50,7 @@ const EXAMPLE_REPORTS = [
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
 export function LibraryEmptyState({
-  onGoToLaunchpad,
+  onGoToHome,
   onOpenChat,
 }: LibraryEmptyStateProps) {
   return (
@@ -64,9 +64,9 @@ export function LibraryEmptyState({
         className="flex flex-col items-center gap-5"
       >
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onGoToLaunchpad}>
+          <Button variant="outline" size="sm" onClick={onGoToHome}>
             <RocketIcon className="size-3.5" />
-            Go to Launchpad
+            Go to Home
           </Button>
           <Button variant="ghost" size="sm" onClick={onOpenChat}>
             <MessageCircleIcon className="size-3.5" />

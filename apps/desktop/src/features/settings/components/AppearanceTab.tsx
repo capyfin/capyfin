@@ -21,7 +21,7 @@ export function AppearanceTab() {
   return (
     <div className="flex flex-col gap-5" data-testid="appearance-tab">
       <p className="text-[13px] text-muted-foreground">
-        Customize the look and feel of the application.
+        Select a theme to match your environment.
       </p>
 
       <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">

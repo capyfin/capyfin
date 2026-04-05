@@ -713,3 +713,27 @@ void test("computePortfolioRisks keeps position alerts when portfolio has multip
   assert.ok(alert);
   assert.equal(alert.name, "AAPL");
 });
+
+void test("computePortfolioRisks returns totalPositions matching holdings count", () => {
+  const portfolio = makePortfolio(); // has 2 holdings by default
+  const result = computePortfolioRisks(portfolio, []);
+  assert.ok(result);
+  assert.equal(result.totalPositions, 2);
+});
+
+void test("computePortfolioRisks returns totalPositions 1 for single-position portfolio", () => {
+  const portfolio = makePortfolio({
+    holdings: [
+      {
+        ticker: "MSFT",
+        shares: 100,
+        costBasis: 300,
+        weight: 100,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+  });
+  const result = computePortfolioRisks(portfolio, []);
+  assert.ok(result);
+  assert.equal(result.totalPositions, 1);
+});

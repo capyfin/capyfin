@@ -54,7 +54,7 @@ export const SETTINGS_TABS: TabDefinition[] = [
   {
     id: "appearance",
     label: "Appearance",
-    description: "Customize theme, density, and display preferences",
+    description: "Choose your preferred color theme",
     icon: PaletteIcon,
   },
   {

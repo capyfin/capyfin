@@ -190,7 +190,7 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
 
       {reports.length === 0 && !hasActiveFilters ? (
         <LibraryEmptyState
-          onGoToLaunchpad={() => {
+          onGoToHome={() => {
             window.location.hash = "#launchpad";
           }}
           onOpenChat={() => {

@@ -8,7 +8,8 @@ interface PortfolioRisksProps {
 export function PortfolioRisks({ risks }: PortfolioRisksProps) {
   const hasAlerts = risks.concentrationAlerts.length > 0;
   const hasStalePositions = risks.positionsNeedingReview > 0;
-  const hasHighConcentration = risks.topHoldingWeight >= 15;
+  const hasHighConcentration =
+    risks.topHoldingWeight >= 15 && risks.totalPositions > 1;
 
   if (!hasAlerts && !hasStalePositions && !hasHighConcentration) return null;
 
@@ -62,6 +63,7 @@ export function PortfolioRisks({ risks }: PortfolioRisksProps) {
             {/* Top holding info */}
             {hasHighConcentration &&
               risks.topHoldingTicker &&
+              risks.totalPositions > 1 &&
               !risks.concentrationAlerts.some(
                 (a) =>
                   a.type === "position" && a.name === risks.topHoldingTicker,

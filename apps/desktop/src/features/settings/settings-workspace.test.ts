@@ -52,6 +52,29 @@ void test("No tab description is the generic 'Manage your settings'", () => {
   }
 });
 
+void test("Appearance tab description does not mention density or display", () => {
+  const appearance = SETTINGS_TABS.find((t) => t.id === "appearance");
+  assert.ok(appearance, "Appearance tab must exist");
+  const desc = appearance.description.toLowerCase();
+  assert.ok(
+    !desc.includes("density"),
+    `Appearance description must not mention "density" — got: "${appearance.description}"`,
+  );
+  assert.ok(
+    !desc.includes("display"),
+    `Appearance description must not mention "display" — got: "${appearance.description}"`,
+  );
+});
+
+void test("Appearance tab description mentions theme", () => {
+  const appearance = SETTINGS_TABS.find((t) => t.id === "appearance");
+  assert.ok(appearance, "Appearance tab must exist");
+  assert.ok(
+    appearance.description.toLowerCase().includes("theme"),
+    `Appearance description should mention "theme" — got: "${appearance.description}"`,
+  );
+});
+
 void test("SettingsWorkspace exports a function component", async () => {
   const mod = await import("./components/SettingsWorkspace");
   assert.equal(typeof mod.SettingsWorkspace, "function");

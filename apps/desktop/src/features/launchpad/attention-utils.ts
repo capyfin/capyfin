@@ -239,6 +239,7 @@ export interface PortfolioRiskSummary {
   positionsNeedingReview: number;
   topHoldingWeight: number;
   topHoldingTicker: string | null;
+  totalPositions: number;
 }
 
 export function computePortfolioRisks(
@@ -276,5 +277,6 @@ export function computePortfolioRisks(
     positionsNeedingReview,
     topHoldingWeight: top ? top.weight : 0,
     topHoldingTicker: top ? top.ticker : null,
+    totalPositions: portfolio.holdings.length,
   };
 }

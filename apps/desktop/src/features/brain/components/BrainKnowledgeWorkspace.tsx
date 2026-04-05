@@ -40,7 +40,7 @@ export function BrainKnowledgeWorkspace({
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-blue-400/20 bg-gradient-to-b from-blue-500/[0.04] to-card/50">
+      <section className="overflow-hidden rounded-xl border border-blue-400/20 bg-gradient-to-b from-blue-500/[0.04] to-card/50 shadow-sm">
         <div className="flex items-center gap-2.5 border-b border-blue-400/15 px-4 py-3.5 lg:px-5">
           <BookOpenIcon className="size-4 text-blue-400" />
           <h3 className="text-[13px] font-semibold uppercase tracking-wide text-blue-400">
@@ -81,7 +81,7 @@ export function BrainKnowledgeWorkspace({
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-amber-400/20 bg-gradient-to-b from-amber-500/[0.04] to-card/50">
+      <section className="overflow-hidden rounded-xl border border-amber-400/20 bg-gradient-to-b from-amber-500/[0.04] to-card/50 shadow-sm">
         <div className="flex items-center gap-2.5 border-b border-amber-400/15 px-4 py-3.5 lg:px-5">
           <StickyNoteIcon className="size-4 text-amber-400" />
           <h3 className="text-[13px] font-semibold uppercase tracking-wide text-amber-400">

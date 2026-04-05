@@ -186,7 +186,7 @@ export function ProvidersWorkspace({
       {/* AI Models section */}
       <section
         data-testid="ai-models-section"
-        className="min-w-0 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-primary/[0.03] to-card"
+        className="min-w-0 overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-primary/[0.03] to-card shadow-sm dark:border-border/30"
       >
         <div className="flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3.5 lg:px-5">
           <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -215,19 +215,19 @@ export function ProvidersWorkspace({
           <Table>
             <TableHeader>
               <TableRow className="border-border/40 hover:bg-transparent">
-                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Provider
                 </TableHead>
-                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Connection
                 </TableHead>
-                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Model
                 </TableHead>
-                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Updated
                 </TableHead>
-                <TableHead className="text-right text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                <TableHead className="text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Actions
                 </TableHead>
               </TableRow>

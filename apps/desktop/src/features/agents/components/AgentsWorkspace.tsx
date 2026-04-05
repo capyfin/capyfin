@@ -327,7 +327,7 @@ export function AgentsWorkspace({
       ) : null}
 
       {isCreateOpen ? (
-        <Card className="rounded-lg border-border/60">
+        <Card className="rounded-xl border-border/50 shadow-sm dark:border-border/30">
           <CardHeader className="gap-0.5 pb-4">
             <CardTitle className="text-[14px]">Create agent</CardTitle>
             <CardDescription className="text-[12px]">
@@ -398,7 +398,7 @@ export function AgentsWorkspace({
               </select>
             </label>
           </CardContent>
-          <CardFooter className="flex flex-col items-stretch gap-2.5 border-t border-border/60 bg-muted/20 sm:flex-row sm:items-center sm:justify-between">
+          <CardFooter className="flex flex-col items-stretch gap-2.5 border-t border-border/40 bg-muted/[0.04] sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[12px] text-muted-foreground">
               Uses {selectedProviderName}.
             </p>
@@ -438,7 +438,7 @@ export function AgentsWorkspace({
         </Card>
       ) : null}
 
-      <section className="overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-primary/[0.03] to-card">
+      <section className="overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-primary/[0.03] to-card shadow-sm dark:border-border/30">
         <div className="flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3.5 lg:px-5">
           <div>
             <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">

@@ -24,11 +24,23 @@ export function ReviewQueueCard({
   loading,
 }: ReviewQueueCardProps) {
   return (
-    <Card className="overflow-hidden rounded-xl border-border/50 dark:border-border/30">
+    <Card className="overflow-hidden rounded-xl border-border/50 shadow-sm dark:border-border/30">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-          <ClipboardCheck className="size-4 text-muted-foreground" />
-          Review Queue
+        <CardTitle className="flex items-center gap-3 text-sm font-semibold">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/[0.08] text-primary ring-1 ring-primary/10">
+            <ClipboardCheck className="size-4" />
+          </div>
+          <div>
+            <span className="text-[15px] font-semibold tracking-tight">
+              Review Queue
+            </span>
+            {!loading && items.length > 0 && (
+              <p className="text-[12px] font-normal text-muted-foreground/70">
+                {items.length} {items.length === 1 ? "case" : "cases"} need
+                attention
+              </p>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-1 pt-0">
@@ -47,9 +59,9 @@ export function ReviewQueueCard({
             {items.map((item) => (
               <div
                 key={item.caseId}
-                className="group flex items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-muted/40"
+                className="group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-colors hover:bg-muted/40"
               >
-                <span className="w-5 shrink-0 text-center text-[11px] font-medium text-muted-foreground/50">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-foreground/[0.04] text-[11px] font-semibold tabular-nums text-muted-foreground/50 dark:bg-foreground/[0.06]">
                   {item.rank}
                 </span>
                 <div className="min-w-0 flex-1">

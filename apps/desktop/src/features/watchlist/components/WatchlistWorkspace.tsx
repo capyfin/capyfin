@@ -1,5 +1,10 @@
 import type { InvestmentCase, WatchlistItem } from "@capyfin/contracts";
-import { ListChecksIcon, LoaderCircleIcon, PlusIcon } from "lucide-react";
+import {
+  ListChecksIcon,
+  LoaderCircleIcon,
+  PlusIcon,
+  SparklesIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -236,9 +241,14 @@ export function WatchlistWorkspace({
           />
 
           {items.length < WATCHLIST_NEAR_EMPTY_THRESHOLD && (
-            <p className="py-8 text-center text-[13px] text-muted-foreground/60">
-              {WATCHLIST_NEAR_EMPTY_TEXT}
-            </p>
+            <div className="flex items-center gap-3 rounded-xl border border-dashed border-border/50 bg-muted/[0.02] px-5 py-4 dark:bg-muted/[0.04]">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/[0.06]">
+                <SparklesIcon className="size-3.5 text-blue-500/60" />
+              </div>
+              <p className="text-[13px] text-muted-foreground/60">
+                {WATCHLIST_NEAR_EMPTY_TEXT}
+              </p>
+            </div>
           )}
         </>
       )}

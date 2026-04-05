@@ -16,10 +16,34 @@ interface CasesEmptyStateProps {
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
 const CASE_FEATURES = [
-  { icon: FileTextIcon, label: "Thesis & key assumptions" },
-  { icon: TrendingUpIcon, label: "Valuation range" },
-  { icon: ShieldAlertIcon, label: "Risks & invalidation signals" },
-  { icon: TargetIcon, label: "Catalysts & next actions" },
+  {
+    icon: FileTextIcon,
+    label: "Thesis & key assumptions",
+    color: "text-blue-500",
+    bg: "bg-blue-500/[0.08]",
+    ring: "ring-blue-500/10",
+  },
+  {
+    icon: TrendingUpIcon,
+    label: "Valuation range",
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/[0.08]",
+    ring: "ring-emerald-500/10",
+  },
+  {
+    icon: ShieldAlertIcon,
+    label: "Risks & invalidation signals",
+    color: "text-amber-500",
+    bg: "bg-amber-500/[0.08]",
+    ring: "ring-amber-500/10",
+  },
+  {
+    icon: TargetIcon,
+    label: "Catalysts & next actions",
+    color: "text-violet-500",
+    bg: "bg-violet-500/[0.08]",
+    ring: "ring-violet-500/10",
+  },
 ];
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
@@ -40,21 +64,25 @@ export function CasesEmptyState({ onDeepDive }: CasesEmptyStateProps) {
         </Button>
       </EmptyState>
 
-      <div className="w-full max-w-sm">
-        <p className="mb-3 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+      <div className="w-full max-w-lg">
+        <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           Each case includes
         </p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           {CASE_FEATURES.map((feature) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
             const Icon = feature.icon;
             return (
               <div
                 key={feature.label}
-                className="flex items-center gap-2.5 rounded-xl border border-border/30 bg-card/40 px-3.5 py-2.5 opacity-60"
+                className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/30 px-4 py-3.5 transition-colors dark:bg-card/20"
               >
-                <Icon className="size-3.5 shrink-0 text-violet-400/70" />
-                <span className="text-[12px] text-muted-foreground">
+                <div
+                  className={`flex size-9 shrink-0 items-center justify-center rounded-xl ring-1 ${feature.bg} ${feature.ring}`}
+                >
+                  <Icon className={`size-4 ${feature.color}`} />
+                </div>
+                <span className="text-[13px] font-medium text-foreground/80">
                   {feature.label}
                 </span>
               </div>

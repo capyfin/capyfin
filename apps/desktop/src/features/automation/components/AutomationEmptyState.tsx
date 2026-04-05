@@ -1,54 +1,103 @@
 import {
-  CalendarIcon,
+  Activity,
   ClockIcon,
-  NewspaperIcon,
+  ListChecks,
+  ListOrdered,
+  Newspaper,
+  PieChart,
   PlusIcon,
-  RefreshCwIcon,
   ZapIcon,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/EmptyState";
 import { AUTOMATION_EMPTY_TEXT } from "./AutomationWorkspace";
 
-interface AutomationEmptyStateProps {
-  onCreate: () => void;
-}
-
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
-const EXAMPLE_AUTOMATIONS = [
+const iconMap: Record<string, LucideIcon> = {
+  Newspaper,
+  Activity,
+  ListChecks,
+  ListOrdered,
+  PieChart,
+};
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+
+export const SCHEDULABLE_CARDS = [
   {
-    icon: NewspaperIcon,
-    label: "Morning Brief",
+    id: "morning-brief",
+    icon: "Newspaper",
+    title: "Morning Brief",
     description: "Daily market context and watchlist signals",
     schedule: "Weekdays at 8:00 AM",
     color: "text-blue-500",
-    bg: "bg-blue-500/[0.08]",
-    ring: "ring-blue-500/10",
+    bg: "bg-blue-500/10",
+    ring: "ring-blue-500/15",
+    hoverBg: "hover:bg-blue-500/[0.06]",
+    hoverBorder: "hover:border-blue-500/30",
   },
   {
-    icon: RefreshCwIcon,
-    label: "Weekly Watchlist Digest",
-    description: "Summarize changes across all watched names",
+    id: "market-health",
+    icon: "Activity",
+    title: "Market Health",
+    description: "Regime score, breadth, sector rotation signals",
+    schedule: "Weekdays at 7:30 AM",
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+    ring: "ring-amber-500/15",
+    hoverBg: "hover:bg-amber-500/[0.06]",
+    hoverBorder: "hover:border-amber-500/30",
+  },
+  {
+    id: "watchlist-digest",
+    icon: "ListChecks",
+    title: "Watchlist Digest",
+    description: "Weekly recap of watchlist changes and new signals",
     schedule: "Every Monday at 9:00 AM",
     color: "text-emerald-500",
-    bg: "bg-emerald-500/[0.08]",
-    ring: "ring-emerald-500/10",
+    bg: "bg-emerald-500/10",
+    ring: "ring-emerald-500/15",
+    hoverBg: "hover:bg-emerald-500/[0.06]",
+    hoverBorder: "hover:border-emerald-500/30",
   },
   {
-    icon: CalendarIcon,
-    label: "Post-Earnings Review",
-    description: "Auto-refresh cases after earnings reports",
-    schedule: "Triggered by earnings",
+    id: "review-queue",
+    icon: "ListOrdered",
+    title: "Review Queue",
+    description: "Prioritized list of cases needing attention",
+    schedule: "Weekdays at 8:30 AM",
     color: "text-violet-500",
-    bg: "bg-violet-500/[0.08]",
-    ring: "ring-violet-500/10",
+    bg: "bg-violet-500/10",
+    ring: "ring-violet-500/15",
+    hoverBg: "hover:bg-violet-500/[0.06]",
+    hoverBorder: "hover:border-violet-500/30",
+  },
+  {
+    id: "portfolio-review",
+    icon: "PieChart",
+    title: "Portfolio Review",
+    description:
+      "Recurring health check — allocation, concentration, regime fit",
+    schedule: "Every Sunday at 10:00 AM",
+    color: "text-rose-500",
+    bg: "bg-rose-500/10",
+    ring: "ring-rose-500/15",
+    hoverBg: "hover:bg-rose-500/[0.06]",
+    hoverBorder: "hover:border-rose-500/30",
   },
 ];
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
-export function AutomationEmptyState({ onCreate }: AutomationEmptyStateProps) {
+interface AutomationEmptyStateProps {
+  onCreate: () => void;
+  onCreateWithCard?: (cardId: string) => void;
+}
+
+export function AutomationEmptyState({
+  onCreate,
+  onCreateWithCard,
+}: AutomationEmptyStateProps) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 py-12">
+    <div className="flex flex-1 flex-col items-center gap-6 py-8">
       <EmptyState
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
         icon={ZapIcon}
@@ -63,37 +112,42 @@ export function AutomationEmptyState({ onCreate }: AutomationEmptyStateProps) {
         </Button>
       </EmptyState>
 
-      <div className="w-full max-w-lg">
-        <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
-          Example automations
-        </p>
-        <div className="flex flex-col gap-2.5">
-          {EXAMPLE_AUTOMATIONS.map((example) => {
+      <div className="w-full max-w-xl">
+        <div className="mb-4 flex items-center gap-3">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
+            Popular automations
+          </h3>
+          <div className="h-px flex-1 bg-border/30" />
+        </div>
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 [&>*:last-child:nth-child(odd)]:sm:col-span-2">
+          {SCHEDULABLE_CARDS.map((card) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
-            const Icon = example.icon;
+            const Icon = iconMap[card.icon];
             return (
-              <div
-                key={example.label}
-                className="flex items-center gap-3.5 rounded-xl border border-border/40 bg-card/30 px-4 py-3.5 transition-colors dark:bg-card/20"
+              <button
+                key={card.id}
+                type="button"
+                className={`flex items-center gap-3.5 rounded-xl border border-border/60 bg-card/60 px-4 py-3.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.03] dark:bg-card/40 dark:hover:shadow-black/20 ${card.hoverBg} ${card.hoverBorder}`}
+                onClick={() => onCreateWithCard?.(card.id)}
               >
                 <div
-                  className={`flex size-9 shrink-0 items-center justify-center rounded-xl ring-1 ${example.bg} ${example.ring}`}
+                  className={`flex size-9 shrink-0 items-center justify-center rounded-xl ring-1 ${card.bg} ${card.ring}`}
                 >
-                  <Icon className={`size-4 ${example.color}`} />
+                  {Icon ? <Icon className={`size-4 ${card.color}`} /> : null}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-medium text-foreground/80">
-                    {example.label}
+                  <p className="text-[13px] font-semibold tracking-tight text-foreground">
+                    {card.title}
                   </p>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground/50">
-                    {example.description}
+                  <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground">
+                    {card.description}
                   </p>
                 </div>
-                <p className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground/40">
+                <p className="hidden shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground/60 sm:flex">
                   <ClockIcon className="size-3" />
-                  {example.schedule}
+                  {card.schedule}
                 </p>
-              </div>
+              </button>
             );
           })}
         </div>

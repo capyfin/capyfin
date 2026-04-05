@@ -42,3 +42,30 @@ void test("SectorExposure still renders sector bars when real data present", () 
     "Must still render weight percentages for real sectors",
   );
 });
+
+// ---------------------------------------------------------------------------
+// HoldingsTable — show "Not set" instead of "--" for missing sector data
+// ---------------------------------------------------------------------------
+
+void test("HoldingsTable shows 'Not set' instead of '--' for missing sector data", () => {
+  const src = readComponent("HoldingsTable.tsx");
+  // Must NOT use "--" for empty sectors
+  assert.ok(
+    !src.includes('?? "--"'),
+    'Must not use "--" as fallback for missing sector data',
+  );
+  // Must show "Not set" instead
+  assert.ok(
+    src.includes("Not set"),
+    'Must show "Not set" text for holdings without sector data',
+  );
+});
+
+void test("HoldingsTable renders 'Not set' in muted styling for missing sectors", () => {
+  const src = readComponent("HoldingsTable.tsx");
+  // The "Not set" text should have muted/italic styling to signal it's informational
+  assert.ok(
+    src.includes("Not set") && src.includes("muted-foreground"),
+    '"Not set" text should use muted styling',
+  );
+});

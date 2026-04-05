@@ -25,6 +25,9 @@ export function AutomationWorkspace({ client }: AutomationWorkspaceProps) {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterValue>("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [initialCardId, setInitialCardId] = useState<string | undefined>(
+    undefined,
+  );
   const [editTarget, setEditTarget] = useState<Automation | undefined>(
     undefined,
   );
@@ -73,6 +76,7 @@ export function AutomationWorkspace({ client }: AutomationWorkspaceProps) {
 
   const handleSave = useCallback(() => {
     setShowCreateDialog(false);
+    setInitialCardId(undefined);
     setEditTarget(undefined);
     void fetchAutomations();
   }, [fetchAutomations]);
@@ -162,6 +166,11 @@ export function AutomationWorkspace({ client }: AutomationWorkspaceProps) {
       {automations.length === 0 ? (
         <AutomationEmptyState
           onCreate={() => {
+            setInitialCardId(undefined);
+            setShowCreateDialog(true);
+          }}
+          onCreateWithCard={(cardId) => {
+            setInitialCardId(cardId);
             setShowCreateDialog(true);
           }}
         />
@@ -210,10 +219,12 @@ export function AutomationWorkspace({ client }: AutomationWorkspaceProps) {
         open={showCreateDialog || editTarget !== undefined}
         onClose={() => {
           setShowCreateDialog(false);
+          setInitialCardId(undefined);
           setEditTarget(undefined);
         }}
         onSave={handleSave}
         editAutomation={editTarget}
+        initialCardId={initialCardId}
       />
 
       <DeleteConfirmDialog

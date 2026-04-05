@@ -148,7 +148,11 @@ export function HoldingsTable({
                       {holding.weight.toFixed(1)}%
                     </TableCell>
                     <TableCell className="text-[13px] text-muted-foreground">
-                      {holding.sector ?? "--"}
+                      {holding.sector ?? (
+                        <span className="italic text-muted-foreground/50">
+                          Not set
+                        </span>
+                      )}
                     </TableCell>
                     {caseMap ? (
                       <TableCell>

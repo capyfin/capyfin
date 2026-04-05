@@ -308,11 +308,12 @@ export function buildMarketContext(
     });
   }
 
-  // 2. Sector leadership from portfolio
+  // 2. Sector leadership from portfolio (exclude Unclassified)
   if (hasPortfolio && portfolio.sectorExposure.length > 0) {
-    const sorted = [...portfolio.sectorExposure].sort(
-      (a, b) => b.weight - a.weight,
+    const realSectors = portfolio.sectorExposure.filter(
+      (s) => s.sector !== "Unclassified",
     );
+    const sorted = [...realSectors].sort((a, b) => b.weight - a.weight);
     const top = sorted[0];
     if (top && top.weight >= 20) {
       const secondPart =

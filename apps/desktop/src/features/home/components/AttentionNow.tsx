@@ -47,8 +47,6 @@ const CATEGORY_ICON: Record<string, LucideIcon> = {
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
 export function AttentionNow({ bullets }: AttentionNowProps) {
-  if (bullets.length === 0) return null;
-
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
@@ -57,24 +55,30 @@ export function AttentionNow({ bullets }: AttentionNowProps) {
         </h2>
         <div className="h-px flex-1 bg-border/30" />
       </div>
-      <div className="space-y-2">
-        {bullets.map((bullet) => {
-          const style = BULLET_STYLES[bullet.urgency];
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
-          const Icon = CATEGORY_ICON[bullet.category] ?? Eye;
-          return (
-            <div
-              key={bullet.category}
-              className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 ${style?.bg ?? "bg-muted"} ${style?.border ?? "border-border/50"}`}
-            >
-              <Icon className="size-4 shrink-0 text-foreground/60" />
-              <span className="text-[13px] text-foreground/80">
-                {bullet.message}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      {bullets.length === 0 ? (
+        <p className="py-3 text-center text-[13px] text-muted-foreground/50">
+          No attention items yet — create your first case to activate monitoring
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {bullets.map((bullet) => {
+            const style = BULLET_STYLES[bullet.urgency];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
+            const Icon = CATEGORY_ICON[bullet.category] ?? Eye;
+            return (
+              <div
+                key={bullet.category}
+                className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 ${style?.bg ?? "bg-muted"} ${style?.border ?? "border-border/50"}`}
+              >
+                <Icon className="size-4 shrink-0 text-foreground/60" />
+                <span className="text-[13px] text-foreground/80">
+                  {bullet.message}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }

@@ -655,6 +655,69 @@ void test("buildMarketContext includes attention summary when cases need review"
   assert.ok(attention, "Should have an attention summary");
 });
 
+void test("buildMarketContext excludes Unclassified from sector leadership", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "MSFT",
+        shares: 100,
+        costBasis: 400,
+        weight: 100,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 40000,
+    sectorExposure: [{ sector: "Unclassified", weight: 100 }],
+    concentrationAlerts: [],
+  };
+  const result = buildMarketContext(portfolio, [], []);
+  const sector = result.find((r) => r.type === "sector-leadership");
+  assert.equal(
+    sector,
+    undefined,
+    "Should not show sector leadership when all sectors are Unclassified",
+  );
+});
+
+void test("buildMarketContext shows real sector when Unclassified is filtered out", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 60,
+        sector: "Technology",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "MSFT",
+        shares: 50,
+        costBasis: 300,
+        weight: 40,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 50000,
+    sectorExposure: [
+      { sector: "Technology", weight: 60 },
+      { sector: "Unclassified", weight: 40 },
+    ],
+    concentrationAlerts: [],
+  };
+  const result = buildMarketContext(portfolio, [], []);
+  const sector = result.find((r) => r.type === "sector-leadership");
+  assert.ok(sector, "Should have sector leadership for real sectors");
+  assert.ok(
+    !sector.message.includes("Unclassified"),
+    "Should not mention Unclassified in sector leadership",
+  );
+  assert.ok(
+    sector.message.includes("Technology"),
+    "Should show Technology as top sector",
+  );
+});
+
 void test("buildMarketContext works with only watchlist items (no portfolio)", () => {
   const watchlist = [
     {

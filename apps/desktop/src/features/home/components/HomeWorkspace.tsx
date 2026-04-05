@@ -129,23 +129,32 @@ export function HomeWorkspace({
     casesData,
   );
   const portfolioAlertItems = buildPortfolioAlerts(portfolioData, casesData);
+  const bullets = buildAttentionBullets(
+    data?.attentionItems ?? [],
+    data?.reviewQueue.length ?? 0,
+  );
 
   if (!hasCases) {
+    const handleOpenCase = (caseId: string) => {
+      onOpenCase?.(caseId);
+    };
+
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-8">
         <HomeHeader casesCount={0} />
         <HomeEmptyState onCardClick={onCardClick} />
+        <AttentionNow bullets={bullets} />
+        <ReviewQueueCard
+          items={data?.reviewQueue ?? []}
+          onOpenCase={handleOpenCase}
+          loading={false}
+        />
         <PersonalizedMarketContext items={marketContextItems} />
         <PortfolioAlerts alerts={portfolioAlertItems} />
         <QuickCreate onCardClick={onCardClick} />
       </div>
     );
   }
-
-  const bullets = buildAttentionBullets(
-    data?.attentionItems ?? [],
-    data?.reviewQueue.length ?? 0,
-  );
   const recentUpdates = buildRecentUpdates(casesData);
   const upcomingCatalysts = buildUpcomingCatalysts(casesData);
 

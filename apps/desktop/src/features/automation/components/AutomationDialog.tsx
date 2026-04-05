@@ -40,6 +40,7 @@ interface AutomationDialogProps {
   onClose: () => void;
   onSave: () => void;
   editAutomation?: Automation | undefined;
+  initialCardId?: string | undefined;
 }
 
 export function AutomationDialog({
@@ -48,6 +49,7 @@ export function AutomationDialog({
   onClose,
   onSave,
   editAutomation,
+  initialCardId,
 }: AutomationDialogProps) {
   const isEdit = !!editAutomation;
   const schedulableCards = allCards.filter((c) => c.schedulable);
@@ -77,20 +79,26 @@ export function AutomationDialog({
 
   const totalSteps = STEP_LABELS.length; // 5
 
-  const resetForm = useCallback(() => {
-    setStep(0);
-    setCardId("");
-    setTriggerType("schedule");
-    setEventType("");
-    setTime("08:00");
-    setDays(["monday", "tuesday", "wednesday", "thursday", "friday"]);
-    setTimezone(getDefaultTimezone());
-    setDestination("library");
-    setWatchlistOnly(false);
-    setSectorFocus("");
-    setError(null);
-    setIsSaving(false);
-  }, []);
+  const resetForm = useCallback(
+    (preselectedCardId?: string) => {
+      const hasPreselect =
+        preselectedCardId &&
+        schedulableCards.some((c) => c.id === preselectedCardId);
+      setStep(hasPreselect ? 1 : 0);
+      setCardId(hasPreselect ? preselectedCardId : "");
+      setTriggerType("schedule");
+      setEventType("");
+      setTime("08:00");
+      setDays(["monday", "tuesday", "wednesday", "thursday", "friday"]);
+      setTimezone(getDefaultTimezone());
+      setDestination("library");
+      setWatchlistOnly(false);
+      setSectorFocus("");
+      setError(null);
+      setIsSaving(false);
+    },
+    [schedulableCards],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -116,9 +124,9 @@ export function AutomationDialog({
       setError(null);
       setIsSaving(false);
     } else {
-      resetForm();
+      resetForm(initialCardId);
     }
-  }, [open, editAutomation, resetForm]);
+  }, [open, editAutomation, initialCardId, resetForm]);
 
   useEffect(() => {
     if (open) {

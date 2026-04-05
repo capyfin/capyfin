@@ -1,14 +1,20 @@
 import { ActionCardItem } from "@/features/launchpad/components/ActionCardItem";
-import { actionCards } from "@/features/launchpad/card-registry";
+import { allCards } from "@/features/launchpad/card-registry";
 import type { ActionCard } from "@/features/launchpad/types";
 
 interface QuickCreateProps {
   onCardClick?: ((card: ActionCard, input?: string) => void) | undefined;
 }
 
-const QUICK_CREATE_IDS = ["deep-dive", "morning-brief", "fair-value"];
+const QUICK_CREATE_IDS = [
+  "deep-dive",
+  "morning-brief",
+  "add-to-watchlist",
+  "compare-companies",
+  "fair-value",
+];
 
-const quickCards = actionCards.filter((c) => QUICK_CREATE_IDS.includes(c.id));
+const quickCards = allCards.filter((c) => QUICK_CREATE_IDS.includes(c.id));
 
 export function QuickCreate({ onCardClick }: QuickCreateProps) {
   return (

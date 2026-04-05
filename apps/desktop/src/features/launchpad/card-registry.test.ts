@@ -12,8 +12,8 @@ import {
 // Card registry — shape & completeness
 // ---------------------------------------------------------------------------
 
-void test("actionCards exports exactly 9 cards", () => {
-  assert.equal(actionCards.length, 9);
+void test("actionCards exports exactly 14 cards", () => {
+  assert.equal(actionCards.length, 14);
 });
 
 void test("every card has a unique id", () => {

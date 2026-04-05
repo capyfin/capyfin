@@ -1,11 +1,13 @@
 import { useState, type KeyboardEvent, type SyntheticEvent } from "react";
 import {
   Activity,
+  ArrowLeftRight,
   ArrowRight,
   Calculator,
   DollarSign,
   Eye,
   FileBarChart,
+  ListPlus,
   Newspaper,
   Scale,
   Search,
@@ -50,6 +52,8 @@ const iconMap: Record<string, LucideIcon> = {
   Zap,
   Eye,
   DollarSign,
+  ListPlus,
+  ArrowLeftRight,
 };
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 

@@ -186,6 +186,33 @@ export const actionCards: ActionCard[] = [
         "Analyze smart money activity for {ticker}. Cover insider buying/selling activity (last 90 days), institutional ownership changes (recent 13F filings), and unusual accumulation or distribution patterns. Present an ownership flow report with insider transaction details, institutional holder changes, volume analysis, and a conviction score (0-100). Highlight any cluster buys or significant position changes.\n\n💡 Connect FMP in Settings → Providers to unlock full market scanning with the screener API. It's free.",
     },
   },
+  {
+    id: "add-to-watchlist",
+    title: "Add to Watchlist",
+    promise: "Track a new company — add it to your watchlist for monitoring",
+    icon: "ListPlus",
+    category: "today",
+    input: "ticker",
+    estimatedDuration: "fast",
+    skills: ["add-to-watchlist"],
+    persona: "macro-analyst",
+    prompt:
+      "Add {ticker} to the user's watchlist. Look up the company name and sector, then add it as a watched name. If a case already exists, link it. Otherwise suggest creating a new case for deeper research.",
+  },
+  {
+    id: "compare-companies",
+    title: "Compare Companies",
+    promise:
+      "Side-by-side comparison of two companies — fundamentals, risks, and conviction",
+    icon: "ArrowLeftRight",
+    category: "research",
+    input: "tickers",
+    estimatedDuration: "medium",
+    skills: ["compare-companies"],
+    persona: "fundamental-analyst",
+    prompt:
+      "Compare the following companies side by side: {tickers}. Cover business model differences, financial health comparison, valuation comparison, key risks for each, competitive positioning, and provide a verdict on which name has the stronger case. Highlight the major differences and what matters most in the comparison.",
+  },
 ];
 
 export const portfolioCards: ActionCard[] = [

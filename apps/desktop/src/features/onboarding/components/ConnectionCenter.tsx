@@ -46,6 +46,7 @@ import type {
   ProviderDefinition,
   ProviderModelCatalog,
 } from "@/app/types";
+import capyfinLogo from "@/assets/brand/capyfin-circled.png";
 import { formatProviderName as formatProviderNameStr } from "@/features/agents/copy";
 import { groupProviders } from "@/features/onboarding/provider-groups";
 import { Button } from "@/components/ui/button";
@@ -459,21 +460,31 @@ export function ConnectionCenter({
     <main className="relative min-h-screen bg-background px-5 py-6 text-foreground lg:px-10 lg:py-8">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-5xl flex-col">
         <header className="flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
-              CapyFin
+          <div className="flex items-start gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 ring-1 ring-primary/15">
+              <img
+                src={capyfinLogo}
+                alt=""
+                className="size-8 rounded-lg object-contain"
+                draggable={false}
+              />
             </div>
-            <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground lg:text-4xl">
-              {step === "providers"
-                ? "Connect a provider"
-                : (selectedProvider?.name ?? "Connection")}
-            </h1>
-            <p className="mt-2 max-w-xl text-[14px] leading-7 text-muted-foreground">
-              {step === "providers"
-                ? "Choose the model provider you want to use. You can always add more later."
-                : (selectedProvider?.description ??
-                  "Choose how you want to connect, then finish setup.")}
-            </p>
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-primary">
+                CapyFin
+              </div>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
+                {step === "providers"
+                  ? "Connect a provider"
+                  : (selectedProvider?.name ?? "Connection")}
+              </h1>
+              <p className="mt-1.5 max-w-xl text-[14px] leading-7 text-muted-foreground">
+                {step === "providers"
+                  ? "Choose the model provider you want to use. You can always add more later."
+                  : (selectedProvider?.description ??
+                    "Choose how you want to connect, then finish setup.")}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -555,14 +566,14 @@ export function ConnectionCenter({
                         key={provider.id}
                         type="button"
                         className={cn(
-                          "group rounded-lg border bg-card p-4 text-left transition-all duration-150 hover:bg-accent",
+                          "group rounded-xl border bg-card p-4 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.04] dark:hover:shadow-black/20",
                           connectedProviderIds.has(
                             resolveProviderConnectionId(provider),
                           )
-                            ? "border-success/30"
+                            ? "border-success/30 bg-success/[0.02]"
                             : group.isPopular
-                              ? "border-primary/20 bg-primary/[0.03] hover:border-primary/30"
-                              : "border-border/60 hover:border-primary/30",
+                              ? "border-primary/20 bg-gradient-to-br from-primary/[0.04] to-card hover:border-primary/30"
+                              : "border-border/60 hover:border-border",
                         )}
                         onClick={() => {
                           selectProvider(provider);
@@ -993,7 +1004,7 @@ function ProviderMark({ provider }: { provider: ProviderDefinition }) {
 
   if (!logo) {
     return (
-      <div className="flex size-10 items-center justify-center rounded-lg border border-border/60 bg-muted text-sm font-semibold text-foreground">
+      <div className="flex size-10 items-center justify-center rounded-xl border border-border/60 bg-muted/50 text-sm font-semibold text-foreground ring-1 ring-border/30">
         {provider.name.charAt(0)}
       </div>
     );
@@ -1001,7 +1012,7 @@ function ProviderMark({ provider }: { provider: ProviderDefinition }) {
 
   return (
     <div
-      className="provider-mark flex size-10 items-center justify-center rounded-lg border border-border/60 bg-card [&_svg]:size-5"
+      className="provider-mark flex size-10 items-center justify-center rounded-xl border border-border/60 bg-card ring-1 ring-border/20 [&_svg]:size-5"
       aria-hidden="true"
       dangerouslySetInnerHTML={{
         __html: logo.svg.replace(

@@ -1,5 +1,9 @@
 import type { InvestmentCase } from "@capyfin/contracts";
-import { GitCompareArrowsIcon, LoaderCircleIcon } from "lucide-react";
+import {
+  BriefcaseIcon,
+  GitCompareArrowsIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -91,7 +95,19 @@ export function CasesWorkspace({ client }: CasesWorkspaceProps) {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Investment Cases</h2>
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] text-primary ring-1 ring-primary/10">
+                <BriefcaseIcon className="size-5" />
+              </div>
+              <div>
+                <h2 className="text-[17px] font-semibold tracking-tight">
+                  Investment Cases
+                </h2>
+                <p className="text-[13px] text-muted-foreground">
+                  {cases.length} {cases.length === 1 ? "case" : "cases"} tracked
+                </p>
+              </div>
+            </div>
             <div className="flex items-center gap-2">
               {compareMode && selectedIds.length === 2 ? (
                 <Button

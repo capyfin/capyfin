@@ -16,7 +16,7 @@ export function ComparisonSectionRow({
 }: ComparisonSectionRowProps) {
   return (
     <div className="flex flex-col gap-2.5">
-      <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
         {aligned.title}
       </h3>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -24,20 +24,20 @@ export function ComparisonSectionRow({
         <Card
           className={
             aligned.left
-              ? "border-border/60"
-              : "border-dashed border-border/40 opacity-50"
+              ? "overflow-hidden rounded-xl border-border/50 shadow-sm dark:border-border/30"
+              : "overflow-hidden rounded-xl border-dashed border-border/40 opacity-50"
           }
         >
-          <CardHeader className="pb-2">
+          <CardHeader className="border-b border-border/40 bg-muted/[0.04] pb-2">
             <CardTitle className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
-              <span className="inline-block size-1.5 rounded-full bg-amber-500/60" />
+              <span className="inline-block size-2 rounded-full bg-amber-500/70" />
               {leftLabel}
               {aligned.left ? (
                 <ConfidenceBadge confidence={aligned.left.confidence} />
               ) : null}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             {aligned.left ? (
               <div className="prose-sm max-h-72 overflow-y-auto">
                 <MessageResponse>{aligned.left.content}</MessageResponse>
@@ -54,20 +54,20 @@ export function ComparisonSectionRow({
         <Card
           className={
             aligned.right
-              ? "border-border/60"
-              : "border-dashed border-border/40 opacity-50"
+              ? "overflow-hidden rounded-xl border-border/50 shadow-sm dark:border-border/30"
+              : "overflow-hidden rounded-xl border-dashed border-border/40 opacity-50"
           }
         >
-          <CardHeader className="pb-2">
+          <CardHeader className="border-b border-border/40 bg-muted/[0.04] pb-2">
             <CardTitle className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
-              <span className="inline-block size-1.5 rounded-full bg-blue-500/60" />
+              <span className="inline-block size-2 rounded-full bg-blue-500/70" />
               {rightLabel}
               {aligned.right ? (
                 <ConfidenceBadge confidence={aligned.right.confidence} />
               ) : null}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             {aligned.right ? (
               <div className="prose-sm max-h-72 overflow-y-auto">
                 <MessageResponse>{aligned.right.content}</MessageResponse>

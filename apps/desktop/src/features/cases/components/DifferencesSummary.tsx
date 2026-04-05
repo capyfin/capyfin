@@ -25,9 +25,9 @@ export function DifferencesSummary({
     result.rightOnlyRisks.length > 0;
 
   return (
-    <Card className="border-border/60">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+    <Card className="overflow-hidden rounded-xl border-border/50 shadow-sm dark:border-border/30">
+      <CardHeader className="border-b border-border/40 bg-muted/[0.04] pb-3">
+        <CardTitle className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
           Differences Summary
         </CardTitle>
       </CardHeader>

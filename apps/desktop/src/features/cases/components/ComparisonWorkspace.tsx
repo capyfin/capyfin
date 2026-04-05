@@ -203,9 +203,9 @@ export function ComparisonWorkspace({
       </Button>
 
       {/* Header card */}
-      <div className="relative overflow-hidden rounded-xl border border-border/60 bg-card p-5">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.03] via-transparent to-transparent" />
-        <div className="relative flex items-start justify-between gap-4">
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.04] via-transparent to-transparent" />
+        <div className="relative flex items-start justify-between gap-4 p-5">
           <div className="flex flex-col gap-1.5">
             <h1 className="text-xl font-bold tracking-tight">
               {mode === "prior"

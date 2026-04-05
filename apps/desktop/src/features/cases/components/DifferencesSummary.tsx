@@ -27,7 +27,7 @@ export function DifferencesSummary({
   return (
     <Card className="overflow-hidden rounded-xl border-border/50 shadow-sm dark:border-border/30">
       <CardHeader className="border-b border-border/40 bg-muted/[0.04] pb-3">
-        <CardTitle className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+        <CardTitle className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           Differences Summary
         </CardTitle>
       </CardHeader>

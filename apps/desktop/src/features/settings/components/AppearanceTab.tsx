@@ -26,7 +26,7 @@ export function AppearanceTab() {
 
       <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
         <div className="border-b border-border/40 bg-muted/[0.04] px-5 py-3">
-          <label className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+          <label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
             Theme
           </label>
         </div>
@@ -39,17 +39,17 @@ export function AppearanceTab() {
                 <button
                   key={option.value}
                   type="button"
-                  className={`flex flex-col items-center gap-2.5 rounded-lg border p-5 transition-all duration-200 ${
+                  className={`flex flex-col items-center gap-3 rounded-xl border p-5 transition-all duration-200 ${
                     isActive
-                      ? "border-primary/40 bg-primary/[0.06] text-foreground ring-1 ring-primary/20"
-                      : "border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted/30 hover:text-foreground"
+                      ? "border-primary/30 bg-primary/[0.06] text-foreground shadow-sm shadow-primary/5 ring-1 ring-primary/15"
+                      : "border-border/50 bg-background text-muted-foreground hover:border-border/70 hover:bg-muted/20 hover:text-foreground dark:border-border/30"
                   }`}
                   onClick={() => {
                     setTheme(option.value);
                   }}
                 >
                   <div
-                    className={`flex size-10 items-center justify-center rounded-full ${isActive ? "bg-primary/10" : "bg-muted/60"}`}
+                    className={`flex size-11 items-center justify-center rounded-xl transition-colors ${isActive ? "bg-primary/10 ring-1 ring-primary/10" : "bg-muted/50 dark:bg-muted/30"}`}
                   >
                     <Icon
                       className={`size-5 ${isActive ? "text-primary" : ""}`}

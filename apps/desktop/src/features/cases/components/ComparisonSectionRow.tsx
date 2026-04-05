@@ -16,7 +16,7 @@ export function ComparisonSectionRow({
 }: ComparisonSectionRowProps) {
   return (
     <div className="flex flex-col gap-2.5">
-      <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+      <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
         {aligned.title}
       </h3>
       <div className="grid gap-3 sm:grid-cols-2">

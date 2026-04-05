@@ -68,7 +68,7 @@ export function PortfolioOverviewPanel({
               <BriefcaseIcon className="size-4.5 text-primary" />
             </div>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/60">
                 Total Value
               </p>
               <p className="text-[18px] font-semibold tabular-nums tracking-tight">
@@ -84,7 +84,7 @@ export function PortfolioOverviewPanel({
               <LayersIcon className="size-4.5 text-blue-500" />
             </div>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/60">
                 Positions
               </p>
               <p className="text-[18px] font-semibold tabular-nums tracking-tight">
@@ -100,7 +100,7 @@ export function PortfolioOverviewPanel({
               <LayersIcon className="size-4.5 text-emerald-500" />
             </div>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/60">
                 Sectors
               </p>
               <p className="text-[18px] font-semibold tabular-nums tracking-tight">

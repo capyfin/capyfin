@@ -109,7 +109,7 @@ function OverviewSection({
     >
       <div className="flex items-center gap-2.5 border-b border-border/40 bg-muted/[0.04] px-5 py-3">
         {icon}
-        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           {title}
         </h3>
         {confidence ? <ConfidenceBadge confidence={confidence} /> : null}

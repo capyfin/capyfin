@@ -215,19 +215,19 @@ export function ProvidersWorkspace({
           <Table>
             <TableHeader>
               <TableRow className="border-border/40 hover:bg-transparent">
-                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                <TableHead className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                   Provider
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                <TableHead className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                   Connection
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                <TableHead className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                   Model
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                <TableHead className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                   Updated
                 </TableHead>
-                <TableHead className="text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                <TableHead className="text-right text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                   Actions
                 </TableHead>
               </TableRow>

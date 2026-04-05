@@ -139,7 +139,7 @@ export function PreferencesTab({
 
       <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
         <div className="border-b border-border/40 bg-muted/[0.04] px-5 py-3">
-          <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
             Investment Profile
           </h3>
         </div>
@@ -179,7 +179,7 @@ export function PreferencesTab({
 
       <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
         <div className="border-b border-border/40 bg-muted/[0.04] px-5 py-3">
-          <label className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+          <label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
             Favorite Sectors
           </label>
         </div>

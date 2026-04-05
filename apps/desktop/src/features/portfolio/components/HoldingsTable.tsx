@@ -60,38 +60,38 @@ export function HoldingsTable({
             <TableHeader>
               <TableRow className="border-b border-border/40 bg-muted/15 hover:bg-muted/15 dark:bg-muted/8">
                 <TableHead className="h-9 pl-5">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                     Ticker
                   </span>
                 </TableHead>
                 <TableHead className="h-9">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                     Shares
                   </span>
                 </TableHead>
                 <TableHead className="h-9">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                     Cost Basis
                   </span>
                 </TableHead>
                 <TableHead className="h-9">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                     Value
                   </span>
                 </TableHead>
                 <TableHead className="h-9">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                     Weight
                   </span>
                 </TableHead>
                 <TableHead className="h-9">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                     Sector
                   </span>
                 </TableHead>
                 {caseMap ? (
                   <TableHead className="h-9">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                       Case
                     </span>
                   </TableHead>

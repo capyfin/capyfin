@@ -122,7 +122,7 @@ export function WatchlistTable({
               <TableHead className="h-9 pl-5">
                 <button
                   type="button"
-                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60"
+                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60"
                   onClick={() => {
                     onSort("ticker");
                   }}
@@ -136,31 +136,31 @@ export function WatchlistTable({
                 </button>
               </TableHead>
               <TableHead className="h-9">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                   List
                 </span>
               </TableHead>
               {caseMap ? (
                 <TableHead className="h-9">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                     Case
                   </span>
                 </TableHead>
               ) : null}
               <TableHead className="h-9 max-w-[200px]">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                   Note
                 </span>
               </TableHead>
               <TableHead className="h-9">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
                   Tags
                 </span>
               </TableHead>
               <TableHead className="h-9">
                 <button
                   type="button"
-                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60"
+                  className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60"
                   onClick={() => {
                     onSort("addedAt");
                   }}

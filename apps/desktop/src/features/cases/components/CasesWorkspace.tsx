@@ -94,58 +94,77 @@ export function CasesWorkspace({ client }: CasesWorkspaceProps) {
         />
       ) : (
         <>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] text-primary ring-1 ring-primary/10">
-                <BriefcaseIcon className="size-5" />
+          <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-primary/[0.05] via-background to-amber-500/[0.03] px-5 py-4 dark:from-primary/[0.10] dark:to-amber-500/[0.05]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] text-primary ring-1 ring-primary/10">
+                  <BriefcaseIcon className="size-5" />
+                </div>
+                <div>
+                  <h2 className="text-[17px] font-semibold tracking-tight">
+                    Investment Cases
+                  </h2>
+                  <p className="text-[13px] text-muted-foreground">
+                    {cases.length} {cases.length === 1 ? "case" : "cases"}{" "}
+                    tracked
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-[17px] font-semibold tracking-tight">
-                  Investment Cases
-                </h2>
-                <p className="text-[13px] text-muted-foreground">
-                  {cases.length} {cases.length === 1 ? "case" : "cases"} tracked
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {compareMode && selectedIds.length === 2 ? (
+              <div className="flex items-center gap-2">
+                {compareMode && selectedIds.length === 2 ? (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => {
+                      const [left, right] = selectedIds;
+                      window.location.hash = `#cases/compare?left=${String(left)}&right=${String(right)}`;
+                    }}
+                  >
+                    <GitCompareArrowsIcon className="size-3.5" />
+                    Compare Selected
+                  </Button>
+                ) : null}
                 <Button
-                  variant="default"
+                  variant={compareMode ? "secondary" : "outline"}
                   size="sm"
+                  className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
                   onClick={() => {
-                    const [left, right] = selectedIds;
-                    window.location.hash = `#cases/compare?left=${String(left)}&right=${String(right)}`;
+                    setCompareMode((prev) => !prev);
+                    setSelectedIds([]);
                   }}
                 >
                   <GitCompareArrowsIcon className="size-3.5" />
-                  Compare Selected
+                  {compareMode ? "Cancel" : "Compare"}
                 </Button>
-              ) : null}
-              <Button
-                variant={compareMode ? "secondary" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setCompareMode((prev) => !prev);
-                  setSelectedIds([]);
-                }}
-              >
-                <GitCompareArrowsIcon className="size-3.5" />
-                {compareMode ? "Cancel" : "Compare"}
-              </Button>
-              <ToggleGroup
-                type="single"
-                variant="outline"
-                size="sm"
-                value={sortBy}
-                onValueChange={(v: string) => {
-                  if (v) setSortBy(v as CasesSortBy);
-                }}
-              >
-                <ToggleGroupItem value="lastReviewed">Recent</ToggleGroupItem>
-                <ToggleGroupItem value="confidence">Confidence</ToggleGroupItem>
-                <ToggleGroupItem value="ticker">A-Z</ToggleGroupItem>
-              </ToggleGroup>
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  size="sm"
+                  value={sortBy}
+                  onValueChange={(v: string) => {
+                    if (v) setSortBy(v as CasesSortBy);
+                  }}
+                >
+                  <ToggleGroupItem
+                    value="lastReviewed"
+                    className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                  >
+                    Recent
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="confidence"
+                    className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                  >
+                    Confidence
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="ticker"
+                    className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                  >
+                    A-Z
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
             </div>
           </div>
 

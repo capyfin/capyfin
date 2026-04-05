@@ -34,30 +34,42 @@ export function PortfolioOverviewPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/[0.08] text-emerald-500 ring-1 ring-emerald-500/10">
-            <PieChartIcon className="size-5" />
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-emerald-500/[0.05] via-background to-primary/[0.03] px-5 py-4 dark:from-emerald-500/[0.10] dark:to-primary/[0.05]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/[0.08] text-emerald-500 ring-1 ring-emerald-500/10">
+              <PieChartIcon className="size-5" />
+            </div>
+            <div>
+              <h2 className="text-[17px] font-semibold tracking-tight text-foreground">
+                Portfolio Overview
+              </h2>
+              <p className="text-[13px] text-muted-foreground">
+                {positionCount} {positionCount === 1 ? "position" : "positions"}{" "}
+                across {sectorCount} {sectorCount === 1 ? "sector" : "sectors"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-[17px] font-semibold tracking-tight text-foreground">
-              Portfolio Overview
-            </h2>
-            <p className="text-[13px] text-muted-foreground">
-              {positionCount} {positionCount === 1 ? "position" : "positions"}{" "}
-              across {sectorCount} {sectorCount === 1 ? "sector" : "sectors"}
-            </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+              onClick={onImport}
+            >
+              <UploadIcon className="size-3.5" />
+              Import
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+              onClick={onAddHolding}
+            >
+              <PlusIcon className="size-3.5" />
+              Add Position
+            </Button>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onImport}>
-            <UploadIcon className="size-3.5" />
-            Import
-          </Button>
-          <Button variant="outline" size="sm" onClick={onAddHolding}>
-            <PlusIcon className="size-3.5" />
-            Add Position
-          </Button>
         </div>
       </div>
 

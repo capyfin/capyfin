@@ -15,10 +15,54 @@ interface PortfolioActionsProps {
 }
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
-const ICONS: Record<string, LucideIcon> = {
-  "portfolio-analysis": BarChart3Icon,
-  "position-review": SearchIcon,
-  "benchmark-comparison": GitCompareArrowsIcon,
+const CARD_META: Record<
+  string,
+  {
+    icon: LucideIcon;
+    color: string;
+    bg: string;
+    ring: string;
+    border: string;
+    gradient: string;
+  }
+> = {
+  "portfolio-analysis": {
+    icon: BarChart3Icon,
+    color: "text-blue-500",
+    bg: "bg-blue-500/[0.08]",
+    ring: "ring-blue-500/10",
+    border: "border-l-blue-500/60",
+    gradient:
+      "bg-gradient-to-r from-blue-500/[0.05] via-transparent to-transparent dark:from-blue-500/[0.07]",
+  },
+  "position-review": {
+    icon: SearchIcon,
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/[0.08]",
+    ring: "ring-emerald-500/10",
+    border: "border-l-emerald-500/60",
+    gradient:
+      "bg-gradient-to-r from-emerald-500/[0.05] via-transparent to-transparent dark:from-emerald-500/[0.07]",
+  },
+  "benchmark-comparison": {
+    icon: GitCompareArrowsIcon,
+    color: "text-violet-500",
+    bg: "bg-violet-500/[0.08]",
+    ring: "ring-violet-500/10",
+    border: "border-l-violet-500/60",
+    gradient:
+      "bg-gradient-to-r from-violet-500/[0.05] via-transparent to-transparent dark:from-violet-500/[0.07]",
+  },
+};
+
+const DEFAULT_META = {
+  icon: BarChart3Icon,
+  color: "text-primary",
+  bg: "bg-primary/[0.08]",
+  ring: "ring-primary/10",
+  border: "border-l-primary/60",
+  gradient:
+    "bg-gradient-to-r from-primary/[0.05] via-transparent to-transparent",
 };
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
@@ -44,20 +88,23 @@ export function PortfolioActions({ onCardClick }: PortfolioActionsProps) {
         <div className="grid gap-3 sm:grid-cols-3">
           {portfolioCards.map((card) => {
             /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
-            const Icon = ICONS[card.id] ?? BarChart3Icon;
+            const meta = CARD_META[card.id] ?? DEFAULT_META;
+            const Icon = meta.icon;
             /* eslint-enable @typescript-eslint/no-unsafe-assignment */
             return (
               <button
                 type="button"
                 key={card.id}
-                className="cursor-pointer rounded-xl border border-border/50 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-border/70 hover:bg-muted/30 hover:shadow-md hover:shadow-black/[0.03] dark:hover:shadow-black/20"
+                className={`cursor-pointer rounded-xl border border-border/50 border-l-2 ${meta.border} ${meta.gradient} p-4 text-left transition-all hover:-translate-y-0.5 hover:border-border/70 hover:shadow-md hover:shadow-black/[0.03] dark:border-border/30 dark:hover:shadow-black/20`}
                 onClick={() => {
                   onCardClick(card);
                 }}
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] ring-1 ring-primary/[0.06]">
-                    <Icon className="size-4 text-primary" />
+                  <div
+                    className={`flex size-9 shrink-0 items-center justify-center rounded-lg ring-1 ${meta.bg} ${meta.ring}`}
+                  >
+                    <Icon className={`size-4 ${meta.color}`} />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[13px] font-semibold">{card.title}</p>

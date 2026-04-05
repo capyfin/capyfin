@@ -114,7 +114,7 @@ export function AppSidebar({
                     CapyFin
                   </span>
                   <span className="text-[10px] text-sidebar-foreground/40">
-                    Research Workstation
+                    Investment Case Manager
                   </span>
                 </div>
               </a>

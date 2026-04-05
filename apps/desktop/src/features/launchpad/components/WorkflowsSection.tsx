@@ -22,10 +22,10 @@ export function WorkflowsSection({ children }: WorkflowsSectionProps) {
         ) : (
           <ChevronRight className="size-3.5 text-muted-foreground/60" />
         )}
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           Workflows
         </h2>
-        <div className="h-px flex-1 bg-border/50" />
+        <div className="h-px flex-1 bg-border/40" />
       </button>
 
       {isOpen && <div className="space-y-8">{children}</div>}

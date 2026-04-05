@@ -183,10 +183,10 @@ export function SuggestionsSection({
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-3">
-        <h2 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           Suggestions
         </h2>
-        <div className="h-px flex-1 bg-border/50" />
+        <div className="h-px flex-1 bg-border/40" />
       </div>
 
       <div className="flex flex-col gap-1">

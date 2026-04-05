@@ -14,10 +14,10 @@ export function UpcomingCatalysts({ catalysts }: UpcomingCatalystsProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           Upcoming Catalysts
         </h2>
-        <div className="h-px flex-1 bg-border/50" />
+        <div className="h-px flex-1 bg-border/40" />
       </div>
 
       {catalysts.length === 0 ? (

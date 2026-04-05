@@ -15,10 +15,10 @@ export function MarketContext({ hasMarketData = false }: MarketContextProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           Today&apos;s Market Context
         </h2>
-        <div className="h-px flex-1 bg-border/50" />
+        <div className="h-px flex-1 bg-border/40" />
       </div>
 
       <div className="rounded-xl border border-blue-500/15 bg-gradient-to-br from-blue-500/[0.04] via-background to-indigo-500/[0.03] px-5 py-4 dark:border-blue-500/10 dark:from-blue-500/[0.06] dark:to-indigo-500/[0.04]">

@@ -66,14 +66,14 @@ export function LaunchpadWorkspace({
         ))}
       </WorkflowsSection>
 
-      <div className="mt-2">
+      <div className="mt-4">
         <RecentActivitySection
           sessions={sessions}
           onSessionSelect={onSessionSelect}
         />
       </div>
 
-      <div className="mt-2">
+      <div className="mt-4">
         <SuggestionsSection
           sessions={sessions}
           onSessionSelect={onSessionSelect}

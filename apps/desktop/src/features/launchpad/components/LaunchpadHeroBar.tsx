@@ -93,7 +93,7 @@ export function LaunchpadHeroBar({
   );
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-primary/[0.05] via-background to-amber-500/[0.03] px-5 py-3.5 dark:from-primary/[0.10] dark:to-amber-500/[0.05]">
+    <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-primary/[0.05] via-background to-amber-500/[0.03] px-5 py-4 dark:from-primary/[0.10] dark:to-amber-500/[0.05]">
       {/* Greeting row: heading + date + actions all in one line */}
       <div className="flex items-center gap-4">
         {/* Greeting + date */}
@@ -101,7 +101,7 @@ export function LaunchpadHeroBar({
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
             {greeting}
           </h1>
-          <span className="text-[13px] text-muted-foreground">
+          <span className="text-[13px] text-muted-foreground/70">
             {formattedDate}
           </span>
         </div>
@@ -113,18 +113,18 @@ export function LaunchpadHeroBar({
         <button
           type="button"
           onClick={onOpenCommandPalette}
-          className="flex h-7 items-center gap-2 rounded-md border border-border/50 bg-background/40 px-2.5 text-[12px] text-muted-foreground backdrop-blur-sm transition-all hover:border-border hover:bg-background/80 hover:text-foreground hover:shadow-sm"
+          className="flex h-8 items-center gap-2 rounded-lg border border-border/40 bg-background/50 px-3 text-[12px] text-muted-foreground backdrop-blur-sm transition-all hover:border-border hover:bg-background/80 hover:text-foreground hover:shadow-sm"
         >
-          <Search className="size-3" />
+          <Search className="size-3.5 text-muted-foreground/50" />
           <span className="hidden sm:inline">Search…</span>
-          <kbd className="ml-1 hidden rounded border border-border/60 bg-muted/50 px-1 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex sm:items-center sm:gap-0.5">
+          <kbd className="ml-1.5 hidden rounded-md border border-border/50 bg-muted/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground/70 sm:inline-flex sm:items-center sm:gap-0.5">
             <Command className="size-2.5" />K
           </kbd>
         </button>
       </div>
 
       {/* Quick actions row */}
-      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         {quickActionDefs.map((def) => {
           /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
           const Icon = def.icon;
@@ -134,12 +134,12 @@ export function LaunchpadHeroBar({
               key={def.id}
               variant="outline"
               size="sm"
-              className="h-7 gap-1.5 border-border/50 bg-background/40 px-2.5 text-[12px] backdrop-blur-sm transition-all hover:border-border hover:bg-background/80 hover:shadow-sm"
+              className="h-8 gap-1.5 rounded-lg border-border/40 bg-background/50 px-3 text-[12px] backdrop-blur-sm transition-all hover:border-border hover:bg-background/80 hover:shadow-sm"
               onClick={() => {
                 handleQuickAction(def);
               }}
             >
-              <Icon data-icon="inline-start" className="size-3" />
+              <Icon data-icon="inline-start" className="size-3.5" />
               {def.label}
             </Button>
           );

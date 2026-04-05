@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { toast, Toaster } from "sonner";
 import { AppHeader } from "@/app/shell/AppHeader";
 import { AppSidebar } from "@/app/shell/AppSidebar";
@@ -54,6 +54,25 @@ export function App() {
     createInitialState,
   );
   const [isRailOpen, setIsRailOpen] = useState(false);
+
+  // Determine if the current view has meaningful context panel content.
+  // When a view starts providing context, add a case for its hashView value.
+  const hasRailContent = useMemo(() => {
+    switch (state.hashView) {
+      default:
+        return false;
+    }
+  }, [state.hashView]);
+
+  // Auto-open rail when navigating to a view with content, auto-close when empty.
+  // Uses React's "adjust state during render" pattern instead of useEffect to
+  // avoid an extra render cycle. Manual toggle within a view is still respected.
+  const [prevHashView, setPrevHashView] = useState(state.hashView);
+  if (state.hashView !== prevHashView) {
+    setPrevHashView(state.hashView);
+    setIsRailOpen(hasRailContent);
+  }
+
   const commandPalette = useCommandPalette();
 
   useEffect(() => {

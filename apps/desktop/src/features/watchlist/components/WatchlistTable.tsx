@@ -227,9 +227,16 @@ export function WatchlistTable({
                         className={`inline-block size-1.5 shrink-0 rounded-full ${getStatusDotColor(item.ticker, caseMap)}`}
                       />
                     ) : null}
-                    <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-sm font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
-                      {item.ticker}
-                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-sm font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
+                        {item.ticker}
+                      </span>
+                      {caseMap?.get(item.ticker.toUpperCase())?.companyName ? (
+                        <span className="text-[12px] text-muted-foreground/50">
+                          {caseMap.get(item.ticker.toUpperCase())?.companyName}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

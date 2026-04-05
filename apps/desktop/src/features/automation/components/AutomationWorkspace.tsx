@@ -129,31 +129,33 @@ export function AutomationWorkspace({ client }: AutomationWorkspaceProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5">
-      {/* Page header with icon accent */}
-      <div className="flex items-start gap-3.5">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/[0.08] ring-1 ring-amber-500/10">
-          <ZapIcon className="size-5 text-amber-500" />
-        </div>
-        <div className="min-w-0 flex-1 pt-0.5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
-              Automation
-            </h2>
-            {automations.length > 0 ? (
-              <Button
-                size="sm"
-                onClick={() => {
-                  setShowCreateDialog(true);
-                }}
-              >
-                <PlusIcon className="size-3.5" />
-                New Automation
-              </Button>
-            ) : null}
+      {/* Page header with gradient hero */}
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-amber-500/[0.05] via-background to-primary/[0.03] px-5 py-4 dark:from-amber-500/[0.10] dark:to-primary/[0.05]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/[0.08] ring-1 ring-amber-500/10">
+              <ZapIcon className="size-5 text-amber-500" />
+            </div>
+            <div>
+              <h2 className="text-[17px] font-semibold tracking-tight text-foreground">
+                Automation
+              </h2>
+              <p className="text-[13px] text-muted-foreground">
+                Schedule recurring research and delivery workflows.
+              </p>
+            </div>
           </div>
-          <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
-            Schedule recurring research and delivery workflows.
-          </p>
+          {automations.length > 0 ? (
+            <Button
+              size="sm"
+              onClick={() => {
+                setShowCreateDialog(true);
+              }}
+            >
+              <PlusIcon className="size-3.5" />
+              New Automation
+            </Button>
+          ) : null}
         </div>
       </div>
 

@@ -92,10 +92,20 @@ export function AutomationList({
     <div className="flex flex-col gap-3">
       {automations.map((auto) => {
         const isEvent = auto.trigger.type === "event";
+        const accentBg = auto.enabled
+          ? isEvent
+            ? "bg-gradient-to-r from-violet-500/[0.03] to-transparent dark:from-violet-500/[0.06]"
+            : "bg-gradient-to-r from-amber-500/[0.03] to-transparent dark:from-amber-500/[0.06]"
+          : "";
+        const accentBorder = auto.enabled
+          ? isEvent
+            ? "border-l-2 border-l-violet-500/40"
+            : "border-l-2 border-l-amber-500/40"
+          : "border-l-2 border-l-transparent";
         return (
           <Card
             key={auto.id}
-            className={`group flex items-center gap-4 border-border/60 px-4 py-3.5 transition-all hover:border-border/80 hover:bg-muted/20 ${!auto.enabled ? "opacity-60" : ""}`}
+            className={`group flex items-center gap-4 border-border/50 px-4 py-3.5 transition-all hover:border-border/70 hover:shadow-sm ${accentBg} ${accentBorder} ${!auto.enabled ? "opacity-55" : ""}`}
           >
             <div
               className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${auto.enabled ? (isEvent ? "bg-violet-500/[0.08] ring-1 ring-violet-500/10" : "bg-amber-500/[0.08] ring-1 ring-amber-500/10") : "bg-muted"}`}
@@ -125,16 +135,18 @@ export function AutomationList({
                 {isEvent && (
                   <Badge
                     variant="outline"
-                    className="rounded-full text-[10px] border-violet-500/30 text-violet-600 dark:text-violet-400"
+                    className="rounded-full border-violet-500/30 text-[10px] text-violet-600 dark:text-violet-400"
                   >
                     Event
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center gap-3 text-[12px] text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
                 <span>{triggerSummary(auto)}</span>
-                <span className="text-muted-foreground/40">&rarr;</span>
-                <span>{DEST_LABELS[auto.destination] ?? auto.destination}</span>
+                <span className="text-muted-foreground/30">&#x2192;</span>
+                <span className="inline-flex items-center gap-1 rounded-md bg-foreground/[0.04] px-1.5 py-0.5 text-[11px] font-medium dark:bg-foreground/[0.06]">
+                  {DEST_LABELS[auto.destination] ?? auto.destination}
+                </span>
               </div>
             </div>
 

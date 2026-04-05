@@ -10,6 +10,7 @@ import {
 import type { AgentSession } from "@capyfin/contracts";
 import type { ActionCard } from "../types";
 import { actionCards } from "../card-registry";
+import { formatSessionLabel } from "@/features/chat/session-label";
 import { TickerInputDialog } from "./TickerInputDialog";
 
 interface SuggestionsSectionProps {
@@ -98,25 +99,53 @@ export function SuggestionsSection({
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
 
+    // Only suggest sessions with meaningful labels (skip unnamed / hex-ID sessions)
+    const named = sorted.filter(
+      (s) => formatSessionLabel(s) !== "New conversation",
+    );
+
+    // If no named sessions exist, fall through to fallback suggestions
+    if (named.length === 0) {
+      return FALLBACK_SUGGESTIONS.map((fs) => ({
+        id: fs.id,
+        label: fs.label,
+        icon: fs.icon,
+        action: () => {
+          if (fs.href) {
+            window.location.hash = fs.href;
+            return;
+          }
+          if (fs.cardId) {
+            const card = actionCards.find((c) => c.id === fs.cardId);
+            if (card?.input === "none") {
+              onCardClick?.(card);
+            } else if (card) {
+              setPendingCard(card);
+            }
+          }
+        },
+      }));
+    }
+
     const result: Suggestion[] = [];
 
-    // Suggest continuing the most recent session
-    const mostRecent = sorted[0];
+    // Suggest continuing the most recent named session
+    const mostRecent = named[0];
     if (mostRecent) {
       result.push({
         id: `continue-${mostRecent.id}`,
-        label: `Continue: ${mostRecent.label ?? mostRecent.sessionKey}`,
+        label: `Continue: ${formatSessionLabel(mostRecent)}`,
         icon: Play,
         action: () => onSessionSelect?.(mostRecent.id),
       });
     }
 
-    // Suggest re-running a previous session (second most recent)
-    const second = sorted[1];
+    // Suggest re-running a previous named session (second most recent)
+    const second = named[1];
     if (second) {
       result.push({
         id: `rerun-${second.id}`,
-        label: `Re-run: ${second.label ?? second.sessionKey}`,
+        label: `Re-run: ${formatSessionLabel(second)}`,
         icon: RotateCcw,
         action: () => onSessionSelect?.(second.id),
       });

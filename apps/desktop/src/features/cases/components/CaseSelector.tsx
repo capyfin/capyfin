@@ -61,7 +61,7 @@ export function CaseSelector({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border/60 bg-card p-4">
+    <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border/50 bg-card p-4 shadow-sm dark:border-border/30">
       <div className="flex items-center gap-2.5">
         <span className="flex size-5 items-center justify-center rounded-full bg-amber-500/10 text-[10px] font-bold text-amber-500">
           A

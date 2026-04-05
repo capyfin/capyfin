@@ -12,6 +12,11 @@ import {
   classifyChange,
   computePriorComparison,
 } from "./comparison-utils";
+import {
+  CASES_FILTER_TABS,
+  filterCases,
+  getCasesFilterGuidance,
+} from "./case-filters";
 
 // ---------------------------------------------------------------------------
 // CasesWorkspace
@@ -175,6 +180,29 @@ void test("COMPARISON_EMPTY_HEADING says no cases to compare", () => {
 
 void test("COMPARISON_EMPTY_TEXT mentions Deep Dive", () => {
   assert.ok(COMPARISON_EMPTY_TEXT.includes("Deep Dive"));
+});
+
+// ---------------------------------------------------------------------------
+// Case filter tabs
+// ---------------------------------------------------------------------------
+
+void test("CASES_FILTER_TABS exports an array with at least 6 tabs", () => {
+  assert.ok(Array.isArray(CASES_FILTER_TABS));
+  assert.ok(CASES_FILTER_TABS.length >= 6);
+});
+
+void test("CASES_FILTER_TABS starts with all", () => {
+  const first = CASES_FILTER_TABS[0];
+  assert.ok(first);
+  assert.equal(first.value, "all");
+});
+
+void test("filterCases is exported as a function", () => {
+  assert.equal(typeof filterCases, "function");
+});
+
+void test("getCasesFilterGuidance is exported as a function", () => {
+  assert.equal(typeof getCasesFilterGuidance, "function");
 });
 
 // ---------------------------------------------------------------------------

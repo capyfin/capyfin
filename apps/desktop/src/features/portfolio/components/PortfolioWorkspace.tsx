@@ -1,15 +1,18 @@
 import type { InvestmentCase, PortfolioOverview } from "@capyfin/contracts";
 import { LoaderCircleIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildCaseMap } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
 import type { SidecarClient } from "@/lib/sidecar/client";
+import { buildRiskMarkers, buildMarketRegimeFit } from "../portfolio-utils";
 import { PortfolioEmptyState } from "./PortfolioEmptyState";
 import { PortfolioOverviewPanel } from "./PortfolioOverviewPanel";
 import { HoldingsTable } from "./HoldingsTable";
 import { ReviewQueue } from "./ReviewQueue";
 import { SectorExposure } from "./SectorExposure";
 import { ConcentrationAlerts } from "./ConcentrationAlerts";
+import { RiskMarkers } from "./RiskMarkers";
+import { MarketRegimeFit } from "./MarketRegimeFit";
 import { PortfolioActions } from "./PortfolioActions";
 import { CsvImportDialog } from "./CsvImportDialog";
 import { AddHoldingDialog } from "./AddHoldingDialog";
@@ -90,6 +93,19 @@ export function PortfolioWorkspace({
     [client],
   );
 
+  const hasHoldings = portfolio !== null && portfolio.holdings.length > 0;
+  const caseMap = buildCaseMap(cases);
+
+  const riskMarkers = useMemo(
+    () => (hasHoldings ? buildRiskMarkers(portfolio, cases) : []),
+    [portfolio, cases, hasHoldings],
+  );
+
+  const regimeFit = useMemo(
+    () => (hasHoldings ? buildMarketRegimeFit(portfolio, cases) : []),
+    [portfolio, cases, hasHoldings],
+  );
+
   if (!client) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -116,13 +132,11 @@ export function PortfolioWorkspace({
     );
   }
 
-  const hasHoldings = portfolio !== null && portfolio.holdings.length > 0;
-  const caseMap = buildCaseMap(cases);
-
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6">
       {hasHoldings ? (
         <>
+          {/* Allocation summary header */}
           <div className="border-b border-border/40 pb-6">
             <PortfolioOverviewPanel
               portfolio={portfolio}
@@ -149,6 +163,26 @@ export function PortfolioWorkspace({
             })()}
           </div>
 
+          {/* Overview blocks — above the position table */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {portfolio.sectorExposure.length > 0 ? (
+              <SectorExposure sectors={portfolio.sectorExposure} />
+            ) : null}
+
+            <RiskMarkers markers={riskMarkers} />
+
+            <ReviewQueue
+              holdings={portfolio.holdings}
+              caseMap={caseMap}
+              onViewCase={onViewCase}
+              onCreateCase={onCreateCase}
+              onRefreshCase={onRefreshCase}
+            />
+
+            <MarketRegimeFit items={regimeFit} />
+          </div>
+
+          {/* Position table */}
           <HoldingsTable
             holdings={portfolio.holdings}
             caseMap={caseMap}
@@ -160,18 +194,6 @@ export function PortfolioWorkspace({
             }}
             onCreateCase={onCreateCase}
           />
-
-          <ReviewQueue
-            holdings={portfolio.holdings}
-            caseMap={caseMap}
-            onViewCase={onViewCase}
-            onCreateCase={onCreateCase}
-            onRefreshCase={onRefreshCase}
-          />
-
-          {portfolio.sectorExposure.length > 0 ? (
-            <SectorExposure sectors={portfolio.sectorExposure} />
-          ) : null}
 
           <PortfolioActions onCardClick={onCardClick} />
         </>

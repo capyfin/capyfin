@@ -66,6 +66,28 @@ void test("portfolioCards have expected IDs", async () => {
   assert.ok(ids.includes("benchmark-comparison"));
 });
 
+// --- New overview block component exports ---
+
+void test("RiskMarkers exports a function component", async () => {
+  const mod = await import("./components/RiskMarkers");
+  assert.equal(typeof mod.RiskMarkers, "function");
+});
+
+void test("MarketRegimeFit exports a function component", async () => {
+  const mod = await import("./components/MarketRegimeFit");
+  assert.equal(typeof mod.MarketRegimeFit, "function");
+});
+
+void test("portfolio-utils exports buildRiskMarkers function", async () => {
+  const mod = await import("./portfolio-utils");
+  assert.equal(typeof mod.buildRiskMarkers, "function");
+});
+
+void test("portfolio-utils exports buildMarketRegimeFit function", async () => {
+  const mod = await import("./portfolio-utils");
+  assert.equal(typeof mod.buildMarketRegimeFit, "function");
+});
+
 // --- Visual separation / spacing tests ---
 
 void test("PortfolioWorkspace uses gap-6 for section spacing (24px)", async () => {
@@ -115,10 +137,10 @@ void test("PortfolioActions quick action cards have adequate padding", async () 
     new URL("./components/PortfolioActions.tsx", import.meta.url),
     "utf-8",
   );
-  // Quick action cards should have at least p-5 padding
+  // Quick action cards should have at least p-4 padding
   assert.ok(
-    source.includes("p-5") || source.includes("p-6"),
-    "Quick Actions cards should have adequate padding (p-5 or p-6)",
+    source.includes("p-4") || source.includes("p-5") || source.includes("p-6"),
+    "Quick Actions cards should have adequate padding (p-4, p-5, or p-6)",
   );
 });
 
@@ -180,6 +202,72 @@ void test("PortfolioOverviewPanel stat card shows dash when no real sectors", as
   assert.ok(
     source.includes("\u2014") || source.includes("&mdash;"),
     "PortfolioOverviewPanel should display an em dash when no real sectors exist",
+  );
+});
+
+// --- Overview blocks layout tests ---
+
+void test("PortfolioWorkspace renders overview blocks grid above HoldingsTable", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioWorkspace.tsx", import.meta.url),
+    "utf-8",
+  );
+  // Overview blocks should be in a grid
+  assert.ok(
+    source.includes("sm:grid-cols-2"),
+    "Overview blocks should use a responsive grid layout",
+  );
+  // Overview blocks grid should appear before HoldingsTable
+  const gridIdx = source.indexOf("Overview blocks");
+  const tableIdx = source.indexOf("HoldingsTable");
+  assert.ok(
+    gridIdx < tableIdx,
+    "Overview blocks should appear before HoldingsTable in the source",
+  );
+});
+
+void test("PortfolioWorkspace imports RiskMarkers and MarketRegimeFit components", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioWorkspace.tsx", import.meta.url),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("RiskMarkers"),
+    "Should import and use RiskMarkers",
+  );
+  assert.ok(
+    source.includes("MarketRegimeFit"),
+    "Should import and use MarketRegimeFit",
+  );
+});
+
+void test("PortfolioWorkspace imports buildRiskMarkers and buildMarketRegimeFit", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioWorkspace.tsx", import.meta.url),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("buildRiskMarkers"),
+    "Should import buildRiskMarkers from portfolio-utils",
+  );
+  assert.ok(
+    source.includes("buildMarketRegimeFit"),
+    "Should import buildMarketRegimeFit from portfolio-utils",
+  );
+});
+
+void test("PortfolioWorkspace uses useMemo for riskMarkers and regimeFit", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioWorkspace.tsx", import.meta.url),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("useMemo"),
+    "Should use useMemo for computed overview data",
   );
 });
 

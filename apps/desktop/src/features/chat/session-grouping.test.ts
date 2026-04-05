@@ -1,18 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { groupSessionsByDate } from "./session-grouping";
+import {
+  groupSessionsByDate,
+  partitionGroupSessions,
+} from "./session-grouping";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeSession(id: string, updatedAt: string) {
+function makeSession(id: string, updatedAt: string, label?: string) {
   return {
     id,
     agentId: "main",
     agentName: "CapyFin",
     sessionKey: `key-${id}`,
-    label: `Session ${id}`,
+    label: label ?? `Session ${id}`,
     sessionFile: `/tmp/${id}.json`,
     workspaceDir: "/tmp",
     createdAt: "2026-03-01T00:00:00Z",
@@ -135,4 +138,84 @@ void test("groups are returned in chronological order (Today first, Older last)"
     "This month",
     "Older",
   ]);
+});
+
+// ---------------------------------------------------------------------------
+// partitionGroupSessions
+// ---------------------------------------------------------------------------
+
+void test("partitions all named sessions into named array", () => {
+  const sessions = [
+    makeSession("a", "2026-03-21T10:00:00Z", "Deep Dive: AAPL"),
+    makeSession("b", "2026-03-21T09:00:00Z", "Morning Brief"),
+  ];
+  const result = partitionGroupSessions(sessions);
+  assert.equal(result.named.length, 2);
+  assert.equal(result.unnamed.length, 0);
+});
+
+void test("partitions sessions with default label into unnamed array", () => {
+  // makeSession without explicit label generates "Session <id>" which is named;
+  // use "New conversation" to test unnamed detection
+  const sessions = [
+    makeSession("a", "2026-03-21T10:00:00Z", "New conversation"),
+    makeSession("b", "2026-03-21T09:00:00Z", "New conversation"),
+  ];
+  const result = partitionGroupSessions(sessions);
+  assert.equal(result.named.length, 0);
+  assert.equal(result.unnamed.length, 2);
+});
+
+void test("partitions UUID-prefix labels into unnamed array", () => {
+  const sessions = [
+    makeSession("a", "2026-03-21T10:00:00Z", "d789933d (2026-03-22)"),
+  ];
+  const result = partitionGroupSessions(sessions);
+  assert.equal(result.named.length, 0);
+  assert.equal(result.unnamed.length, 1);
+});
+
+void test("partitions mixed named and unnamed sessions correctly", () => {
+  const sessions = [
+    makeSession("a", "2026-03-21T10:00:00Z", "Deep Dive: AAPL"),
+    makeSession("b", "2026-03-21T09:00:00Z", "New conversation"),
+    makeSession("c", "2026-03-21T08:00:00Z", "Morning Brief"),
+    makeSession("d", "2026-03-21T07:00:00Z", "New conversation"),
+    makeSession("e", "2026-03-21T06:00:00Z", "New conversation"),
+  ];
+  const result = partitionGroupSessions(sessions);
+  assert.equal(result.named.length, 2);
+  assert.deepEqual(
+    result.named.map((s) => s.id),
+    ["a", "c"],
+  );
+  assert.equal(result.unnamed.length, 3);
+  assert.deepEqual(
+    result.unnamed.map((s) => s.id),
+    ["b", "d", "e"],
+  );
+});
+
+void test("preserves order within named and unnamed partitions", () => {
+  const sessions = [
+    makeSession("1", "2026-03-21T10:00:00Z", "Alpha"),
+    makeSession("2", "2026-03-21T09:00:00Z", "New conversation"),
+    makeSession("3", "2026-03-21T08:00:00Z", "Beta"),
+    makeSession("4", "2026-03-21T07:00:00Z", "New conversation"),
+  ];
+  const result = partitionGroupSessions(sessions);
+  assert.deepEqual(
+    result.named.map((s) => s.id),
+    ["1", "3"],
+  );
+  assert.deepEqual(
+    result.unnamed.map((s) => s.id),
+    ["2", "4"],
+  );
+});
+
+void test("handles empty sessions array", () => {
+  const result = partitionGroupSessions([]);
+  assert.equal(result.named.length, 0);
+  assert.equal(result.unnamed.length, 0);
 });

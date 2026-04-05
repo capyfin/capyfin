@@ -1,8 +1,33 @@
 import type { AgentSession } from "@capyfin/contracts";
+import { formatSessionLabel } from "./session-label";
 
 export interface SessionGroup {
   label: string;
   sessions: AgentSession[];
+}
+
+export interface PartitionedSessions {
+  named: AgentSession[];
+  unnamed: AgentSession[];
+}
+
+/**
+ * Partition sessions into named and unnamed ("New conversation") groups.
+ * Uses `formatSessionLabel` to determine if a session is unnamed.
+ */
+export function partitionGroupSessions(
+  sessions: AgentSession[],
+): PartitionedSessions {
+  const named: AgentSession[] = [];
+  const unnamed: AgentSession[] = [];
+  for (const session of sessions) {
+    if (formatSessionLabel(session) === "New conversation") {
+      unnamed.push(session);
+    } else {
+      named.push(session);
+    }
+  }
+  return { named, unnamed };
 }
 
 const GROUP_LABELS = [

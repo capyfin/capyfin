@@ -1,5 +1,6 @@
 import type { AgentSession } from "@capyfin/contracts";
 import {
+  ChevronDownIcon,
   ChevronRightIcon,
   MoreHorizontalIcon,
   PencilIcon,
@@ -16,7 +17,10 @@ import {
   SETTINGS_TABS,
   type SettingsTab,
 } from "@/features/settings/components/SettingsWorkspace";
-import { groupSessionsByDate } from "@/features/chat/session-grouping";
+import {
+  groupSessionsByDate,
+  partitionGroupSessions,
+} from "@/features/chat/session-grouping";
 import { formatSessionLabel } from "@/features/chat/session-label";
 import {
   detectSessionType,
@@ -160,32 +164,71 @@ export function AppSidebar({
               </SidebarGroupAction>
             ) : null}
             <SidebarGroupContent>
-              {sessionGroups.map((group) => (
-                <div key={group.label}>
-                  <div className="px-3 py-1.5 mt-3 first:mt-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50">
-                    {group.label}
+              {sessionGroups.map((group) => {
+                const { named, unnamed } = partitionGroupSessions(
+                  group.sessions,
+                );
+                const collapseUnnamed = unnamed.length > 2;
+
+                return (
+                  <div key={group.label}>
+                    <div className="px-3 py-1.5 mt-3 first:mt-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50">
+                      {group.label}
+                    </div>
+                    <SidebarMenu>
+                      {named.map((session) => (
+                        <SessionItem
+                          key={session.id}
+                          isActive={session.id === activeSessionId}
+                          isEditing={editingSessionId === session.id}
+                          session={session}
+                          onDelete={onSessionDelete}
+                          onRename={onSessionRename}
+                          onSelect={onSessionSelect}
+                          onStartEditing={() => {
+                            setEditingSessionId(session.id);
+                          }}
+                          onStopEditing={() => {
+                            setEditingSessionId(null);
+                          }}
+                        />
+                      ))}
+                      {collapseUnnamed ? (
+                        <UnnamedSessionGroup
+                          sessions={unnamed}
+                          activeSessionId={activeSessionId}
+                          editingSessionId={editingSessionId}
+                          onDelete={onSessionDelete}
+                          onRename={onSessionRename}
+                          onSelect={onSessionSelect}
+                          onStartEditing={setEditingSessionId}
+                          onStopEditing={() => {
+                            setEditingSessionId(null);
+                          }}
+                        />
+                      ) : (
+                        unnamed.map((session) => (
+                          <SessionItem
+                            key={session.id}
+                            isActive={session.id === activeSessionId}
+                            isEditing={editingSessionId === session.id}
+                            session={session}
+                            onDelete={onSessionDelete}
+                            onRename={onSessionRename}
+                            onSelect={onSessionSelect}
+                            onStartEditing={() => {
+                              setEditingSessionId(session.id);
+                            }}
+                            onStopEditing={() => {
+                              setEditingSessionId(null);
+                            }}
+                          />
+                        ))
+                      )}
+                    </SidebarMenu>
                   </div>
-                  <SidebarMenu>
-                    {group.sessions.map((session) => (
-                      <SessionItem
-                        key={session.id}
-                        isActive={session.id === activeSessionId}
-                        isEditing={editingSessionId === session.id}
-                        session={session}
-                        onDelete={onSessionDelete}
-                        onRename={onSessionRename}
-                        onSelect={onSessionSelect}
-                        onStartEditing={() => {
-                          setEditingSessionId(session.id);
-                        }}
-                        onStopEditing={() => {
-                          setEditingSessionId(null);
-                        }}
-                      />
-                    ))}
-                  </SidebarMenu>
-                </div>
-              ))}
+                );
+              })}
             </SidebarGroupContent>
           </SidebarGroup>
         ) : null}
@@ -232,6 +275,63 @@ export function AppSidebar({
 
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+function UnnamedSessionGroup({
+  sessions,
+  activeSessionId,
+  editingSessionId,
+  onDelete,
+  onRename,
+  onSelect,
+  onStartEditing,
+  onStopEditing,
+}: {
+  sessions: AgentSession[];
+  activeSessionId?: string | undefined;
+  editingSessionId: string | null;
+  onDelete?: ((sessionId: string) => void) | undefined;
+  onRename?: ((sessionId: string, label: string) => void) | undefined;
+  onSelect?: ((sessionId: string) => void) | undefined;
+  onStartEditing: (id: string) => void;
+  onStopEditing: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs italic text-sidebar-foreground/45 hover:bg-sidebar-accent hover:text-sidebar-foreground/60 transition-colors"
+          >
+            <ChevronDownIcon
+              className={`size-3.5 shrink-0 transition-transform duration-200 ${open ? "" : "-rotate-90"}`}
+            />
+            <span>{sessions.length} unnamed conversations</span>
+          </button>
+        </CollapsibleTrigger>
+      </SidebarMenuItem>
+      <CollapsibleContent>
+        {sessions.map((session) => (
+          <SessionItem
+            key={session.id}
+            isActive={session.id === activeSessionId}
+            isEditing={editingSessionId === session.id}
+            session={session}
+            onDelete={onDelete}
+            onRename={onRename}
+            onSelect={onSelect}
+            onStartEditing={() => {
+              onStartEditing(session.id);
+            }}
+            onStopEditing={onStopEditing}
+          />
+        ))}
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 

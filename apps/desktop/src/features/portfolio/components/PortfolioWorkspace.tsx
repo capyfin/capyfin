@@ -120,22 +120,26 @@ export function PortfolioWorkspace({
   const caseMap = buildCaseMap(cases);
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6">
       {hasHoldings ? (
         <>
-          <PortfolioOverviewPanel
-            portfolio={portfolio}
-            onImport={() => {
-              setShowImport(true);
-            }}
-            onAddHolding={() => {
-              setShowAddHolding(true);
-            }}
-          />
+          <div className="border-b border-border/40 pb-6">
+            <PortfolioOverviewPanel
+              portfolio={portfolio}
+              onImport={() => {
+                setShowImport(true);
+              }}
+              onAddHolding={() => {
+                setShowAddHolding(true);
+              }}
+            />
 
-          {portfolio.concentrationAlerts.length > 0 ? (
-            <ConcentrationAlerts alerts={portfolio.concentrationAlerts} />
-          ) : null}
+            {portfolio.concentrationAlerts.length > 0 ? (
+              <div className="mt-4">
+                <ConcentrationAlerts alerts={portfolio.concentrationAlerts} />
+              </div>
+            ) : null}
+          </div>
 
           <HoldingsTable
             holdings={portfolio.holdings}

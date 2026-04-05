@@ -66,6 +66,62 @@ void test("portfolioCards have expected IDs", async () => {
   assert.ok(ids.includes("benchmark-comparison"));
 });
 
+// --- Visual separation / spacing tests ---
+
+void test("PortfolioWorkspace uses gap-6 for section spacing (24px)", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioWorkspace.tsx", import.meta.url),
+    "utf-8",
+  );
+  // Sections should have at least 24px gap (gap-6)
+  assert.ok(
+    source.includes("gap-6"),
+    "PortfolioWorkspace should use gap-6 for 24px vertical spacing between sections",
+  );
+});
+
+void test("PortfolioWorkspace has visual separator between overview and sections", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioWorkspace.tsx", import.meta.url),
+    "utf-8",
+  );
+  // Should have a visual boundary after overview (border or separator)
+  assert.ok(
+    source.includes("border-b") ||
+      source.includes("Separator") ||
+      source.includes("border-border"),
+    "PortfolioWorkspace should have visual separation between overview and section cards",
+  );
+});
+
+void test("PortfolioActions is wrapped in a card container", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioActions.tsx", import.meta.url),
+    "utf-8",
+  );
+  // PortfolioActions should use Card wrapper and CardHeader for consistency
+  assert.ok(
+    source.includes("CardHeader"),
+    "PortfolioActions should use CardHeader for consistent section styling",
+  );
+});
+
+void test("PortfolioActions quick action cards have adequate padding", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioActions.tsx", import.meta.url),
+    "utf-8",
+  );
+  // Quick action cards should have at least p-5 padding
+  assert.ok(
+    source.includes("p-5") || source.includes("p-6"),
+    "Quick Actions cards should have adequate padding (p-5 or p-6)",
+  );
+});
+
 void test("cardSections includes a portfolio section", async () => {
   const mod = await import("../launchpad/card-registry");
   const section = mod.cardSections.find(

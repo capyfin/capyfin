@@ -499,14 +499,14 @@ function ChatSessionView({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Agent/provider bar */}
-      <div className="flex items-center gap-3 border-b border-border/40 bg-card/30 px-4 py-2 lg:px-6">
+      <div className="flex items-center gap-3 border-b border-border/30 bg-card/20 px-4 py-2 lg:px-6">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/[0.08] px-2 py-0.5 text-[11px] font-medium text-primary">
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/[0.08] px-2 py-0.5 text-[11px] font-medium text-primary ring-1 ring-primary/[0.06]">
             <BotIcon className="size-3" />
             {getAgentDisplayName(bootstrap.agent.name)}
           </span>
           {providerName ? (
-            <span className="rounded-md bg-muted/60 px-2 py-0.5 text-[11px] text-muted-foreground/70">
+            <span className="rounded-md bg-muted/40 px-2 py-0.5 text-[11px] text-muted-foreground/60">
               {providerName}
               {bootstrap.resolvedModelId
                 ? ` / ${formatModelId(bootstrap.resolvedModelId)}`
@@ -514,7 +514,7 @@ function ChatSessionView({
             </span>
           ) : null}
           {hasPortfolio ? (
-            <span className="inline-flex items-center gap-1 rounded-md bg-success/[0.08] px-2 py-0.5 text-[11px] font-medium text-success">
+            <span className="inline-flex items-center gap-1 rounded-md bg-success/[0.08] px-2 py-0.5 text-[11px] font-medium text-success ring-1 ring-success/[0.06]">
               <BriefcaseIcon className="size-3" />
               Portfolio
             </span>
@@ -529,11 +529,11 @@ function ChatSessionView({
       >
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6">
           {messages.length === 0 ? (
-            <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-10 py-8 text-center">
+            <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
               <div className="space-y-4">
                 <div className="relative mx-auto w-fit">
-                  <div className="absolute -inset-4 rounded-full bg-primary/[0.05] blur-2xl" />
-                  <div className="relative flex size-14 items-center justify-center rounded-2xl border border-primary/15 bg-primary/[0.06] text-primary ring-1 ring-primary/[0.06]">
+                  <div className="absolute -inset-6 rounded-full bg-primary/[0.04] blur-3xl" />
+                  <div className="relative flex size-14 items-center justify-center rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/[0.10] to-primary/[0.04] text-primary ring-1 ring-primary/[0.08]">
                     <SparklesIcon className="size-6" />
                   </div>
                 </div>
@@ -541,37 +541,44 @@ function ChatSessionView({
                   <h1 className="text-xl font-semibold tracking-tight text-foreground">
                     Start a conversation
                   </h1>
-                  <p className="mx-auto max-w-sm text-[13px] leading-relaxed text-muted-foreground/80">
+                  <p className="mx-auto max-w-sm text-[13px] leading-relaxed text-muted-foreground/70">
                     {CHAT_EMPTY_STATE_SUBTITLE}
                   </p>
                 </div>
               </div>
 
-              <div className="grid w-full gap-2.5 sm:grid-cols-3">
-                {starterPrompts.map((prompt) => {
-                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- fallback guaranteed
-                  const accent = (suggestionAccent[prompt.color] ??
-                    suggestionAccent.amber)!;
-                  return (
-                    <button
-                      key={prompt.text}
-                      type="button"
-                      className={`flex items-start gap-3 rounded-xl border px-3.5 py-3.5 text-left text-[13px] leading-relaxed transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.03] dark:hover:shadow-black/20 ${accent.card} ${accent.hover}`}
-                      onClick={() => {
-                        handleSubmit({ text: prompt.text });
-                      }}
-                    >
-                      <div
-                        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg ${accent.iconBg}`}
+              <div className="w-full space-y-3">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/40">
+                  Try asking
+                </p>
+                <div className="grid w-full gap-2.5 sm:grid-cols-3">
+                  {starterPrompts.map((prompt) => {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- fallback guaranteed
+                    const accent = (suggestionAccent[prompt.color] ??
+                      suggestionAccent.amber)!;
+                    return (
+                      <button
+                        key={prompt.text}
+                        type="button"
+                        className={`flex items-start gap-3 rounded-xl border px-3.5 py-3.5 text-left text-[13px] leading-relaxed transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.03] dark:hover:shadow-black/20 ${accent.card} ${accent.hover}`}
+                        onClick={() => {
+                          handleSubmit({ text: prompt.text });
+                        }}
                       >
-                        <prompt.icon className={`size-4 ${accent.iconText}`} />
-                      </div>
-                      <span className="text-muted-foreground/90">
-                        {prompt.text}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <div
+                          className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ${accent.iconBg}`}
+                        >
+                          <prompt.icon
+                            className={`size-4 ${accent.iconText}`}
+                          />
+                        </div>
+                        <span className="text-muted-foreground/80">
+                          {prompt.text}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ) : (

@@ -1,5 +1,5 @@
 import type { InvestmentCase, PortfolioHolding } from "@capyfin/contracts";
-import { TrashIcon } from "lucide-react";
+import { LayersIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -55,13 +55,20 @@ export function HoldingsTable({
 }: HoldingsTableProps) {
   return (
     <Card className="overflow-hidden rounded-xl border border-border/50 shadow-sm dark:border-border/40">
-      <CardHeader className="border-b border-border/40 bg-muted/20 pb-4 dark:bg-muted/10">
-        <CardTitle className="text-[15px] font-semibold tracking-tight">
-          Holdings
-        </CardTitle>
-        <CardDescription className="mt-0.5 text-[13px]">
-          Positions sorted by portfolio weight. Cost-basis-derived values.
-        </CardDescription>
+      <CardHeader className="border-b border-border/40 bg-gradient-to-r from-muted/30 to-transparent pb-4 dark:from-muted/15">
+        <div className="flex items-center gap-3">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/[0.08] text-primary ring-1 ring-primary/10">
+            <LayersIcon className="size-4" />
+          </div>
+          <div>
+            <CardTitle className="text-[15px] font-semibold tracking-tight">
+              Holdings
+            </CardTitle>
+            <CardDescription className="mt-0.5 text-[12px]">
+              Sorted by weight. Cost-basis-derived values.
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <div>

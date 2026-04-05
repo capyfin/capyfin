@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AttentionBadge } from "@/features/cases/components/AttentionBadge";
 import {
   getCaseStatus,
   type CaseStatus,
@@ -24,8 +25,14 @@ interface ReviewQueueProps {
 interface ReviewItem {
   ticker: string;
   name?: string | undefined;
+  weight: number;
   status: CaseStatus;
-  reason: "missing" | "stale" | "low-confidence";
+  reason:
+    | "missing"
+    | "stale"
+    | "low-confidence"
+    | "review-now"
+    | "drift-detected";
 }
 
 function getReasonLabel(reason: ReviewItem["reason"]): string {
@@ -36,6 +43,10 @@ function getReasonLabel(reason: ReviewItem["reason"]): string {
       return "Stale";
     case "low-confidence":
       return "Low confidence";
+    case "review-now":
+      return "Review now";
+    case "drift-detected":
+      return "Drift detected";
   }
 }
 
@@ -46,6 +57,10 @@ function getReasonStyle(reason: ReviewItem["reason"]): string {
     case "stale":
       return "text-amber-600 dark:text-amber-400 bg-amber-500/10";
     case "low-confidence":
+      return "text-red-600 dark:text-red-400 bg-red-500/10";
+    case "review-now":
+      return "text-red-600 dark:text-red-400 bg-red-500/10";
+    case "drift-detected":
       return "text-red-600 dark:text-red-400 bg-red-500/10";
   }
 }
@@ -65,13 +80,31 @@ export function ReviewQueue({
       reviewItems.push({
         ticker: holding.ticker,
         name: holding.name,
+        weight: holding.weight,
         status,
         reason: "missing",
       });
-    } else if (status.isStale) {
+    } else if (status.attentionState === "review-now") {
       reviewItems.push({
         ticker: holding.ticker,
         name: holding.name,
+        weight: holding.weight,
+        status,
+        reason: "review-now",
+      });
+    } else if (status.attentionState === "drift-detected") {
+      reviewItems.push({
+        ticker: holding.ticker,
+        name: holding.name,
+        weight: holding.weight,
+        status,
+        reason: "drift-detected",
+      });
+    } else if (status.attentionState === "stale" || status.isStale) {
+      reviewItems.push({
+        ticker: holding.ticker,
+        name: holding.name,
+        weight: holding.weight,
         status,
         reason: "stale",
       });
@@ -79,22 +112,26 @@ export function ReviewQueue({
       reviewItems.push({
         ticker: holding.ticker,
         name: holding.name,
+        weight: holding.weight,
         status,
         reason: "low-confidence",
       });
     }
   }
 
-  // Sort: missing first, then stale (most stale first), then low confidence
+  // Sort by reason priority, then by position weight (highest first)
+  const reasonOrder: Record<ReviewItem["reason"], number> = {
+    "review-now": 0,
+    "drift-detected": 1,
+    missing: 2,
+    stale: 3,
+    "low-confidence": 4,
+  };
   reviewItems.sort((a, b) => {
-    const order = { missing: 0, stale: 1, "low-confidence": 2 };
-    if (order[a.reason] !== order[b.reason]) {
-      return order[a.reason] - order[b.reason];
+    if (reasonOrder[a.reason] !== reasonOrder[b.reason]) {
+      return reasonOrder[a.reason] - reasonOrder[b.reason];
     }
-    if (a.reason === "stale" && b.reason === "stale") {
-      return (b.status.daysSinceReview ?? 0) - (a.status.daysSinceReview ?? 0);
-    }
-    return 0;
+    return b.weight - a.weight;
   });
 
   if (reviewItems.length === 0) return null;
@@ -134,14 +171,24 @@ export function ReviewQueue({
                     {item.name}
                   </span>
                 ) : null}
-                <span
-                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${getReasonStyle(item.reason)}`}
-                >
-                  {getReasonLabel(item.reason)}
-                  {item.reason === "stale" &&
-                  item.status.daysSinceReview !== undefined
-                    ? ` · ${String(item.status.daysSinceReview)}d`
-                    : ""}
+                {item.status.attentionState ? (
+                  <AttentionBadge
+                    state={item.status.attentionState}
+                    className="text-[10px] px-1.5 py-0"
+                  />
+                ) : (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${getReasonStyle(item.reason)}`}
+                  >
+                    {getReasonLabel(item.reason)}
+                    {item.reason === "stale" &&
+                    item.status.daysSinceReview !== undefined
+                      ? ` · ${String(item.status.daysSinceReview)}d`
+                      : ""}
+                  </span>
+                )}
+                <span className="text-[11px] text-muted-foreground/50">
+                  {item.weight.toFixed(1)}%
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -173,7 +220,9 @@ export function ReviewQueue({
                   </Button>
                 ) : null}
                 {(item.reason === "stale" ||
-                  item.reason === "low-confidence") &&
+                  item.reason === "low-confidence" ||
+                  item.reason === "review-now" ||
+                  item.reason === "drift-detected") &&
                 onRefreshCase ? (
                   <Button
                     size="sm"

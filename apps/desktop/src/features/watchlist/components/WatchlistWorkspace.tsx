@@ -26,7 +26,13 @@ export const WATCHLIST_NEAR_EMPTY_TEXT =
 
 export const WATCHLIST_NEAR_EMPTY_THRESHOLD = 5;
 
-type FilterValue = "all" | "position" | "watching" | "needs-review";
+type FilterValue =
+  | "all"
+  | "position"
+  | "watching"
+  | "needs-review"
+  | "catalyst-soon"
+  | "no-case";
 
 interface WatchlistWorkspaceProps {
   client: SidecarClient | null;
@@ -148,15 +154,37 @@ export function WatchlistWorkspace({
 
   const caseMap = buildCaseMap(cases);
 
-  const filteredItems =
-    filter === "all"
-      ? items
-      : filter === "needs-review"
-        ? items.filter((i) => {
-            const status = getCaseStatus(i.ticker, caseMap);
-            return !status.hasCase || status.isStale || status.isLowConfidence;
-          })
-        : items.filter((i) => i.list === filter);
+  const filteredItems = (() => {
+    if (filter === "all") return items;
+    if (filter === "position" || filter === "watching")
+      return items.filter((i) => i.list === filter);
+    if (filter === "needs-review")
+      return items.filter((i) => {
+        const status = getCaseStatus(i.ticker, caseMap);
+        if (!status.hasCase) return true;
+        const a = status.attentionState;
+        return (
+          a === "review-soon" ||
+          a === "review-now" ||
+          a === "stale" ||
+          status.isStale ||
+          status.isLowConfidence
+        );
+      });
+    if (filter === "catalyst-soon")
+      return items.filter((i) => {
+        const status = getCaseStatus(i.ticker, caseMap);
+        if (!status.nextCatalystDate) return false;
+        const diffMs = new Date(status.nextCatalystDate).getTime() - Date.now();
+        const daysUntil = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        return daysUntil >= 0 && daysUntil <= 14;
+      });
+    // no-case
+    return items.filter((i) => {
+      const status = getCaseStatus(i.ticker, caseMap);
+      return !status.hasCase;
+    });
+  })();
 
   const sortedItems = [...filteredItems].sort((a, b) => {
     const mul = sortDir === "asc" ? 1 : -1;
@@ -238,6 +266,18 @@ export function WatchlistWorkspace({
                   className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
                 >
                   Needs Review
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="catalyst-soon"
+                  className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                >
+                  Catalyst Soon
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="no-case"
+                  className="border-border/40 bg-background/50 backdrop-blur-sm transition-all hover:border-border hover:bg-background/80"
+                >
+                  No Case
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>

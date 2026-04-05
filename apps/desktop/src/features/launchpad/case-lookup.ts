@@ -1,4 +1,5 @@
 import type {
+  AttentionState,
   CaseStance,
   Confidence,
   InvestmentCase,
@@ -14,6 +15,9 @@ export interface CaseStatus {
   daysSinceReview?: number;
   isStale: boolean;
   isLowConfidence: boolean;
+  attentionState?: AttentionState | undefined;
+  nextCatalystDate?: string | undefined;
+  nextCatalystDescription?: string | undefined;
 }
 
 /**
@@ -70,5 +74,8 @@ export function getCaseStatus(
     daysSinceReview,
     isStale: daysSinceReview >= stalenessThreshold,
     isLowConfidence: investmentCase.confidence === "LOW",
+    attentionState: investmentCase.attentionState,
+    nextCatalystDate: investmentCase.nextCatalystDate,
+    nextCatalystDescription: investmentCase.nextCatalystDescription,
   };
 }

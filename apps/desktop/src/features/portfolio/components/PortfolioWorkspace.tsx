@@ -158,6 +158,7 @@ export function PortfolioWorkspace({
             onTickerAction={(card, ticker) => {
               onCardClick(card, ticker);
             }}
+            onCreateCase={onCreateCase}
           />
 
           <ReviewQueue

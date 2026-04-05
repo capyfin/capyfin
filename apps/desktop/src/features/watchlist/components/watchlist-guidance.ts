@@ -3,7 +3,13 @@ import {
   WATCHLIST_NEAR_EMPTY_THRESHOLD,
 } from "./WatchlistWorkspace";
 
-type FilterValue = "all" | "position" | "watching" | "needs-review";
+type FilterValue =
+  | "all"
+  | "position"
+  | "watching"
+  | "needs-review"
+  | "catalyst-soon"
+  | "no-case";
 
 /**
  * Returns filter-aware guidance text for the watchlist footer,
@@ -23,6 +29,10 @@ export function getFilterGuidance(
         return "No items in watching-only mode.";
       case "needs-review":
         return "All caught up — no items need review right now.";
+      case "catalyst-soon":
+        return "No upcoming catalysts within the next 14 days.";
+      case "no-case":
+        return "All watchlist items have an associated investment case.";
     }
   }
 

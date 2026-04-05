@@ -153,3 +153,110 @@ void test("getCaseStatus is case-insensitive on ticker lookup", () => {
   assert.equal(status.hasCase, true);
   assert.equal(status.caseId, "c1");
 });
+
+// ---------------------------------------------------------------------------
+// getCaseStatus — attention state and catalyst fields
+// ---------------------------------------------------------------------------
+
+void test("getCaseStatus returns attentionState from case", () => {
+  const cases = [
+    makeCase({
+      id: "c1",
+      ticker: "AAPL",
+      attentionState: "review-now",
+      lastReviewedAt: "2026-04-01T00:00:00Z",
+    }),
+  ];
+  const map = buildCaseMap(cases);
+  const now = new Date("2026-04-04T00:00:00Z");
+  const status = getCaseStatus("AAPL", map, 30, now);
+  assert.equal(status.attentionState, "review-now");
+});
+
+void test("getCaseStatus returns nextCatalystDate and description from case", () => {
+  const cases = [
+    makeCase({
+      id: "c1",
+      ticker: "MSFT",
+      nextCatalystDate: "2026-04-15T00:00:00Z",
+      nextCatalystDescription: "Q2 Earnings",
+      lastReviewedAt: "2026-04-01T00:00:00Z",
+    }),
+  ];
+  const map = buildCaseMap(cases);
+  const now = new Date("2026-04-04T00:00:00Z");
+  const status = getCaseStatus("MSFT", map, 30, now);
+  assert.equal(status.nextCatalystDate, "2026-04-15T00:00:00Z");
+  assert.equal(status.nextCatalystDescription, "Q2 Earnings");
+});
+
+void test("getCaseStatus returns undefined attention fields when case has none", () => {
+  const cases = [
+    makeCase({
+      id: "c1",
+      ticker: "GOOG",
+      lastReviewedAt: "2026-04-01T00:00:00Z",
+    }),
+  ];
+  const map = buildCaseMap(cases);
+  const now = new Date("2026-04-04T00:00:00Z");
+  const status = getCaseStatus("GOOG", map, 30, now);
+  assert.equal(status.attentionState, undefined);
+  assert.equal(status.nextCatalystDate, undefined);
+  assert.equal(status.nextCatalystDescription, undefined);
+});
+
+void test("getCaseStatus returns no attention fields for unknown ticker", () => {
+  const map = buildCaseMap([]);
+  const status = getCaseStatus("TSLA", map);
+  assert.equal(status.hasCase, false);
+  assert.equal(status.attentionState, undefined);
+  assert.equal(status.nextCatalystDate, undefined);
+});
+
+void test("watchlist item AAPL picks up AAPL case attention state via cross-reference", () => {
+  const cases = [
+    makeCase({
+      id: "c1",
+      ticker: "AAPL",
+      attentionState: "stale",
+      nextCatalystDate: "2026-04-20T00:00:00Z",
+      nextCatalystDescription: "WWDC",
+      lastReviewedAt: "2026-02-01T00:00:00Z",
+    }),
+    makeCase({
+      id: "c2",
+      ticker: "MSFT",
+      attentionState: "healthy",
+      lastReviewedAt: "2026-04-01T00:00:00Z",
+    }),
+  ];
+  const map = buildCaseMap(cases);
+  const now = new Date("2026-04-04T00:00:00Z");
+
+  // Simulate cross-reference: watchlist item ticker -> case map lookup
+  const aaplStatus = getCaseStatus("AAPL", map, 30, now);
+  assert.equal(aaplStatus.hasCase, true);
+  assert.equal(aaplStatus.attentionState, "stale");
+  assert.equal(aaplStatus.nextCatalystDate, "2026-04-20T00:00:00Z");
+  assert.equal(aaplStatus.nextCatalystDescription, "WWDC");
+
+  const msftStatus = getCaseStatus("MSFT", map, 30, now);
+  assert.equal(msftStatus.hasCase, true);
+  assert.equal(msftStatus.attentionState, "healthy");
+});
+
+void test("case-insensitive cross-reference: 'aapl' matches AAPL case attention state", () => {
+  const cases = [
+    makeCase({
+      id: "c1",
+      ticker: "AAPL",
+      attentionState: "drift-detected",
+      lastReviewedAt: "2026-04-01T00:00:00Z",
+    }),
+  ];
+  const map = buildCaseMap(cases);
+  const status = getCaseStatus("aapl", map);
+  assert.equal(status.hasCase, true);
+  assert.equal(status.attentionState, "drift-detected");
+});

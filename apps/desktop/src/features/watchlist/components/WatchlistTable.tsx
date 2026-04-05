@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ConfidenceBadge } from "@/components/report/ConfidenceBadge";
+import { AttentionBadge } from "@/features/cases/components/AttentionBadge";
 import { StanceBadge } from "@/features/cases/components/StanceBadge";
 import { getCaseStatus } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
@@ -81,6 +82,11 @@ function formatReviewAge(days: number): string {
   if (days === 0) return "today";
   if (days === 1) return "1d ago";
   return `${String(days)}d ago`;
+}
+
+function formatCatalystDate(iso: string): string {
+  const d = new Date(iso);
+  return `Cat: ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
 
 function SortIndicator({
@@ -221,7 +227,7 @@ export function WatchlistTable({
                         );
                       }
                       return (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           {status.stance ? (
                             <StanceBadge
                               stance={status.stance}
@@ -234,11 +240,22 @@ export function WatchlistTable({
                               className="text-[10px] px-1.5 py-0"
                             />
                           ) : null}
+                          {status.attentionState ? (
+                            <AttentionBadge
+                              state={status.attentionState}
+                              className="text-[10px] px-1.5 py-0"
+                            />
+                          ) : null}
                           {status.daysSinceReview !== undefined ? (
                             <span
                               className={`text-[11px] ${status.isStale ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground/60"}`}
                             >
                               {formatReviewAge(status.daysSinceReview)}
+                            </span>
+                          ) : null}
+                          {status.nextCatalystDate ? (
+                            <span className="text-[11px] text-blue-600 dark:text-blue-400">
+                              {formatCatalystDate(status.nextCatalystDate)}
                             </span>
                           ) : null}
                         </div>

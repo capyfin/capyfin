@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ConfidenceBadge } from "@/components/report/ConfidenceBadge";
+import { AttentionBadge } from "@/features/cases/components/AttentionBadge";
 import { StanceBadge } from "@/features/cases/components/StanceBadge";
 import { getCaseStatus } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
@@ -27,6 +28,7 @@ interface HoldingsTableProps {
   caseMap?: Map<string, InvestmentCase>;
   onRemove: (ticker: string) => void;
   onTickerAction?: (card: ActionCard, ticker: string) => void;
+  onCreateCase?: ((ticker: string) => void) | undefined;
 }
 
 function formatCurrency(value: number): string {
@@ -38,11 +40,18 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
+function formatReviewAge(days: number): string {
+  if (days === 0) return "today";
+  if (days === 1) return "1d ago";
+  return `${String(days)}d ago`;
+}
+
 export function HoldingsTable({
   holdings,
   caseMap,
   onRemove,
   onTickerAction,
+  onCreateCase,
 }: HoldingsTableProps) {
   return (
     <Card className="overflow-hidden rounded-xl border border-border/50 shadow-sm dark:border-border/40">
@@ -146,14 +155,24 @@ export function HoldingsTable({
                         {(() => {
                           const status = getCaseStatus(holding.ticker, caseMap);
                           if (!status.hasCase) {
-                            return (
+                            return onCreateCase ? (
+                              <button
+                                type="button"
+                                className="text-[12px] text-muted-foreground/50 transition-colors hover:text-foreground"
+                                onClick={() => {
+                                  onCreateCase(holding.ticker);
+                                }}
+                              >
+                                + Create case
+                              </button>
+                            ) : (
                               <span className="text-[12px] text-muted-foreground/50">
                                 No case
                               </span>
                             );
                           }
                           return (
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex flex-wrap items-center gap-1.5">
                               {status.stance ? (
                                 <StanceBadge
                                   stance={status.stance}
@@ -165,6 +184,19 @@ export function HoldingsTable({
                                   confidence={status.confidence}
                                   className="text-[10px] px-1.5 py-0"
                                 />
+                              ) : null}
+                              {status.attentionState ? (
+                                <AttentionBadge
+                                  state={status.attentionState}
+                                  className="text-[10px] px-1.5 py-0"
+                                />
+                              ) : null}
+                              {status.daysSinceReview !== undefined ? (
+                                <span
+                                  className={`text-[11px] ${status.isStale ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground/60"}`}
+                                >
+                                  {formatReviewAge(status.daysSinceReview)}
+                                </span>
                               ) : null}
                             </div>
                           );

@@ -15,6 +15,7 @@ interface CaseSelectorProps {
   leftId: string | null;
   rightId: string | null;
   onSelectionChange: (leftId: string | null, rightId: string | null) => void;
+  onCasesLoaded?: (count: number) => void;
 }
 
 export function CaseSelector({
@@ -22,6 +23,7 @@ export function CaseSelector({
   leftId,
   rightId,
   onSelectionChange,
+  onCasesLoaded,
 }: CaseSelectorProps) {
   const [cases, setCases] = useState<InvestmentCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,12 +34,14 @@ export function CaseSelector({
       setIsLoading(true);
       const result = await client.listCases();
       setCases(result.cases);
+      onCasesLoaded?.(result.cases.length);
     } catch {
       // Silently fail — empty list is fine
+      onCasesLoaded?.(0);
     } finally {
       setIsLoading(false);
     }
-  }, [client]);
+  }, [client, onCasesLoaded]);
 
   useEffect(() => {
     void fetchCases();
@@ -53,11 +57,7 @@ export function CaseSelector({
   }
 
   if (cases.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        No cases available. Create cases with Deep Dive first.
-      </p>
-    );
+    return null;
   }
 
   return (

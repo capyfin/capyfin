@@ -72,7 +72,7 @@ export function FinancialDataSection({ client }: FinancialDataSectionProps) {
   return (
     <section
       data-testid="financial-data-section"
-      className="overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-blue-500/[0.03] to-card"
+      className="overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-blue-500/[0.03] to-card shadow-sm dark:border-border/30"
     >
       <div className="border-b border-border/40 px-4 py-3.5 lg:px-5">
         <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">

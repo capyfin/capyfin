@@ -41,7 +41,7 @@ export function AdvancedTab({
         Developer and debugging settings for advanced users.
       </p>
 
-      <div className="flex items-start gap-2.5 rounded-lg border border-yellow-500/15 bg-yellow-500/[0.04] p-3.5">
+      <div className="flex items-start gap-2.5 rounded-xl border border-yellow-500/15 bg-yellow-500/[0.04] p-3.5">
         <AlertTriangleIcon className="mt-0.5 size-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
         <p className="text-[12px] leading-relaxed text-yellow-700 dark:text-yellow-300/80">
           These settings are for power users. Changing them may affect
@@ -91,7 +91,7 @@ function ToggleRow({
   onChange: (value: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/60 bg-card p-4">
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-border/50 bg-card p-4 shadow-sm dark:border-border/30">
       <div className="min-w-0">
         <p className="text-[13px] font-medium text-foreground">{label}</p>
         <p className="mt-0.5 text-[12px] text-muted-foreground">

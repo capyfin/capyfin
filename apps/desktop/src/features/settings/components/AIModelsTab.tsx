@@ -201,27 +201,27 @@ export function AIModelsTab({
       ) : null}
 
       {storedConnections.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border/60 bg-card px-5 py-8 text-center text-[13px] text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-border/50 bg-card px-5 py-8 text-center text-[13px] text-muted-foreground shadow-sm dark:border-border/30">
           No saved connections yet. Add a provider to get started.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border/60 bg-card">
+        <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
           <Table>
             <TableHeader>
-              <TableRow className="border-border/60 hover:bg-transparent">
-                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+              <TableRow className="border-border/40 bg-muted/[0.04] hover:bg-muted/[0.04]">
+                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Provider
                 </TableHead>
-                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Connection
                 </TableHead>
-                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Model
                 </TableHead>
-                <TableHead className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Updated
                 </TableHead>
-                <TableHead className="text-right text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+                <TableHead className="text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                   Actions
                 </TableHead>
               </TableRow>
@@ -277,7 +277,7 @@ function ConnectionRow({
       : "");
 
   return (
-    <TableRow className="border-border/60 transition-colors hover:bg-muted/20">
+    <TableRow className="border-border/40 transition-colors hover:bg-muted/20">
       <TableCell className="text-[12px] font-medium">
         {getProviderDisplayName(
           connection.providerId,

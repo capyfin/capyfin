@@ -137,11 +137,13 @@ export function PreferencesTab({
         <FeedbackBanner tone="success">{feedback}</FeedbackBanner>
       ) : null}
 
-      <div className="rounded-lg border border-border/60 bg-card p-5">
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-          Investment Profile
-        </h3>
-        <div className="grid gap-4 sm:grid-cols-2">
+      <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
+        <div className="border-b border-border/40 bg-muted/[0.04] px-5 py-3">
+          <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            Investment Profile
+          </h3>
+        </div>
+        <div className="grid gap-4 p-5 sm:grid-cols-2">
           <SelectField
             label="Investment Style"
             value={investmentStyle}
@@ -175,11 +177,13 @@ export function PreferencesTab({
         </div>
       </div>
 
-      <div className="rounded-lg border border-border/60 bg-card p-5">
-        <label className="mb-3 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-          Favorite Sectors
-        </label>
-        <div className="flex flex-wrap gap-2">
+      <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
+        <div className="border-b border-border/40 bg-muted/[0.04] px-5 py-3">
+          <label className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            Favorite Sectors
+          </label>
+        </div>
+        <div className="flex flex-wrap gap-2 p-5">
           {SECTORS.map((sector) => {
             const isSelected = favoriteSectors.includes(sector);
             return (

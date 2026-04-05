@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import { CaseSelector } from "./CaseSelector";
+import { ComparisonEmptyState } from "./ComparisonEmptyState";
 import { ComparisonGrid } from "./ComparisonGrid";
 import { DifferencesSummary } from "./DifferencesSummary";
 import { PriorComparisonView } from "./PriorComparisonView";
@@ -35,6 +36,7 @@ export function ComparisonWorkspace({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [caseCount, setCaseCount] = useState<number | null>(null);
 
   const fetchCases = useCallback(async () => {
     if (!client) return;
@@ -242,6 +244,7 @@ export function ComparisonWorkspace({
           leftId={leftId}
           rightId={rightId}
           onSelectionChange={handleSelectionChange}
+          onCasesLoaded={setCaseCount}
         />
       ) : null}
 
@@ -278,6 +281,12 @@ export function ComparisonWorkspace({
             rightLabel={rightLabel}
           />
         </div>
+      ) : caseCount === 0 ? (
+        <ComparisonEmptyState
+          onDeepDive={() => {
+            window.location.hash = "#launchpad";
+          }}
+        />
       ) : (
         <div className="flex flex-1 items-center justify-center py-12">
           <p className="text-sm text-muted-foreground">

@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CASES_EMPTY_TEXT, CASE_DETAIL_TABS } from "./constants";
+import {
+  CASES_EMPTY_TEXT,
+  CASE_DETAIL_TABS,
+  COMPARISON_EMPTY_HEADING,
+  COMPARISON_EMPTY_TEXT,
+} from "./constants";
 import {
   alignSections,
   computeDifferences,
@@ -143,6 +148,33 @@ void test("ChangeBadge exports a function component", async () => {
 void test("PriorComparisonView exports a function component", async () => {
   const mod = await import("./components/PriorComparisonView");
   assert.equal(typeof mod.PriorComparisonView, "function");
+});
+
+void test("ComparisonEmptyState exports a function component", async () => {
+  const mod = await import("./components/ComparisonEmptyState");
+  assert.equal(typeof mod.ComparisonEmptyState, "function");
+});
+
+// ---------------------------------------------------------------------------
+// Comparison empty state constants
+// ---------------------------------------------------------------------------
+
+void test("COMPARISON_EMPTY_HEADING is a non-empty string", () => {
+  assert.ok(typeof COMPARISON_EMPTY_HEADING === "string");
+  assert.ok(COMPARISON_EMPTY_HEADING.length > 0);
+});
+
+void test("COMPARISON_EMPTY_TEXT is a non-empty string", () => {
+  assert.ok(typeof COMPARISON_EMPTY_TEXT === "string");
+  assert.ok(COMPARISON_EMPTY_TEXT.length > 0);
+});
+
+void test("COMPARISON_EMPTY_HEADING says no cases to compare", () => {
+  assert.ok(COMPARISON_EMPTY_HEADING.toLowerCase().includes("no cases"));
+});
+
+void test("COMPARISON_EMPTY_TEXT mentions Deep Dive", () => {
+  assert.ok(COMPARISON_EMPTY_TEXT.includes("Deep Dive"));
 });
 
 // ---------------------------------------------------------------------------

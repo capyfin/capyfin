@@ -130,12 +130,12 @@ export function ChannelCard({
   return (
     <>
       <div
-        className="flex items-center justify-between rounded-lg border border-border/60 bg-card p-4 transition-colors hover:border-border"
+        className="flex items-center justify-between rounded-xl border border-border/50 bg-card p-4 shadow-sm transition-colors hover:border-border dark:border-border/30"
         data-testid={`channel-card-${definition.type}`}
       >
         <div className="flex items-center gap-3">
           <div
-            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${definition.accent}`}
+            className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${definition.accent}`}
           >
             <Icon className={`size-4 ${definition.iconColor}`} />
           </div>

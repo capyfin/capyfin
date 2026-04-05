@@ -24,38 +24,44 @@ export function AppearanceTab() {
         Customize the look and feel of the application.
       </p>
 
-      <div className="rounded-lg border border-border/60 bg-card p-5">
-        <label className="mb-3 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-          Theme
-        </label>
-        <div className="grid grid-cols-3 gap-3">
-          {THEME_OPTIONS.map((option) => {
-            const Icon = option.icon;
-            const isActive = theme === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className={`flex flex-col items-center gap-2.5 rounded-lg border p-5 transition-all duration-200 ${
-                  isActive
-                    ? "border-primary/40 bg-primary/[0.06] text-foreground ring-1 ring-primary/20"
-                    : "border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted/30 hover:text-foreground"
-                }`}
-                onClick={() => {
-                  setTheme(option.value);
-                }}
-              >
-                <div
-                  className={`flex size-10 items-center justify-center rounded-full ${isActive ? "bg-primary/10" : "bg-muted/60"}`}
+      <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
+        <div className="border-b border-border/40 bg-muted/[0.04] px-5 py-3">
+          <label className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            Theme
+          </label>
+        </div>
+        <div className="p-5">
+          <div className="grid grid-cols-3 gap-3">
+            {THEME_OPTIONS.map((option) => {
+              const Icon = option.icon;
+              const isActive = theme === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`flex flex-col items-center gap-2.5 rounded-lg border p-5 transition-all duration-200 ${
+                    isActive
+                      ? "border-primary/40 bg-primary/[0.06] text-foreground ring-1 ring-primary/20"
+                      : "border-border/60 bg-background text-muted-foreground hover:border-border hover:bg-muted/30 hover:text-foreground"
+                  }`}
+                  onClick={() => {
+                    setTheme(option.value);
+                  }}
                 >
-                  <Icon
-                    className={`size-5 ${isActive ? "text-primary" : ""}`}
-                  />
-                </div>
-                <span className="text-[12px] font-medium">{option.label}</span>
-              </button>
-            );
-          })}
+                  <div
+                    className={`flex size-10 items-center justify-center rounded-full ${isActive ? "bg-primary/10" : "bg-muted/60"}`}
+                  >
+                    <Icon
+                      className={`size-5 ${isActive ? "text-primary" : ""}`}
+                    />
+                  </div>
+                  <span className="text-[12px] font-medium">
+                    {option.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

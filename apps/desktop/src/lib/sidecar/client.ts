@@ -96,7 +96,11 @@ import {
   type AddCaseHistoryEntryRequest,
   type CaseFromOutputRequest,
   type CaseFromOutputResponse,
+  type AttentionItem,
+  type AttentionItemList,
   investmentCaseSchema,
+  attentionItemSchema,
+  attentionItemListSchema,
   caseListSchema,
   createCaseRequestSchema,
   updateCaseRequestSchema,
@@ -554,6 +558,37 @@ export class SidecarClient {
         method: "POST",
       }),
     );
+  }
+
+  async getAttentionItems(filter?: {
+    urgency?: string;
+    attentionState?: string;
+  }): Promise<AttentionItemList> {
+    const params = new URLSearchParams();
+    if (filter?.urgency) {
+      params.set("urgency", filter.urgency);
+    }
+    if (filter?.attentionState) {
+      params.set("state", filter.attentionState);
+    }
+    const query = params.toString();
+    return attentionItemListSchema.parse(
+      await this.request(
+        `/monitoring/attention-items${query ? `?${query}` : ""}`,
+      ),
+    );
+  }
+
+  async dismissAttentionItem(itemId: string): Promise<AttentionItem> {
+    return attentionItemSchema.parse(
+      await this.request(`/monitoring/dismiss/${encodeURIComponent(itemId)}`, {
+        method: "POST",
+      }),
+    );
+  }
+
+  async triggerMonitoringScan(): Promise<void> {
+    await this.request("/monitoring/scan", { method: "POST" });
   }
 
   async getWatchlist(): Promise<WatchlistList> {

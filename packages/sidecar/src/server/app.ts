@@ -11,6 +11,7 @@ import { createDataProviderRoutes } from "./routes/data-providers.ts";
 import { createDeliveryChannelRoutes } from "./routes/delivery-channels.ts";
 import { createGlobalRoutes } from "./routes/global.ts";
 import { createLibraryRoutes } from "./routes/library.ts";
+import { createMonitoringRoutes } from "./routes/monitoring.ts";
 import { createPortfolioRoutes } from "./routes/portfolio.ts";
 import { createPortfolioV2Routes } from "./routes/portfolio-v2.ts";
 import { createPreferencesRoutes } from "./routes/preferences.ts";
@@ -85,6 +86,7 @@ export function createSidecarApp(runtime: SidecarRuntime): Hono<{
   app.route("/global", createGlobalRoutes(runtime));
   app.route("/auth", createAuthRoutes(runtime));
   app.route("/library", createLibraryRoutes(runtime));
+  app.route("/monitoring", createMonitoringRoutes(runtime));
   app.route("/portfolio", createPortfolioV2Routes(runtime));
   app.route("/preferences", createPreferencesRoutes(runtime));
   app.route("/providers", createDataProviderRoutes(runtime));

@@ -975,6 +975,31 @@ export type CaseFromOutputResponse = z.infer<
   typeof caseFromOutputResponseSchema
 >;
 
+// ─── Monitoring / Attention Items ───────────────────────────────────────
+
+export const urgencySchema = z.enum(["high", "medium", "low"]);
+
+export const attentionItemSchema = z.object({
+  id: z.string(),
+  caseId: z.string(),
+  ticker: z.string(),
+  companyName: z.string(),
+  reason: z.string(),
+  urgency: urgencySchema,
+  attentionState: attentionStateSchema,
+  detectedAt: z.string(),
+  dismissed: z.boolean(),
+});
+
+export const attentionItemListSchema = z.object({
+  items: z.array(attentionItemSchema),
+  lastScanAt: z.string().nullable(),
+});
+
+export type Urgency = z.infer<typeof urgencySchema>;
+export type AttentionItem = z.infer<typeof attentionItemSchema>;
+export type AttentionItemList = z.infer<typeof attentionItemListSchema>;
+
 export const appManifest = appManifestSchema.parse(appManifestJson);
 
 export function createBasicAuthHeader(

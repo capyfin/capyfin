@@ -8,6 +8,7 @@ import { loadSidecarConfig, type SidecarConfig } from "./config.ts";
 import { DataProviderService } from "./data-providers/service.ts";
 import { DeliveryChannelService } from "./delivery-channels/service.ts";
 import { LibraryService } from "./library/service.ts";
+import { MonitoringService } from "./monitoring/service.ts";
 import { PortfolioService } from "./portfolio/service.ts";
 import { PreferencesService } from "./preferences/service.ts";
 import { WatchlistService } from "./watchlist/service.ts";
@@ -61,6 +62,10 @@ export async function startSidecarServer(
     gatewaySupervisor.paths.stateDir,
   );
   const casesService = new CasesService(gatewaySupervisor.paths.stateDir);
+  const monitoringService = new MonitoringService(
+    gatewaySupervisor.paths.stateDir,
+    casesService,
+  );
   const dataProviderService = new DataProviderService(
     gatewaySupervisor.paths.stateDir,
   );
@@ -94,6 +99,7 @@ export async function startSidecarServer(
     dataProviderService,
     deliveryChannelService,
     libraryService,
+    monitoringService,
     portfolioService,
     preferencesService,
     watchlistService,
@@ -118,8 +124,11 @@ export async function startSidecarServer(
     },
   );
 
+  runtime.monitoringService.start();
+
   return {
     async close() {
+      runtime.monitoringService.stop();
       server.close();
       await gatewaySupervisor.stop();
     },

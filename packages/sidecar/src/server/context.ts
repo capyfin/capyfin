@@ -8,6 +8,7 @@ import type { PreferencesService } from "../preferences/service.ts";
 import type { AutomationService } from "../automation/service.ts";
 import type { CasesService } from "../cases/service.ts";
 import type { DeliveryChannelService } from "../delivery-channels/service.ts";
+import type { MonitoringService } from "../monitoring/service.ts";
 import type { WatchlistService } from "../watchlist/service.ts";
 import type { EmbeddedGatewayClient } from "../internal-gateway/gateway-client.ts";
 import type { EmbeddedGatewaySupervisor } from "../internal-gateway/supervisor.ts";
@@ -21,6 +22,7 @@ export interface SidecarRuntime {
   dataProviderService: DataProviderService;
   deliveryChannelService: DeliveryChannelService;
   libraryService: LibraryService;
+  monitoringService: MonitoringService;
   portfolioService: PortfolioService;
   preferencesService: PreferencesService;
   watchlistService: WatchlistService;

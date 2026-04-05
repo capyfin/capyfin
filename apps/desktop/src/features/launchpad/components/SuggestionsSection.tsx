@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   Lightbulb,
   RotateCcw,
@@ -10,6 +10,7 @@ import {
 import type { AgentSession } from "@capyfin/contracts";
 import type { ActionCard } from "../types";
 import { actionCards } from "../card-registry";
+import { TickerInputDialog } from "./TickerInputDialog";
 
 interface SuggestionsSectionProps {
   sessions: AgentSession[];
@@ -58,6 +59,15 @@ export function SuggestionsSection({
   onSessionSelect,
   onCardClick,
 }: SuggestionsSectionProps) {
+  const [pendingCard, setPendingCard] = useState<ActionCard | null>(null);
+
+  const handleTickerSubmit = useCallback(
+    (card: ActionCard, ticker: string) => {
+      onCardClick?.(card, ticker);
+    },
+    [onCardClick],
+  );
+
   /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
   const suggestions: Suggestion[] = useMemo(() => {
     if (sessions.length === 0) {
@@ -75,13 +85,7 @@ export function SuggestionsSection({
             if (card?.input === "none") {
               onCardClick?.(card);
             } else if (card) {
-              const el = document.querySelector(
-                `[data-card-id="${fs.cardId}"]`,
-              );
-              if (el instanceof HTMLElement) {
-                el.scrollIntoView({ behavior: "smooth", block: "center" });
-                el.click();
-              }
+              setPendingCard(card);
             }
           }
         },
@@ -177,6 +181,15 @@ export function SuggestionsSection({
           );
         })}
       </div>
+
+      <TickerInputDialog
+        card={pendingCard}
+        open={pendingCard !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingCard(null);
+        }}
+        onSubmit={handleTickerSubmit}
+      />
     </section>
   );
 }

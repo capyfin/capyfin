@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   Newspaper,
   Search,
@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { actionCards } from "../card-registry";
 import type { ActionCard } from "../types";
+import { TickerInputDialog } from "./TickerInputDialog";
 
 interface LaunchpadHeroBarProps {
   onCardClick?: ((card: ActionCard, input?: string) => void) | undefined;
@@ -62,6 +63,7 @@ export function LaunchpadHeroBar({
 }: LaunchpadHeroBarProps) {
   const greeting = useMemo(() => getGreeting(), []);
   const formattedDate = useMemo(() => getFormattedDate(), []);
+  const [pendingCard, setPendingCard] = useState<ActionCard | null>(null);
 
   const handleQuickAction = useCallback(
     (def: QuickActionDef) => {
@@ -76,13 +78,16 @@ export function LaunchpadHeroBar({
         if (card.input === "none") {
           onCardClick?.(card);
         } else {
-          const el = document.querySelector(`[data-card-id="${def.cardId}"]`);
-          if (el instanceof HTMLElement) {
-            el.scrollIntoView({ behavior: "smooth", block: "center" });
-            el.click();
-          }
+          setPendingCard(card);
         }
       }
+    },
+    [onCardClick],
+  );
+
+  const handleTickerSubmit = useCallback(
+    (card: ActionCard, ticker: string) => {
+      onCardClick?.(card, ticker);
     },
     [onCardClick],
   );
@@ -140,6 +145,15 @@ export function LaunchpadHeroBar({
           );
         })}
       </div>
+
+      <TickerInputDialog
+        card={pendingCard}
+        open={pendingCard !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingCard(null);
+        }}
+        onSubmit={handleTickerSubmit}
+      />
     </div>
   );
 }

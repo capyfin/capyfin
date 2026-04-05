@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   Search,
   RefreshCw,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { actionCards } from "../card-registry";
 import type { ActionCard } from "../types";
+import { TickerInputDialog } from "./TickerInputDialog";
 
 interface QuickActionsProps {
   onCardClick?: ((card: ActionCard, input?: string) => void) | undefined;
@@ -58,6 +59,8 @@ const quickActionDefs: QuickActionDef[] = [
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
 export function QuickActions({ onCardClick }: QuickActionsProps) {
+  const [pendingCard, setPendingCard] = useState<ActionCard | null>(null);
+
   const handleAction = useCallback(
     (def: QuickActionDef) => {
       if (def.href) {
@@ -71,13 +74,16 @@ export function QuickActions({ onCardClick }: QuickActionsProps) {
         if (card.input === "none") {
           onCardClick?.(card);
         } else {
-          const el = document.querySelector(`[data-card-id="${def.cardId}"]`);
-          if (el instanceof HTMLElement) {
-            el.scrollIntoView({ behavior: "smooth", block: "center" });
-            el.click();
-          }
+          setPendingCard(card);
         }
       }
+    },
+    [onCardClick],
+  );
+
+  const handleTickerSubmit = useCallback(
+    (card: ActionCard, ticker: string) => {
+      onCardClick?.(card, ticker);
     },
     [onCardClick],
   );
@@ -115,6 +121,15 @@ export function QuickActions({ onCardClick }: QuickActionsProps) {
           );
         })}
       </div>
+
+      <TickerInputDialog
+        card={pendingCard}
+        open={pendingCard !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingCard(null);
+        }}
+        onSubmit={handleTickerSubmit}
+      />
     </section>
   );
 }

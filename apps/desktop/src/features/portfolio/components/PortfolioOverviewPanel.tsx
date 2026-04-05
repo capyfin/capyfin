@@ -62,9 +62,9 @@ export function PortfolioOverviewPanel({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="border-border/50 dark:border-border/30">
+        <Card className="overflow-hidden rounded-xl border-border/50 dark:border-border/30">
           <CardContent className="flex items-center gap-3.5 p-4">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 ring-2 ring-primary/[0.06]">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] ring-1 ring-primary/10">
               <BriefcaseIcon className="size-4.5 text-primary" />
             </div>
             <div>
@@ -78,9 +78,9 @@ export function PortfolioOverviewPanel({
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 dark:border-border/30">
+        <Card className="overflow-hidden rounded-xl border-border/50 dark:border-border/30">
           <CardContent className="flex items-center gap-3.5 p-4">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-blue-500/10 ring-2 ring-blue-500/[0.06]">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-blue-500/[0.08] ring-1 ring-blue-500/10">
               <LayersIcon className="size-4.5 text-blue-500" />
             </div>
             <div>
@@ -94,9 +94,9 @@ export function PortfolioOverviewPanel({
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 dark:border-border/30">
+        <Card className="overflow-hidden rounded-xl border-border/50 dark:border-border/30">
           <CardContent className="flex items-center gap-3.5 p-4">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-500/10 ring-2 ring-emerald-500/[0.06]">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/[0.08] ring-1 ring-emerald-500/10">
               <LayersIcon className="size-4.5 text-emerald-500" />
             </div>
             <div>

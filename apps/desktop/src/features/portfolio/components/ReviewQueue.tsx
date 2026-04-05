@@ -100,14 +100,23 @@ export function ReviewQueue({
   if (reviewItems.length === 0) return null;
 
   return (
-    <Card className="border-border/50 shadow-sm dark:border-border/30">
-      <CardHeader>
-        <CardTitle className="text-[17px] font-semibold tracking-tight">
-          Review Queue
-        </CardTitle>
-        <CardDescription className="text-[13px]">
-          Holdings that need attention — stale or missing investment cases.
-        </CardDescription>
+    <Card className="overflow-hidden rounded-xl border-border/50 shadow-sm dark:border-border/30">
+      <CardHeader className="pb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-amber-500/[0.08] text-amber-500 ring-1 ring-amber-500/10">
+            <RefreshCwIcon className="size-4" />
+          </div>
+          <div>
+            <CardTitle className="text-[15px] font-semibold tracking-tight">
+              Review Queue
+            </CardTitle>
+            <CardDescription className="text-[12px] text-muted-foreground/70">
+              {reviewItems.length}{" "}
+              {reviewItems.length === 1 ? "holding" : "holdings"} needing
+              attention
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="divide-y divide-border/40">

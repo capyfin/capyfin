@@ -94,6 +94,8 @@ import {
   type DeleteCaseResponse,
   type CaseHistoryEntry,
   type AddCaseHistoryEntryRequest,
+  type CaseFromOutputRequest,
+  type CaseFromOutputResponse,
   investmentCaseSchema,
   caseListSchema,
   createCaseRequestSchema,
@@ -101,6 +103,8 @@ import {
   deleteCaseResponseSchema,
   caseHistoryEntrySchema,
   addCaseHistoryEntryRequestSchema,
+  caseFromOutputRequestSchema,
+  caseFromOutputResponseSchema,
   watchlistListSchema,
   watchlistItemSchema,
   addWatchlistItemRequestSchema,
@@ -536,6 +540,17 @@ export class SidecarClient {
     return caseHistoryEntrySchema.parse(
       await this.request(`/cases/${encodeURIComponent(id)}/history`, {
         body: JSON.stringify(addCaseHistoryEntryRequestSchema.parse(entry)),
+        method: "POST",
+      }),
+    );
+  }
+
+  async caseFromOutput(
+    request: CaseFromOutputRequest,
+  ): Promise<CaseFromOutputResponse> {
+    return caseFromOutputResponseSchema.parse(
+      await this.request("/cases/from-output", {
+        body: JSON.stringify(caseFromOutputRequestSchema.parse(request)),
         method: "POST",
       }),
     );

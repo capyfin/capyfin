@@ -1,5 +1,7 @@
 import {
   addCaseHistoryEntryRequestSchema,
+  caseFromOutputRequestSchema,
+  caseFromOutputResponseSchema,
   caseHistoryEntrySchema,
   caseListSchema,
   createCaseRequestSchema,
@@ -16,6 +18,35 @@ export function createCasesRoutes(runtime: SidecarRuntime): Hono {
   app.get("/", async (context) => {
     const cases = await runtime.casesService.listCases();
     return context.json(caseListSchema.parse({ cases }));
+  });
+
+  app.post("/from-output", async (context) => {
+    try {
+      const payload = caseFromOutputRequestSchema.parse(
+        await context.req.json(),
+      );
+      const result = await runtime.casesService.createOrUpdateFromOutput(
+        payload.cardOutput,
+        payload.workflowType,
+      );
+      return context.json(
+        caseFromOutputResponseSchema.parse(result),
+        result.created ? 201 : 200,
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        if (
+          error.message.includes("Subject") ||
+          error.message.includes("subject")
+        ) {
+          return context.json({ error: error.message }, 400);
+        }
+        if (error.message.startsWith("No existing case found")) {
+          return context.json({ error: error.message }, 404);
+        }
+      }
+      throw error;
+    }
   });
 
   app.get("/:id", async (context) => {

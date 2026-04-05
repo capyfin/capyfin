@@ -350,3 +350,355 @@ void test("existing cases without new fields default gracefully", async () => {
     await rm(dir, { recursive: true });
   }
 });
+
+// ---------------------------------------------------------------------------
+// findByTicker
+// ---------------------------------------------------------------------------
+
+void test("findByTicker returns null when no cases exist", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    const result = await service.findByTicker("AAPL");
+    assert.equal(result, null);
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("findByTicker returns case with case-insensitive match", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    await service.createCase({ ticker: "AAPL", companyName: "Apple Inc." });
+    const found = await service.findByTicker("aapl");
+    assert.ok(found);
+    assert.equal(found.ticker, "AAPL");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("findByTicker returns most recently reviewed case if multiple exist", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    const older = await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+    });
+    // Small delay to ensure different timestamps
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    const newer = await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+    });
+    const found = await service.findByTicker("AAPL");
+    assert.ok(found);
+    assert.equal(found.id, newer.id);
+    assert.notEqual(found.id, older.id);
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// createOrUpdateFromOutput
+// ---------------------------------------------------------------------------
+
+import type { CardOutput } from "@capyfin/contracts";
+
+function stubCardOutput(overrides: Partial<CardOutput> = {}): CardOutput {
+  return {
+    cardId: "deep-dive",
+    subject: "AAPL",
+    title: "Apple Deep Dive",
+    summary: "A deep dive into Apple",
+    sections: [
+      {
+        id: "s1",
+        title: "Thesis",
+        confidence: "HIGH",
+        content: "Strong thesis content",
+        citations: [],
+      },
+    ],
+    keyRisks: ["Supply chain risk"],
+    challengeSummary: "Market saturation",
+    dataTier: "1",
+    sourcesUsed: ["10-K"],
+    dataAsOf: "2026-04-01",
+    companyName: "Apple Inc.",
+    stance: "bullish",
+    confidence: "HIGH",
+    keyAssumptions: ["Services growth"],
+    invalidationSignals: ["iPhone decline"],
+    ...overrides,
+  };
+}
+
+void test("createOrUpdateFromOutput: deep-dive creates new case with 'created' history", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    const result = await service.createOrUpdateFromOutput(
+      stubCardOutput(),
+      "deep-dive",
+    );
+    assert.equal(result.created, true);
+    assert.equal(result.case.ticker, "AAPL");
+    assert.equal(result.case.companyName, "Apple Inc.");
+    assert.equal(result.case.stance, "bullish");
+    assert.equal(result.case.confidence, "HIGH");
+    assert.equal(result.historyEntry.eventType, "created");
+    assert.ok(result.case.sections.length > 0);
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("createOrUpdateFromOutput: deep-dive with existing ticker upserts with 'refreshed' history", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    // Create initial case
+    await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+      stance: "neutral",
+      confidence: "LOW",
+      sections: [
+        {
+          id: "existing-s1",
+          title: "Thesis",
+          content: "Old thesis",
+          confidence: "LOW",
+          citations: [],
+        },
+      ],
+    });
+
+    const result = await service.createOrUpdateFromOutput(
+      stubCardOutput({ stance: "bullish", confidence: "HIGH" }),
+      "deep-dive",
+    );
+    assert.equal(result.created, false);
+    assert.equal(result.case.stance, "bullish");
+    assert.equal(result.case.confidence, "HIGH");
+    assert.equal(result.historyEntry.eventType, "refreshed");
+    // Section should be merged (existing ID preserved)
+    const thesisSection = result.case.sections.find(
+      (s) => s.title === "Thesis",
+    );
+    assert.ok(thesisSection);
+    assert.equal(thesisSection.id, "existing-s1");
+    assert.equal(thesisSection.content, "Strong thesis content");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("createOrUpdateFromOutput: position-review merges sections with 'refreshed' history", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+      stance: "neutral",
+      confidence: "MEDIUM",
+      sections: [
+        {
+          id: "orig-1",
+          title: "Thesis",
+          content: "Original thesis",
+          confidence: "MEDIUM",
+          citations: [],
+        },
+        {
+          id: "orig-2",
+          title: "Risks",
+          content: "Original risks",
+          confidence: "LOW",
+          citations: [],
+        },
+      ],
+    });
+
+    const result = await service.createOrUpdateFromOutput(
+      stubCardOutput({
+        cardId: "position-review",
+        stance: "bullish",
+        confidence: "HIGH",
+      }),
+      "position-review",
+    );
+    assert.equal(result.created, false);
+    assert.equal(result.case.stance, "bullish");
+    assert.equal(result.historyEntry.eventType, "refreshed");
+    // Thesis should be merged (existing ID preserved), Risks should remain
+    assert.ok(result.case.sections.length >= 2);
+    const thesis = result.case.sections.find((s) => s.title === "Thesis");
+    assert.ok(thesis);
+    assert.equal(thesis.id, "orig-1");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("createOrUpdateFromOutput: position-review with no existing case throws", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    await assert.rejects(
+      () =>
+        service.createOrUpdateFromOutput(
+          stubCardOutput({ cardId: "position-review" }),
+          "position-review",
+        ),
+      { message: /no existing case/i },
+    );
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("createOrUpdateFromOutput: earnings-xray merges sections with 'earnings-update' history", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+      stance: "bullish",
+      confidence: "HIGH",
+      sections: [
+        {
+          id: "orig-1",
+          title: "Thesis",
+          content: "Original thesis",
+          confidence: "HIGH",
+          citations: [],
+        },
+      ],
+    });
+
+    const result = await service.createOrUpdateFromOutput(
+      stubCardOutput({
+        cardId: "earnings-xray",
+        stance: "bearish",
+        confidence: "LOW",
+      }),
+      "earnings-xray",
+    );
+    assert.equal(result.created, false);
+    // Earnings X-Ray should NOT change stance/confidence
+    assert.equal(result.case.stance, "bullish");
+    assert.equal(result.case.confidence, "HIGH");
+    assert.equal(result.historyEntry.eventType, "earnings-update");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("createOrUpdateFromOutput: earnings-xray with no existing case throws", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    await assert.rejects(
+      () =>
+        service.createOrUpdateFromOutput(
+          stubCardOutput({ cardId: "earnings-xray" }),
+          "earnings-xray",
+        ),
+      { message: /no existing case/i },
+    );
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("createOrUpdateFromOutput: section merging preserves user edits", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+      sections: [
+        {
+          id: "user-section",
+          title: "My Notes",
+          content: "User personal notes",
+          confidence: "MEDIUM",
+          citations: [],
+        },
+        {
+          id: "orig-thesis",
+          title: "Thesis",
+          content: "Old thesis",
+          confidence: "MEDIUM",
+          citations: [],
+        },
+      ],
+    });
+
+    const result = await service.createOrUpdateFromOutput(
+      stubCardOutput(),
+      "deep-dive",
+    );
+    // "My Notes" should be preserved (not matched by incoming)
+    const userSection = result.case.sections.find(
+      (s) => s.title === "My Notes",
+    );
+    assert.ok(userSection);
+    assert.equal(userSection.content, "User personal notes");
+    assert.equal(userSection.id, "user-section");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("createOrUpdateFromOutput: history summary includes stance change", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    await service.createCase({
+      ticker: "AAPL",
+      companyName: "Apple Inc.",
+      stance: "neutral",
+      confidence: "LOW",
+    });
+
+    const result = await service.createOrUpdateFromOutput(
+      stubCardOutput({ stance: "bullish", confidence: "HIGH" }),
+      "position-review",
+    );
+    assert.ok(
+      result.historyEntry.summary.includes(
+        "Stance changed from neutral to bullish",
+      ),
+    );
+    assert.equal(result.historyEntry.priorStance, "neutral");
+    assert.equal(result.historyEntry.newStance, "bullish");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("createOrUpdateFromOutput: throws when subject is missing", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new CasesService(dir);
+    await assert.rejects(
+      () =>
+        service.createOrUpdateFromOutput(
+          stubCardOutput({ subject: undefined }),
+          "deep-dive",
+        ),
+      { message: /subject.*required/i },
+    );
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});

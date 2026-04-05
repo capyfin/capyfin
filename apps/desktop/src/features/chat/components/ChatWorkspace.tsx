@@ -74,12 +74,7 @@ import { createChatTransport } from "@/features/chat/transport";
 import { SidecarClient } from "@/lib/sidecar/client";
 import { deriveSessionLabel } from "@/features/chat/session-label";
 import { tryParseCardOutput } from "@/features/chat/structured-output";
-import {
-  isDeepDiveOutput,
-  isPositionReviewOutput,
-  mapCardOutputToCase,
-  mapCardOutputToUpdateCase,
-} from "@/features/chat/case-mapper";
+import type { CaseFromOutputRequest } from "@capyfin/contracts";
 import { ReportView } from "@/components/report";
 import { WatchlistItemDialog } from "@/features/watchlist/components/WatchlistItemDialog";
 import type { PendingCardPrompt } from "@/app/state/app-state";
@@ -384,112 +379,52 @@ function ChatSessionView({
         return;
       }
 
-      // Handle Position Review → update existing case
-      if (isPositionReviewOutput(cardOutput)) {
-        const updateRequest = mapCardOutputToUpdateCase(cardOutput);
-        const subject = cardOutput.subject;
-        if (!updateRequest || !subject) return;
-        createdCasesRef.current.add(messageId);
-
-        void (async () => {
-          try {
-            // Find the existing case by ticker
-            const { cases } = await client.listCases();
-            const ticker = subject.toUpperCase();
-            const existingCase = cases
-              .filter((c) => c.ticker.toUpperCase() === ticker)
-              .sort(
-                (a, b) =>
-                  new Date(b.lastReviewedAt).getTime() -
-                  new Date(a.lastReviewedAt).getTime(),
-              )[0];
-
-            if (!existingCase) {
-              toast.error(`No existing case found for ${ticker}`);
-              createdCasesRef.current.delete(messageId);
-              return;
-            }
-
-            const priorStance = existingCase.stance;
-            const priorConfidence = existingCase.confidence;
-
-            const updated = await client.updateCase(
-              existingCase.id,
-              updateRequest,
-            );
-            lastCreatedCaseIdRef.current = updated.id;
-
-            // Add history entry
-            const newStance = updated.stance;
-            const newConfidence = updated.confidence;
-            const stanceChanged = priorStance !== newStance;
-            const summary = stanceChanged
-              ? `Position reviewed — stance changed from ${priorStance} to ${newStance}`
-              : `Position reviewed — stance unchanged (${newStance})`;
-
-            void client.addCaseHistoryEntry(existingCase.id, {
-              eventType: "refreshed",
-              summary,
-              priorStance,
-              newStance,
-              priorConfidence,
-              newConfidence,
-            });
-
-            // Save to Library
-            void client.saveReport({
-              cardOutput,
-              workflowType: "position-review",
-              subject: cardOutput.subject,
-            });
-
-            toast.success("Investment case refreshed", {
-              action: {
-                label: "View Case",
-                onClick: () => {
-                  window.location.hash = `#cases/${updated.id}`;
-                },
-              },
-            });
-          } catch {
-            createdCasesRef.current.delete(messageId);
-            toast.error("Failed to refresh investment case");
-          }
-        })();
+      // Only handle case-related workflows with a subject (ticker)
+      const workflowType =
+        cardOutput.cardId as CaseFromOutputRequest["workflowType"];
+      const supportedWorkflows = [
+        "deep-dive",
+        "position-review",
+        "earnings-xray",
+      ];
+      if (!supportedWorkflows.includes(workflowType) || !cardOutput.subject) {
         return;
       }
 
-      // Handle Deep Dive → create new case
-      if (!isDeepDiveOutput(cardOutput)) {
-        return;
-      }
-      const request = mapCardOutputToCase(cardOutput);
-      if (!request) {
-        return;
-      }
       createdCasesRef.current.add(messageId);
 
       void (async () => {
         try {
-          const created = await client.createCase(request);
-          lastCreatedCaseIdRef.current = created.id;
-          // Also save to Library
+          const result = await client.caseFromOutput({
+            cardOutput,
+            workflowType,
+          });
+          lastCreatedCaseIdRef.current = result.case.id;
+
+          // Save to Library
           void client.saveReport({
             cardOutput,
-            workflowType: "deep-dive",
+            workflowType: cardOutput.cardId,
             subject: cardOutput.subject,
           });
-          toast.success("Investment case created", {
+
+          const toastMessage = result.created
+            ? "Investment case created"
+            : workflowType === "earnings-xray"
+              ? "Investment case updated with earnings data"
+              : "Investment case refreshed";
+
+          toast.success(toastMessage, {
             action: {
               label: "View Case",
               onClick: () => {
-                window.location.hash = `#cases/${created.id}`;
+                window.location.hash = `#cases/${result.case.id}`;
               },
             },
           });
         } catch {
           createdCasesRef.current.delete(messageId);
-          toast.error("Failed to create investment case");
+          toast.error("Failed to update investment case");
         }
       })();
     },

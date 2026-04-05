@@ -5,12 +5,20 @@ import {
   caseHistoryEntrySchema,
   investmentCaseSchema,
   type AddCaseHistoryEntryRequest,
+  type CardOutput,
+  type CaseFromOutputResponse,
   type CaseHistoryEntry,
   type CreateCaseRequest,
   type InvestmentCase,
   type UpdateCaseRequest,
 } from "@capyfin/contracts";
 import { computeAttentionState } from "./attention.ts";
+import { buildChangeSummary } from "./history-summary.ts";
+import {
+  cardOutputToCreateRequest,
+  cardOutputToUpdateFields,
+} from "./output-mapper.ts";
+import { mergeSections } from "./section-merge.ts";
 
 interface CasesStore {
   version: 1;
@@ -171,6 +179,112 @@ export class CasesService {
     });
     await this.#save(store);
     return entry;
+  }
+
+  async findByTicker(ticker: string): Promise<InvestmentCase | null> {
+    const store = await this.#load();
+    const normalized = ticker.toUpperCase();
+    const matches = store.cases.filter(
+      (c) => c.ticker.toUpperCase() === normalized,
+    );
+    if (matches.length === 0) {
+      return null;
+    }
+    // Return the most recently reviewed case
+    matches.sort(
+      (a, b) =>
+        new Date(b.lastReviewedAt).getTime() -
+        new Date(a.lastReviewedAt).getTime(),
+    );
+    const best = matches[0];
+    if (!best) return null;
+    return this.#enrichCase(best);
+  }
+
+  async createOrUpdateFromOutput(
+    cardOutput: CardOutput,
+    workflowType: "deep-dive" | "position-review" | "earnings-xray",
+  ): Promise<CaseFromOutputResponse> {
+    if (!cardOutput.subject) {
+      throw new Error("Subject (ticker) is required for case operations");
+    }
+
+    const existingCase = await this.findByTicker(cardOutput.subject);
+
+    // Deep Dive — create or upsert
+    if (workflowType === "deep-dive") {
+      if (!existingCase) {
+        const request = cardOutputToCreateRequest(cardOutput);
+        const created = await this.createCase(request);
+        const historyEntry = await this.addHistoryEntry(created.id, {
+          eventType: "created",
+          summary: `Case created via deep dive`,
+        });
+        return {
+          case: await this.getCase(created.id),
+          created: true,
+          historyEntry,
+        };
+      }
+
+      // Upsert existing case
+      const updateFields = cardOutputToUpdateFields(cardOutput, workflowType);
+      const mergedSections = mergeSections(
+        existingCase.sections,
+        updateFields.sections ?? [],
+      );
+      const updated = await this.updateCase(existingCase.id, {
+        ...updateFields,
+        sections: mergedSections,
+      });
+      const summary = buildChangeSummary(existingCase, updated, workflowType);
+      const historyEntry = await this.addHistoryEntry(existingCase.id, {
+        eventType: "refreshed",
+        summary,
+        priorStance: existingCase.stance,
+        newStance: updated.stance,
+        priorConfidence: existingCase.confidence,
+        newConfidence: updated.confidence,
+      });
+      return {
+        case: await this.getCase(existingCase.id),
+        created: false,
+        historyEntry,
+      };
+    }
+
+    // Position Review and Earnings X-Ray — require existing case
+    if (!existingCase) {
+      throw new Error(
+        `No existing case found for ${cardOutput.subject.toUpperCase()}`,
+      );
+    }
+
+    const eventType =
+      workflowType === "earnings-xray" ? "earnings-update" : "refreshed";
+    const updateFields = cardOutputToUpdateFields(cardOutput, workflowType);
+    const mergedSections = mergeSections(
+      existingCase.sections,
+      updateFields.sections ?? [],
+    );
+    const updated = await this.updateCase(existingCase.id, {
+      ...updateFields,
+      sections: mergedSections,
+    });
+    const summary = buildChangeSummary(existingCase, updated, workflowType);
+    const historyEntry = await this.addHistoryEntry(existingCase.id, {
+      eventType,
+      summary,
+      priorStance: existingCase.stance,
+      newStance: updated.stance,
+      priorConfidence: existingCase.confidence,
+      newConfidence: updated.confidence,
+    });
+    return {
+      case: await this.getCase(existingCase.id),
+      created: false,
+      historyEntry,
+    };
   }
 
   async #load(): Promise<CasesStore> {

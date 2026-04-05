@@ -959,6 +959,22 @@ export type AddCaseHistoryEntryRequest = z.infer<
   typeof addCaseHistoryEntryRequestSchema
 >;
 
+export const caseFromOutputRequestSchema = z.object({
+  cardOutput: cardOutputSchema,
+  workflowType: z.enum(["deep-dive", "position-review", "earnings-xray"]),
+});
+
+export const caseFromOutputResponseSchema = z.object({
+  case: investmentCaseSchema,
+  created: z.boolean(),
+  historyEntry: caseHistoryEntrySchema,
+});
+
+export type CaseFromOutputRequest = z.infer<typeof caseFromOutputRequestSchema>;
+export type CaseFromOutputResponse = z.infer<
+  typeof caseFromOutputResponseSchema
+>;
+
 export const appManifest = appManifestSchema.parse(appManifestJson);
 
 export function createBasicAuthHeader(

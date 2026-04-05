@@ -112,7 +112,7 @@ export function QuickActions({ onCardClick }: QuickActionsProps) {
               }}
             >
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary/[0.06] text-primary/70 transition-colors group-hover/qa:bg-primary/[0.10] group-hover/qa:text-primary dark:bg-primary/[0.08]">
-                <Icon className="size-5" />
+                <Icon className="size-4" />
               </div>
               <span className="text-[12px] font-medium text-muted-foreground transition-colors group-hover/qa:text-foreground">
                 {def.label}

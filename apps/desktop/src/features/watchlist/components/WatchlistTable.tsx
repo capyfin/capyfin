@@ -37,7 +37,39 @@ import { AttentionBadge } from "@/features/cases/components/AttentionBadge";
 import { StanceBadge } from "@/features/cases/components/StanceBadge";
 import { getCaseStatus } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
+import type { CaseStance } from "@capyfin/contracts";
 import { WATCHLIST_CARD_ACTIONS } from "@/features/watchlist/get-watchlist-card-actions";
+
+function getStatusDotColor(
+  ticker: string,
+  caseMap: Map<string, InvestmentCase>,
+): string {
+  const status = getCaseStatus(ticker, caseMap);
+  if (!status.hasCase) {
+    return "bg-muted-foreground/25";
+  }
+  // Attention states with urgency override stance color
+  if (
+    status.attentionState === "review-now" ||
+    status.attentionState === "drift-detected"
+  ) {
+    return "bg-red-500";
+  }
+  if (status.attentionState === "stale") {
+    return "bg-amber-500";
+  }
+  if (status.attentionState === "catalyst-upcoming") {
+    return "bg-blue-500";
+  }
+  // Stance-based color
+  const stanceColors: Record<CaseStance, string> = {
+    bullish: "bg-emerald-500",
+    bearish: "bg-red-500",
+    neutral: "bg-zinc-400 dark:bg-zinc-500",
+    watching: "bg-blue-500",
+  };
+  return status.stance ? stanceColors[status.stance] : "bg-muted-foreground/40";
+}
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
 const CARD_ICON_MAP: Record<
@@ -189,9 +221,16 @@ export function WatchlistTable({
                 className="group/row border-b border-border/25 transition-colors hover:bg-muted/30 dark:border-border/20"
               >
                 <TableCell className="pl-5">
-                  <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-sm font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
-                    {item.ticker}
-                  </span>
+                  <div className="flex items-center gap-2.5">
+                    {caseMap ? (
+                      <span
+                        className={`inline-block size-1.5 shrink-0 rounded-full ${getStatusDotColor(item.ticker, caseMap)}`}
+                      />
+                    ) : null}
+                    <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-sm font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
+                      {item.ticker}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <Badge
@@ -213,7 +252,7 @@ export function WatchlistTable({
                         return onCreateCase ? (
                           <button
                             type="button"
-                            className="text-[12px] text-muted-foreground/50 transition-colors hover:text-foreground"
+                            className="text-[12px] text-primary/70 transition-colors hover:text-primary"
                             onClick={() => {
                               onCreateCase(item.ticker);
                             }}
@@ -221,7 +260,7 @@ export function WatchlistTable({
                             + Create case
                           </button>
                         ) : (
-                          <span className="text-[12px] text-muted-foreground/50">
+                          <span className="text-[12px] text-primary/60">
                             + Create case
                           </span>
                         );

@@ -466,3 +466,88 @@ void test("AutomationDialog source uses getDefaultScheduleForCard for schedule p
     "AutomationDialog should import and use getDefaultScheduleForCard for pre-filling schedule",
   );
 });
+
+// --- Suggested Automations richer layout tests ---
+
+void test("SuggestedAutomations source uses vertical card layout with solid borders", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "SuggestedAutomations.tsx"),
+    "utf-8",
+  );
+  // Cards should use flex-col for vertical layout
+  assert.ok(
+    source.includes("flex-col"),
+    "Suggested cards should use vertical (flex-col) layout",
+  );
+  // Should NOT use border-dashed anymore
+  assert.ok(
+    !source.includes("border-dashed"),
+    "Suggested cards should use solid borders, not dashed",
+  );
+});
+
+void test("SuggestedAutomations source has benefit text for each card", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "SuggestedAutomations.tsx"),
+    "utf-8",
+  );
+  // Should contain benefit descriptions per task spec
+  assert.ok(
+    source.includes("Never miss a thesis-relevant"),
+    "Should include benefit text for watchlist-digest",
+  );
+  assert.ok(
+    source.includes("Start each day knowing"),
+    "Should include benefit text for review-queue",
+  );
+  assert.ok(
+    source.includes("concentration drift"),
+    "Should include benefit text for portfolio-review",
+  );
+});
+
+void test("SuggestedAutomations section heading uses visible opacity", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "SuggestedAutomations.tsx"),
+    "utf-8",
+  );
+  // Should NOT use /40 opacity on heading text
+  assert.ok(
+    !source.includes("text-muted-foreground/40"),
+    "Section heading should not use /40 opacity — should be more visible",
+  );
+});
+
+void test("SuggestedAutomations source includes schedule preview in cards", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "SuggestedAutomations.tsx"),
+    "utf-8",
+  );
+  // Schedule info should be always visible, not hidden
+  assert.ok(
+    source.includes("card.schedule"),
+    "Cards should display schedule preview",
+  );
+});
+
+void test("SuggestedAutomations source has prominent Set up CTA button", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "SuggestedAutomations.tsx"),
+    "utf-8",
+  );
+  // CTA should be always visible (not opacity-0 hidden until hover)
+  assert.ok(
+    !source.includes("opacity-0"),
+    "Set up CTA should be visible by default, not hidden with opacity-0",
+  );
+});

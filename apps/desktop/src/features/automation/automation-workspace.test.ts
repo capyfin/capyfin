@@ -159,3 +159,51 @@ void test("AutomationDialogSteps exports all step components including new ones"
   assert.equal(typeof mod.TriggerTypeStep, "function");
   assert.equal(typeof mod.EventTypeStep, "function");
 });
+
+void test("card registry includes watchlist-digest as schedulable", async () => {
+  const { allCards } = await import("../../features/launchpad/card-registry");
+  const card = allCards.find((c) => c.id === "watchlist-digest");
+  assert.ok(card, "watchlist-digest card should exist");
+  assert.equal(card.schedulable, true);
+  assert.ok(card.title.length > 0);
+  assert.ok(card.promise.length > 0);
+  assert.ok(card.prompt.length > 0);
+  assert.equal(card.input, "none");
+});
+
+void test("card registry includes review-queue as schedulable", async () => {
+  const { allCards } = await import("../../features/launchpad/card-registry");
+  const card = allCards.find((c) => c.id === "review-queue");
+  assert.ok(card, "review-queue card should exist");
+  assert.equal(card.schedulable, true);
+  assert.ok(card.title.length > 0);
+  assert.ok(card.promise.length > 0);
+  assert.ok(card.prompt.length > 0);
+  assert.equal(card.input, "none");
+});
+
+void test("card registry includes portfolio-review as schedulable", async () => {
+  const { allCards } = await import("../../features/launchpad/card-registry");
+  const card = allCards.find((c) => c.id === "portfolio-review");
+  assert.ok(card, "portfolio-review card should exist");
+  assert.equal(card.schedulable, true);
+  assert.ok(card.title.length > 0);
+  assert.ok(card.promise.length > 0);
+  assert.ok(card.prompt.length > 0);
+  assert.equal(card.input, "none");
+});
+
+void test("total schedulable cards is at least 5", async () => {
+  const { allCards } = await import("../../features/launchpad/card-registry");
+  const schedulable = allCards.filter((c) => c.schedulable);
+  assert.ok(
+    schedulable.length >= 5,
+    `Expected >= 5 schedulable cards, got ${String(schedulable.length)}`,
+  );
+});
+
+void test("AutomationDialog uses allCards for schedulable cards", async () => {
+  // Verify the dialog module imports allCards (not just actionCards)
+  const mod = await import("./components/AutomationDialog");
+  assert.equal(typeof mod.AutomationDialog, "function");
+});

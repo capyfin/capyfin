@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { actionCards } from "@/features/launchpad/card-registry";
+import { allCards } from "@/features/launchpad/card-registry";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import { STEP_LABELS } from "../schedule-utils";
 import {
@@ -50,7 +50,7 @@ export function AutomationDialog({
   editAutomation,
 }: AutomationDialogProps) {
   const isEdit = !!editAutomation;
-  const schedulableCards = actionCards.filter((c) => c.schedulable);
+  const schedulableCards = allCards.filter((c) => c.schedulable);
 
   const [step, setStep] = useState(0);
   const [cardId, setCardId] = useState("");

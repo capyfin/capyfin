@@ -43,6 +43,20 @@ void test("CASES_FILTER_TABS includes all required categories", () => {
   assert.ok(values.includes("drift"));
   assert.ok(values.includes("stale"));
   assert.ok(values.includes("recent"));
+  assert.ok(values.includes("archived"));
+});
+
+void test("CASES_FILTER_TABS has Archived tab after Recently Updated", () => {
+  const values = CASES_FILTER_TABS.map((t) => t.value);
+  const recentIdx = values.indexOf("recent");
+  const archivedIdx = values.indexOf("archived");
+  assert.ok(
+    archivedIdx > recentIdx,
+    "Archived tab should come after Recently Updated",
+  );
+  const archivedTab = CASES_FILTER_TABS[archivedIdx];
+  assert.ok(archivedTab);
+  assert.equal(archivedTab.label, "Archived");
 });
 
 void test("CASES_FILTER_TABS first item is All", () => {
@@ -211,6 +225,34 @@ void test("filterCases recent returns cases updated exactly 7 days ago", () => {
   const cases = [makeCase({ id: "1", updatedAt: sevenDaysAgo })];
   const result = filterCases(cases, "recent", EMPTY_SET, EMPTY_SET);
   assert.equal(result.length, 1);
+});
+
+// ---------------------------------------------------------------------------
+// filterCases — archived filter
+// ---------------------------------------------------------------------------
+
+void test("filterCases archived returns cases with watching stance and LOW confidence", () => {
+  const cases = [
+    makeCase({ id: "1", stance: "watching", confidence: "LOW" }),
+    makeCase({ id: "2", stance: "bullish", confidence: "HIGH" }),
+    makeCase({ id: "3", stance: "watching", confidence: "HIGH" }),
+    makeCase({ id: "4", stance: "watching", confidence: "LOW" }),
+  ];
+  const result = filterCases(cases, "archived", EMPTY_SET, EMPTY_SET);
+  assert.equal(result.length, 2);
+  assert.deepEqual(
+    result.map((c) => c.id),
+    ["1", "4"],
+  );
+});
+
+void test("filterCases archived returns empty when no archived cases", () => {
+  const cases = [
+    makeCase({ id: "1", stance: "bullish", confidence: "HIGH" }),
+    makeCase({ id: "2", stance: "bearish", confidence: "MEDIUM" }),
+  ];
+  const result = filterCases(cases, "archived", EMPTY_SET, EMPTY_SET);
+  assert.equal(result.length, 0);
 });
 
 // ---------------------------------------------------------------------------

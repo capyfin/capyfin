@@ -123,6 +123,51 @@ export const actionCards: ActionCard[] = [
     },
   },
   {
+    id: "watchlist-digest",
+    title: "Watchlist Digest",
+    promise:
+      "Weekly recap of watchlist changes, new signals, and price movements",
+    icon: "ListChecks",
+    category: "today",
+    input: "none",
+    estimatedDuration: "fast",
+    skills: ["watchlist-digest"],
+    persona: "macro-analyst",
+    prompt:
+      "Generate a watchlist digest summarizing recent activity across the user's watchlist. Cover: price movements and notable movers, new signals or attention state changes, upcoming catalysts for watched names, names that entered or exited target zones, and any new cases created or updated. Prioritize actionable changes over noise.",
+    schedulable: true,
+  },
+  {
+    id: "review-queue",
+    title: "Review Queue",
+    promise:
+      "Fresh prioritized review list from current case data and attention states",
+    icon: "ListOrdered",
+    category: "today",
+    input: "none",
+    estimatedDuration: "fast",
+    skills: ["review-queue"],
+    persona: "fundamental-analyst",
+    prompt:
+      "Generate a prioritized review queue from the current investment cases. Rank names by: new evidence since last review, risk significance, time since last review, position size or importance, catalyst timing, and severity of any detected drift. For each name include: ticker, reason for review, what changed, urgency level, and recommended action.",
+    schedulable: true,
+  },
+  {
+    id: "portfolio-review",
+    title: "Portfolio Review",
+    promise:
+      "Recurring portfolio health check — allocation, concentration, regime fit",
+    icon: "PieChart",
+    category: "today",
+    input: "none",
+    estimatedDuration: "medium",
+    skills: ["portfolio-review"],
+    persona: "macro-analyst",
+    prompt:
+      "Perform a recurring portfolio review covering: allocation summary and balance, concentration risks (any position >20% or sector >40%), holdings needing case refresh (stale or drifting cases), sector and theme exposure relative to current market regime, top risk markers across the portfolio, and specific rebalancing or review suggestions. Read portfolio.csv for current holdings.",
+    schedulable: true,
+  },
+  {
     id: "smart-money",
     title: "Smart Money",
     promise:

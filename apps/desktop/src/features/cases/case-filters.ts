@@ -21,6 +21,7 @@ export const CASES_FILTER_TABS: {
   { value: "drift", label: "Drift" },
   { value: "stale", label: "Stale" },
   { value: "recent", label: "Recently Updated" },
+  { value: "archived", label: "Archived" },
 ];
 
 const RECENT_DAYS = 7;

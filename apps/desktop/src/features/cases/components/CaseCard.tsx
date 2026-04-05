@@ -1,7 +1,16 @@
 import type { InvestmentCase } from "@capyfin/contracts";
+import { ActivityIcon, CalendarClockIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfidenceBadge } from "@/components/report/ConfidenceBadge";
 import { StanceBadge } from "./StanceBadge";
+import { AttentionBadge } from "./AttentionBadge";
+
+const STANCE_BORDER: Record<string, string> = {
+  bullish: "border-l-emerald-500/50",
+  bearish: "border-l-red-500/50",
+  neutral: "border-l-zinc-500/40",
+  watching: "border-l-blue-500/50",
+};
 
 interface CaseCardProps {
   investmentCase: InvestmentCase;
@@ -17,16 +26,19 @@ export function CaseCard({ investmentCase, onClick, selected }: CaseCardProps) {
       : thesisSection.content
     : null;
 
-  const reviewedDate = new Date(investmentCase.lastReviewedAt);
-  const formattedDate = reviewedDate.toLocaleDateString("en-US", {
+  const formattedDate = new Date(
+    investmentCase.lastReviewedAt,
+  ).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 
+  const borderColor = STANCE_BORDER[investmentCase.stance] ?? "";
+
   return (
     <Card
-      className={`cursor-pointer overflow-hidden rounded-xl border-border/50 transition-all hover:-translate-y-0.5 hover:border-border/70 hover:bg-muted/20 hover:shadow-md hover:shadow-black/[0.03] dark:border-border/30 dark:hover:border-border/50 dark:hover:shadow-black/20 ${selected === true ? "ring-2 ring-primary" : ""} ${selected === false ? "opacity-60" : ""}`}
+      className={`cursor-pointer overflow-hidden rounded-xl border-l-2 border-border/50 transition-all hover:-translate-y-0.5 hover:border-border/70 hover:bg-muted/20 hover:shadow-md hover:shadow-black/[0.03] dark:border-border/30 dark:hover:border-border/50 dark:hover:shadow-black/20 ${borderColor} ${selected === true ? "ring-2 ring-primary" : ""} ${selected === false ? "opacity-60" : ""}`}
       onClick={onClick}
     >
       <CardHeader className="pb-2">
@@ -40,6 +52,9 @@ export function CaseCard({ investmentCase, onClick, selected }: CaseCardProps) {
             </span>
           </CardTitle>
           <div className="flex shrink-0 items-center gap-1.5">
+            {investmentCase.attentionState ? (
+              <AttentionBadge state={investmentCase.attentionState} />
+            ) : null}
             <StanceBadge stance={investmentCase.stance} />
             <ConfidenceBadge confidence={investmentCase.confidence} />
           </div>
@@ -51,9 +66,25 @@ export function CaseCard({ investmentCase, onClick, selected }: CaseCardProps) {
             {snippet}
           </p>
         ) : null}
-        <p className="mt-2.5 text-[11px] text-muted-foreground/50">
-          Last reviewed {formattedDate}
-        </p>
+        <div className="mt-2.5 flex items-center gap-3 text-[11px] text-muted-foreground/50">
+          <span>Reviewed {formattedDate}</span>
+          {investmentCase.monitoringEnabled ? (
+            <span className="flex items-center gap-1">
+              <ActivityIcon className="size-3 text-emerald-500/60" />
+              Monitoring
+            </span>
+          ) : null}
+          {investmentCase.nextCatalystDate ? (
+            <span className="flex items-center gap-1">
+              <CalendarClockIcon className="size-3 text-blue-500/60" />
+              Catalyst{" "}
+              {new Date(investmentCase.nextCatalystDate).toLocaleDateString(
+                "en-US",
+                { month: "short", day: "numeric" },
+              )}
+            </span>
+          ) : null}
+        </div>
       </CardContent>
     </Card>
   );

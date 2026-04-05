@@ -167,17 +167,20 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-violet-500/[0.08] text-violet-500 ring-1 ring-violet-500/10">
-          <BookOpenIcon className="size-5" />
-        </div>
-        <div>
-          <h2 className="text-[17px] font-semibold tracking-tight">
-            Research Library
-          </h2>
-          <p className="text-[13px] text-muted-foreground">
-            {reports.length} {reports.length === 1 ? "report" : "reports"} saved
-          </p>
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-violet-500/[0.05] via-background to-primary/[0.03] px-5 py-4 dark:from-violet-500/[0.10] dark:to-primary/[0.05]">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-violet-500/[0.08] text-violet-500 ring-1 ring-violet-500/10">
+            <BookOpenIcon className="size-5" />
+          </div>
+          <div>
+            <h2 className="text-[17px] font-semibold tracking-tight">
+              Research Library
+            </h2>
+            <p className="text-[13px] text-muted-foreground">
+              {reports.length} {reports.length === 1 ? "report" : "reports"}{" "}
+              saved
+            </p>
+          </div>
         </div>
       </div>
 

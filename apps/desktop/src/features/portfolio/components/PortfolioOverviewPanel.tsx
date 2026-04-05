@@ -77,7 +77,7 @@ export function PortfolioOverviewPanel({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="overflow-hidden rounded-xl border-border/50 dark:border-border/30">
+        <Card className="relative overflow-hidden rounded-xl border-border/50 bg-gradient-to-br from-primary/[0.04] to-transparent dark:border-border/30 dark:from-primary/[0.08]">
           <CardContent className="flex items-center gap-3.5 p-4">
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] ring-1 ring-primary/10">
               <BriefcaseIcon className="size-4.5 text-primary" />
@@ -86,14 +86,14 @@ export function PortfolioOverviewPanel({
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/60">
                 Total Value
               </p>
-              <p className="text-[18px] font-semibold tabular-nums tracking-tight">
+              <p className="text-[20px] font-semibold tabular-nums tracking-tight">
                 {formatCurrency(portfolio.totalValue)}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden rounded-xl border-border/50 dark:border-border/30">
+        <Card className="relative overflow-hidden rounded-xl border-border/50 bg-gradient-to-br from-blue-500/[0.04] to-transparent dark:border-border/30 dark:from-blue-500/[0.08]">
           <CardContent className="flex items-center gap-3.5 p-4">
             <div className="flex size-10 items-center justify-center rounded-xl bg-blue-500/[0.08] ring-1 ring-blue-500/10">
               <LayersIcon className="size-4.5 text-blue-500" />
@@ -102,14 +102,14 @@ export function PortfolioOverviewPanel({
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/60">
                 Positions
               </p>
-              <p className="text-[18px] font-semibold tabular-nums tracking-tight">
+              <p className="text-[20px] font-semibold tabular-nums tracking-tight">
                 {positionCount}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden rounded-xl border-border/50 dark:border-border/30">
+        <Card className="relative overflow-hidden rounded-xl border-border/50 bg-gradient-to-br from-emerald-500/[0.04] to-transparent dark:border-border/30 dark:from-emerald-500/[0.08]">
           <CardContent className="flex items-center gap-3.5 p-4">
             <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/[0.08] ring-1 ring-emerald-500/10">
               <LayersIcon className="size-4.5 text-emerald-500" />
@@ -118,7 +118,7 @@ export function PortfolioOverviewPanel({
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/60">
                 Sectors
               </p>
-              <p className="text-[18px] font-semibold tabular-nums tracking-tight">
+              <p className="text-[20px] font-semibold tabular-nums tracking-tight">
                 {realSectorCount > 0 ? realSectorCount : "—"}
               </p>
             </div>

@@ -31,7 +31,7 @@ export function HistoryTab({ history }: HistoryTabProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border/60 bg-card px-5 py-4">
+    <div className="overflow-hidden rounded-xl border border-border/50 bg-card px-5 py-5 shadow-sm dark:border-border/30">
       <div className="flex flex-col gap-0">
         {history.map((entry, index) => {
           const date = new Date(entry.date);

@@ -30,52 +30,54 @@ export function SectionTab({ section, emptyMessage }: SectionTabProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border/60 bg-card p-5">
-      <div className="mb-4 flex items-center gap-2">
-        <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+    <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
+      <div className="flex items-center gap-2.5 border-b border-border/40 bg-muted/[0.04] px-5 py-3">
+        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
           {section.title}
         </h3>
         <ConfidenceBadge confidence={section.confidence} />
       </div>
 
-      <div className="prose-sm">
-        <MessageResponse>{section.content}</MessageResponse>
-      </div>
-
-      {section.citations.length > 0 ? (
-        <div className="mt-5 border-t border-border/40 pt-4">
-          <Accordion type="single" collapsible>
-            <AccordionItem value="citations" className="border-none">
-              <AccordionTrigger className="py-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground hover:no-underline">
-                {section.citations.length} source
-                {section.citations.length !== 1 ? "s" : ""}
-              </AccordionTrigger>
-              <AccordionContent>
-                <ul className="space-y-2 pt-1">
-                  {section.citations.map((citation, index) => (
-                    <li
-                      key={`${citation.source}-${String(index)}`}
-                      className="flex items-start gap-2 text-xs text-muted-foreground"
-                    >
-                      <ExternalLinkIcon className="mt-0.5 size-3 shrink-0 text-muted-foreground/50" />
-                      <span>
-                        <span className="font-medium text-foreground">
-                          {citation.label}
-                        </span>
-                        {" — "}
-                        {citation.source}
-                        <span className="ml-1 text-muted-foreground/60">
-                          ({citation.date})
-                        </span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+      <div className="p-5">
+        <div className="prose-sm">
+          <MessageResponse>{section.content}</MessageResponse>
         </div>
-      ) : null}
+
+        {section.citations.length > 0 ? (
+          <div className="mt-5 border-t border-border/40 pt-4">
+            <Accordion type="single" collapsible>
+              <AccordionItem value="citations" className="border-none">
+                <AccordionTrigger className="py-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground hover:no-underline">
+                  {section.citations.length} source
+                  {section.citations.length !== 1 ? "s" : ""}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="space-y-2 pt-1">
+                    {section.citations.map((citation, index) => (
+                      <li
+                        key={`${citation.source}-${String(index)}`}
+                        className="flex items-start gap-2 text-xs text-muted-foreground"
+                      >
+                        <ExternalLinkIcon className="mt-0.5 size-3 shrink-0 text-muted-foreground/50" />
+                        <span>
+                          <span className="font-medium text-foreground">
+                            {citation.label}
+                          </span>
+                          {" — "}
+                          {citation.source}
+                          <span className="ml-1 text-muted-foreground/60">
+                            ({citation.date})
+                          </span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -117,28 +117,34 @@ export function CaseDetailPage({
       </Button>
 
       {/* Header card */}
-      <div className="relative overflow-hidden rounded-xl border border-border/60 bg-card p-5">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-transparent" />
-        <div className="relative flex items-start justify-between gap-4">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-baseline gap-3">
-              <h1 className="text-2xl font-bold tracking-tight">
-                {investmentCase.ticker}
-              </h1>
-              <span className="text-base text-muted-foreground">
-                {investmentCase.companyName}
-              </span>
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-transparent to-emerald-500/[0.02]" />
+        <div className="relative flex items-start justify-between gap-4 p-5">
+          <div className="flex items-start gap-4">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-primary/[0.10] font-mono text-base font-bold tracking-wider text-primary ring-1 ring-primary/15">
+              {investmentCase.ticker.slice(0, 2)}
             </div>
-            <div className="flex items-center gap-2.5">
-              <StanceBadge stance={investmentCase.stance} />
-              <ConfidenceBadge confidence={investmentCase.confidence} />
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground/70">
-                <CalendarIcon className="size-3" />
-                Reviewed {formattedDate}
-              </span>
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-baseline gap-3">
+                <h1 className="font-mono text-xl font-bold tracking-wide text-foreground">
+                  {investmentCase.ticker}
+                </h1>
+                <span className="text-[15px] text-muted-foreground">
+                  {investmentCase.companyName}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <StanceBadge stance={investmentCase.stance} />
+                <ConfidenceBadge confidence={investmentCase.confidence} />
+                <div className="h-3.5 w-px bg-border/50" />
+                <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground/60">
+                  <CalendarIcon className="size-3" />
+                  Reviewed {formattedDate}
+                </span>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -186,12 +192,12 @@ export function CaseDetailPage({
 
       {/* Tabbed content */}
       <Tabs defaultValue="overview" className="flex-1">
-        <TabsList className="w-full justify-start border-b border-border/60 bg-transparent p-0 rounded-none h-auto">
+        <TabsList className="w-full justify-start gap-0.5 border-b border-border/50 bg-transparent p-0 px-1 rounded-none h-auto">
           {CASE_DETAIL_TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[13px] font-medium text-muted-foreground transition-colors data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+              className="rounded-none border-b-2 border-transparent px-3.5 py-2.5 text-[13px] font-medium text-muted-foreground/70 transition-colors data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
             >
               {tab.label}
             </TabsTrigger>

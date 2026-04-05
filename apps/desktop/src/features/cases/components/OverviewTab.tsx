@@ -105,16 +105,16 @@ function OverviewSection({
 }) {
   return (
     <div
-      className={`rounded-lg border border-border/60 bg-card p-4 ${accentClass ?? ""}`}
+      className={`overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30 ${accentClass ?? ""}`}
     >
-      <div className="mb-3 flex items-center gap-2">
+      <div className="flex items-center gap-2.5 border-b border-border/40 bg-muted/[0.04] px-5 py-3">
         {icon}
-        <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/70">
           {title}
         </h3>
         {confidence ? <ConfidenceBadge confidence={confidence} /> : null}
       </div>
-      {children}
+      <div className="p-5">{children}</div>
     </div>
   );
 }

@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   groupSessionsByDate,
+  partitionAllGroupsSessions,
   partitionGroupSessions,
+  type SessionGroup,
 } from "./session-grouping";
 
 // ---------------------------------------------------------------------------
@@ -218,4 +220,86 @@ void test("handles empty sessions array", () => {
   const result = partitionGroupSessions([]);
   assert.equal(result.named.length, 0);
   assert.equal(result.unnamed.length, 0);
+});
+
+// ---------------------------------------------------------------------------
+// partitionAllGroupsSessions
+// ---------------------------------------------------------------------------
+
+void test("partitionAllGroupsSessions aggregates unnamed from all groups", () => {
+  const groups: SessionGroup[] = [
+    {
+      label: "Today",
+      sessions: [
+        makeSession("t1", "2026-03-21T10:00:00Z", "Deep Dive: AAPL"),
+        makeSession("t2", "2026-03-21T09:00:00Z", "New conversation"),
+        makeSession("t3", "2026-03-21T08:00:00Z", "New conversation"),
+      ],
+    },
+    {
+      label: "Older",
+      sessions: [
+        makeSession("o1", "2026-01-05T12:00:00Z", "New conversation"),
+        makeSession("o2", "2026-01-04T12:00:00Z", "Morning Brief"),
+      ],
+    },
+  ];
+  const result = partitionAllGroupsSessions(groups);
+  // Named groups should only contain named sessions
+  assert.equal(result.namedGroups.length, 2);
+  assert.deepEqual(
+    at(result.namedGroups, 0).sessions.map((s) => s.id),
+    ["t1"],
+  );
+  assert.deepEqual(
+    at(result.namedGroups, 1).sessions.map((s) => s.id),
+    ["o2"],
+  );
+  // All unnamed aggregated
+  assert.equal(result.allUnnamed.length, 3);
+  assert.deepEqual(
+    result.allUnnamed.map((s) => s.id),
+    ["t2", "t3", "o1"],
+  );
+});
+
+void test("partitionAllGroupsSessions omits groups with only unnamed sessions", () => {
+  const groups: SessionGroup[] = [
+    {
+      label: "Today",
+      sessions: [makeSession("t1", "2026-03-21T10:00:00Z", "New conversation")],
+    },
+    {
+      label: "Older",
+      sessions: [makeSession("o1", "2026-01-05T12:00:00Z", "Morning Brief")],
+    },
+  ];
+  const result = partitionAllGroupsSessions(groups);
+  // Only the Older group should remain (Today had only unnamed)
+  assert.equal(result.namedGroups.length, 1);
+  assert.equal(at(result.namedGroups, 0).label, "Older");
+  assert.equal(result.allUnnamed.length, 1);
+  assert.equal(at(result.allUnnamed, 0).id, "t1");
+});
+
+void test("partitionAllGroupsSessions handles empty groups array", () => {
+  const result = partitionAllGroupsSessions([]);
+  assert.equal(result.namedGroups.length, 0);
+  assert.equal(result.allUnnamed.length, 0);
+});
+
+void test("partitionAllGroupsSessions returns empty unnamed when all are named", () => {
+  const groups: SessionGroup[] = [
+    {
+      label: "Today",
+      sessions: [
+        makeSession("a", "2026-03-21T10:00:00Z", "Deep Dive"),
+        makeSession("b", "2026-03-21T09:00:00Z", "Morning Brief"),
+      ],
+    },
+  ];
+  const result = partitionAllGroupsSessions(groups);
+  assert.equal(result.namedGroups.length, 1);
+  assert.equal(at(result.namedGroups, 0).sessions.length, 2);
+  assert.equal(result.allUnnamed.length, 0);
 });

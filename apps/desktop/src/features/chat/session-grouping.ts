@@ -30,6 +30,33 @@ export function partitionGroupSessions(
   return { named, unnamed };
 }
 
+export interface PartitionedAllSessions {
+  namedGroups: SessionGroup[];
+  allUnnamed: AgentSession[];
+}
+
+/**
+ * Partition all session groups at once: collect named sessions per group
+ * and aggregate all unnamed sessions into a single flat array.
+ * Groups that end up with zero named sessions are omitted.
+ */
+export function partitionAllGroupsSessions(
+  groups: SessionGroup[],
+): PartitionedAllSessions {
+  const namedGroups: SessionGroup[] = [];
+  const allUnnamed: AgentSession[] = [];
+
+  for (const group of groups) {
+    const { named, unnamed } = partitionGroupSessions(group.sessions);
+    allUnnamed.push(...unnamed);
+    if (named.length > 0) {
+      namedGroups.push({ label: group.label, sessions: named });
+    }
+  }
+
+  return { namedGroups, allUnnamed };
+}
+
 const GROUP_LABELS = [
   "Today",
   "Yesterday",

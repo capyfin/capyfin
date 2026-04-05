@@ -19,7 +19,7 @@ import {
 } from "@/features/settings/components/SettingsWorkspace";
 import {
   groupSessionsByDate,
-  partitionGroupSessions,
+  partitionAllGroupsSessions,
 } from "@/features/chat/session-grouping";
 import { formatSessionLabel } from "@/features/chat/session-label";
 import {
@@ -86,6 +86,10 @@ export function AppSidebar({
   const sessionGroups = useMemo(
     () => groupSessionsByDate(sessions ?? []),
     [sessions],
+  );
+  const { namedGroups, allUnnamed } = useMemo(
+    () => partitionAllGroupsSessions(sessionGroups),
+    [sessionGroups],
   );
 
   return (
@@ -164,71 +168,48 @@ export function AppSidebar({
               </SidebarGroupAction>
             ) : null}
             <SidebarGroupContent>
-              {sessionGroups.map((group) => {
-                const { named, unnamed } = partitionGroupSessions(
-                  group.sessions,
-                );
-                const collapseUnnamed = unnamed.length > 2;
-
-                return (
-                  <div key={group.label}>
-                    <div className="px-3 py-1.5 mt-3 first:mt-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50">
-                      {group.label}
-                    </div>
-                    <SidebarMenu>
-                      {named.map((session) => (
-                        <SessionItem
-                          key={session.id}
-                          isActive={session.id === activeSessionId}
-                          isEditing={editingSessionId === session.id}
-                          session={session}
-                          onDelete={onSessionDelete}
-                          onRename={onSessionRename}
-                          onSelect={onSessionSelect}
-                          onStartEditing={() => {
-                            setEditingSessionId(session.id);
-                          }}
-                          onStopEditing={() => {
-                            setEditingSessionId(null);
-                          }}
-                        />
-                      ))}
-                      {collapseUnnamed ? (
-                        <UnnamedSessionGroup
-                          sessions={unnamed}
-                          activeSessionId={activeSessionId}
-                          editingSessionId={editingSessionId}
-                          onDelete={onSessionDelete}
-                          onRename={onSessionRename}
-                          onSelect={onSessionSelect}
-                          onStartEditing={setEditingSessionId}
-                          onStopEditing={() => {
-                            setEditingSessionId(null);
-                          }}
-                        />
-                      ) : (
-                        unnamed.map((session) => (
-                          <SessionItem
-                            key={session.id}
-                            isActive={session.id === activeSessionId}
-                            isEditing={editingSessionId === session.id}
-                            session={session}
-                            onDelete={onSessionDelete}
-                            onRename={onSessionRename}
-                            onSelect={onSessionSelect}
-                            onStartEditing={() => {
-                              setEditingSessionId(session.id);
-                            }}
-                            onStopEditing={() => {
-                              setEditingSessionId(null);
-                            }}
-                          />
-                        ))
-                      )}
-                    </SidebarMenu>
+              {namedGroups.map((group) => (
+                <div key={group.label}>
+                  <div className="px-3 py-1.5 mt-3 first:mt-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50">
+                    {group.label}
                   </div>
-                );
-              })}
+                  <SidebarMenu>
+                    {group.sessions.map((session) => (
+                      <SessionItem
+                        key={session.id}
+                        isActive={session.id === activeSessionId}
+                        isEditing={editingSessionId === session.id}
+                        session={session}
+                        onDelete={onSessionDelete}
+                        onRename={onSessionRename}
+                        onSelect={onSessionSelect}
+                        onStartEditing={() => {
+                          setEditingSessionId(session.id);
+                        }}
+                        onStopEditing={() => {
+                          setEditingSessionId(null);
+                        }}
+                      />
+                    ))}
+                  </SidebarMenu>
+                </div>
+              ))}
+              {allUnnamed.length > 0 ? (
+                <SidebarMenu>
+                  <UnnamedSessionGroup
+                    sessions={allUnnamed}
+                    activeSessionId={activeSessionId}
+                    editingSessionId={editingSessionId}
+                    onDelete={onSessionDelete}
+                    onRename={onSessionRename}
+                    onSelect={onSessionSelect}
+                    onStartEditing={setEditingSessionId}
+                    onStopEditing={() => {
+                      setEditingSessionId(null);
+                    }}
+                  />
+                </SidebarMenu>
+              ) : null}
             </SidebarGroupContent>
           </SidebarGroup>
         ) : null}

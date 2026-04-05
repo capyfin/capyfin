@@ -9,6 +9,7 @@ import { AutomationEmptyState } from "./AutomationEmptyState";
 import { AutomationList } from "./AutomationList";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { RunHistoryPanel } from "./RunHistoryPanel";
+import { SuggestedAutomations } from "./SuggestedAutomations";
 
 export const AUTOMATION_EMPTY_TEXT =
   "No automations configured. Schedule recurring research and delivery workflows here.";
@@ -209,6 +210,14 @@ export function AutomationWorkspace({ client }: AutomationWorkspaceProps) {
             }}
             onViewRuns={(a) => {
               setRunsTarget(a);
+            }}
+          />
+
+          <SuggestedAutomations
+            existingCardIds={automations.map((a) => a.cardId)}
+            onSetUp={(cardId) => {
+              setInitialCardId(cardId);
+              setShowCreateDialog(true);
             }}
           />
         </>

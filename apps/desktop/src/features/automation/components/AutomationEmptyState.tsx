@@ -23,6 +23,14 @@ const iconMap: Record<string, LucideIcon> = {
 };
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
+const WEEKDAYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+] as const;
+
 export const SCHEDULABLE_CARDS = [
   {
     id: "morning-brief",
@@ -30,6 +38,8 @@ export const SCHEDULABLE_CARDS = [
     title: "Morning Brief",
     description: "Daily market context and watchlist signals",
     schedule: "Weekdays at 8:00 AM",
+    defaultTime: "08:00",
+    defaultDays: [...WEEKDAYS],
     color: "text-blue-500",
     bg: "bg-blue-500/10",
     ring: "ring-blue-500/15",
@@ -42,6 +52,8 @@ export const SCHEDULABLE_CARDS = [
     title: "Market Health",
     description: "Regime score, breadth, sector rotation signals",
     schedule: "Weekdays at 7:30 AM",
+    defaultTime: "07:30",
+    defaultDays: [...WEEKDAYS],
     color: "text-amber-500",
     bg: "bg-amber-500/10",
     ring: "ring-amber-500/15",
@@ -54,6 +66,8 @@ export const SCHEDULABLE_CARDS = [
     title: "Watchlist Digest",
     description: "Weekly recap of watchlist changes and new signals",
     schedule: "Every Monday at 9:00 AM",
+    defaultTime: "09:00",
+    defaultDays: ["monday"],
     color: "text-emerald-500",
     bg: "bg-emerald-500/10",
     ring: "ring-emerald-500/15",
@@ -66,6 +80,8 @@ export const SCHEDULABLE_CARDS = [
     title: "Review Queue",
     description: "Prioritized list of cases needing attention",
     schedule: "Weekdays at 8:30 AM",
+    defaultTime: "08:30",
+    defaultDays: [...WEEKDAYS],
     color: "text-violet-500",
     bg: "bg-violet-500/10",
     ring: "ring-violet-500/15",
@@ -79,6 +95,8 @@ export const SCHEDULABLE_CARDS = [
     description:
       "Recurring health check — allocation, concentration, regime fit",
     schedule: "Every Sunday at 10:00 AM",
+    defaultTime: "10:00",
+    defaultDays: ["sunday"],
     color: "text-rose-500",
     bg: "bg-rose-500/10",
     ring: "ring-rose-500/15",
@@ -86,6 +104,18 @@ export const SCHEDULABLE_CARDS = [
     hoverBorder: "hover:border-rose-500/30",
   },
 ];
+
+/**
+ * Returns the default schedule (time + days) for a given card ID,
+ * or null if the card ID is not found in SCHEDULABLE_CARDS.
+ */
+export function getDefaultScheduleForCard(
+  cardId: string,
+): { time: string; days: string[] } | null {
+  const card = SCHEDULABLE_CARDS.find((c) => c.id === cardId);
+  if (!card) return null;
+  return { time: card.defaultTime, days: [...card.defaultDays] };
+}
 
 interface AutomationEmptyStateProps {
   onCreate: () => void;

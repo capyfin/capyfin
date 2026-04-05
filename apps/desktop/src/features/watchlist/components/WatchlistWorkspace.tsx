@@ -1,9 +1,9 @@
 import type { InvestmentCase, WatchlistItem } from "@capyfin/contracts";
 import {
+  LightbulbIcon,
   ListChecksIcon,
   LoaderCircleIcon,
   PlusIcon,
-  SparklesIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -333,11 +333,11 @@ export function WatchlistWorkspace({
               items.length,
             );
             return guidance ? (
-              <div className="flex items-center gap-3 rounded-xl border border-dashed border-border/50 bg-muted/[0.02] px-5 py-4 dark:bg-muted/[0.04]">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/[0.06]">
-                  <SparklesIcon className="size-3.5 text-blue-500/60" />
+              <div className="flex items-center gap-3 rounded-xl border border-border/40 bg-gradient-to-br from-amber-500/[0.06] via-background to-blue-500/[0.04] px-5 py-4 dark:from-amber-500/[0.10] dark:to-blue-500/[0.06]">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 ring-1 ring-amber-500/10">
+                  <LightbulbIcon className="size-4 text-amber-500" />
                 </div>
-                <p className="text-[13px] text-muted-foreground/60">
+                <p className="text-[13px] leading-relaxed text-muted-foreground">
                   {guidance}
                 </p>
               </div>

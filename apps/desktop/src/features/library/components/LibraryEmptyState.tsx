@@ -25,8 +25,11 @@ const WORKFLOW_CARDS = [
     color: "text-blue-500",
     bg: "bg-blue-500/[0.08]",
     ring: "ring-blue-500/10",
-    hoverBg: "hover:bg-blue-500/[0.12]",
-    hoverBorder: "hover:border-blue-500/30",
+    hoverBg: "hover:bg-blue-500/[0.15]",
+    hoverBorder: "hover:border-blue-500/40",
+    gradient:
+      "bg-gradient-to-br from-blue-500/[0.06] via-transparent to-transparent",
+    borderLeft: "border-l-blue-500/40",
   },
   {
     id: "morning-brief",
@@ -36,8 +39,11 @@ const WORKFLOW_CARDS = [
     color: "text-amber-500",
     bg: "bg-amber-500/[0.08]",
     ring: "ring-amber-500/10",
-    hoverBg: "hover:bg-amber-500/[0.12]",
-    hoverBorder: "hover:border-amber-500/30",
+    hoverBg: "hover:bg-amber-500/[0.15]",
+    hoverBorder: "hover:border-amber-500/40",
+    gradient:
+      "bg-gradient-to-br from-amber-500/[0.06] via-transparent to-transparent",
+    borderLeft: "border-l-amber-500/40",
   },
   {
     id: "position-review",
@@ -47,8 +53,11 @@ const WORKFLOW_CARDS = [
     color: "text-emerald-500",
     bg: "bg-emerald-500/[0.08]",
     ring: "ring-emerald-500/10",
-    hoverBg: "hover:bg-emerald-500/[0.12]",
-    hoverBorder: "hover:border-emerald-500/30",
+    hoverBg: "hover:bg-emerald-500/[0.15]",
+    hoverBorder: "hover:border-emerald-500/40",
+    gradient:
+      "bg-gradient-to-br from-emerald-500/[0.06] via-transparent to-transparent",
+    borderLeft: "border-l-emerald-500/40",
   },
   {
     id: "compare-companies",
@@ -58,8 +67,11 @@ const WORKFLOW_CARDS = [
     color: "text-violet-500",
     bg: "bg-violet-500/[0.08]",
     ring: "ring-violet-500/10",
-    hoverBg: "hover:bg-violet-500/[0.12]",
-    hoverBorder: "hover:border-violet-500/30",
+    hoverBg: "hover:bg-violet-500/[0.15]",
+    hoverBorder: "hover:border-violet-500/40",
+    gradient:
+      "bg-gradient-to-br from-violet-500/[0.06] via-transparent to-transparent",
+    borderLeft: "border-l-violet-500/40",
   },
 ];
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */
@@ -70,7 +82,7 @@ export function LibraryEmptyState({
   onWorkflowClick,
 }: LibraryEmptyStateProps) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 py-12">
+    <div className="flex flex-1 flex-col items-center justify-center gap-5 py-12">
       <EmptyState
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
         icon={BookOpenIcon}
@@ -103,7 +115,7 @@ export function LibraryEmptyState({
               <button
                 key={card.label}
                 type="button"
-                className={`flex cursor-pointer items-start gap-3 rounded-xl border border-border/40 bg-card/30 px-4 py-3.5 text-left transition-all dark:bg-card/20 ${card.hoverBg} ${card.hoverBorder}`}
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border border-l-2 border-border/50 ${card.borderLeft} ${card.gradient} bg-card/50 px-4 py-3.5 text-left ring-1 ring-border/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.03] dark:bg-card/30 dark:hover:shadow-black/20 ${card.hoverBg} ${card.hoverBorder}`}
                 onClick={() => {
                   onWorkflowClick(card.id);
                 }}

@@ -308,3 +308,161 @@ void test("AutomationDialog imports useMemo from react", async () => {
     "AutomationDialog should import useMemo from react",
   );
 });
+
+// --- Suggested Automations tests ---
+
+void test("SuggestedAutomations exports a function component", async () => {
+  const mod = await import("./components/SuggestedAutomations");
+  assert.equal(typeof mod.SuggestedAutomations, "function");
+});
+
+void test("SuggestedAutomations exports getSuggestedCards helper", async () => {
+  const mod = await import("./components/SuggestedAutomations");
+  assert.equal(typeof mod.getSuggestedCards, "function");
+});
+
+void test("getSuggestedCards returns all 5 cards when no automations exist", async () => {
+  const { getSuggestedCards } =
+    await import("./components/SuggestedAutomations");
+  const suggested = getSuggestedCards([]);
+  assert.equal(suggested.length, 5);
+});
+
+void test("getSuggestedCards excludes cards that already have automations", async () => {
+  const { getSuggestedCards } =
+    await import("./components/SuggestedAutomations");
+  const suggested = getSuggestedCards(["morning-brief", "market-health"]);
+  assert.equal(suggested.length, 3);
+  const ids = suggested.map((c: { id: string }) => c.id);
+  assert.ok(!ids.includes("morning-brief"));
+  assert.ok(!ids.includes("market-health"));
+  assert.ok(ids.includes("watchlist-digest"));
+  assert.ok(ids.includes("review-queue"));
+  assert.ok(ids.includes("portfolio-review"));
+});
+
+void test("getSuggestedCards returns empty array when all 5 types are configured", async () => {
+  const { getSuggestedCards } =
+    await import("./components/SuggestedAutomations");
+  const allIds = [
+    "morning-brief",
+    "market-health",
+    "watchlist-digest",
+    "review-queue",
+    "portfolio-review",
+  ];
+  const suggested = getSuggestedCards(allIds);
+  assert.equal(suggested.length, 0);
+});
+
+void test("getSuggestedCards card entries have required fields", async () => {
+  const { getSuggestedCards } =
+    await import("./components/SuggestedAutomations");
+  const suggested = getSuggestedCards([]);
+  for (const card of suggested) {
+    assert.ok(card.id, "Card should have an id");
+    assert.ok(card.title, "Card should have a title");
+    assert.ok(card.description, "Card should have a description");
+    assert.ok(card.color, "Card should have a color class");
+    assert.ok(card.bg, "Card should have a bg class");
+  }
+});
+
+void test("AutomationWorkspace source renders SuggestedAutomations", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationWorkspace.tsx"),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("SuggestedAutomations"),
+    "AutomationWorkspace should render SuggestedAutomations component",
+  );
+});
+
+// --- Suggested automation schedule pre-fill tests ---
+
+void test("SCHEDULABLE_CARDS entries have defaultTime and defaultDays fields", async () => {
+  const { SCHEDULABLE_CARDS } =
+    await import("./components/AutomationEmptyState");
+  for (const card of SCHEDULABLE_CARDS) {
+    assert.ok(
+      typeof card.defaultTime === "string" &&
+        /^\d{2}:\d{2}$/.test(card.defaultTime),
+      `Card ${card.id} should have defaultTime in HH:MM format`,
+    );
+    assert.ok(
+      Array.isArray(card.defaultDays) && card.defaultDays.length > 0,
+      `Card ${card.id} should have non-empty defaultDays array`,
+    );
+  }
+});
+
+void test("watchlist-digest default schedule is Monday at 09:00", async () => {
+  const { SCHEDULABLE_CARDS } =
+    await import("./components/AutomationEmptyState");
+  const card = SCHEDULABLE_CARDS.find(
+    (c: { id: string }) => c.id === "watchlist-digest",
+  );
+  assert.ok(card);
+  assert.equal(card.defaultTime, "09:00");
+  assert.deepEqual(card.defaultDays, ["monday"]);
+});
+
+void test("review-queue default schedule is weekdays at 08:30", async () => {
+  const { SCHEDULABLE_CARDS } =
+    await import("./components/AutomationEmptyState");
+  const card = SCHEDULABLE_CARDS.find(
+    (c: { id: string }) => c.id === "review-queue",
+  );
+  assert.ok(card);
+  assert.equal(card.defaultTime, "08:30");
+  assert.deepEqual(card.defaultDays, [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+  ]);
+});
+
+void test("portfolio-review default schedule is Sunday at 10:00", async () => {
+  const { SCHEDULABLE_CARDS } =
+    await import("./components/AutomationEmptyState");
+  const card = SCHEDULABLE_CARDS.find(
+    (c: { id: string }) => c.id === "portfolio-review",
+  );
+  assert.ok(card);
+  assert.equal(card.defaultTime, "10:00");
+  assert.deepEqual(card.defaultDays, ["sunday"]);
+});
+
+void test("getDefaultScheduleForCard returns correct schedule for known cards", async () => {
+  const { getDefaultScheduleForCard } =
+    await import("./components/AutomationEmptyState");
+  const schedule = getDefaultScheduleForCard("watchlist-digest");
+  assert.ok(schedule);
+  assert.equal(schedule.time, "09:00");
+  assert.deepEqual(schedule.days, ["monday"]);
+});
+
+void test("getDefaultScheduleForCard returns null for unknown card ID", async () => {
+  const { getDefaultScheduleForCard } =
+    await import("./components/AutomationEmptyState");
+  const schedule = getDefaultScheduleForCard("nonexistent-card");
+  assert.equal(schedule, null);
+});
+
+void test("AutomationDialog source uses getDefaultScheduleForCard for schedule pre-fill", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationDialog.tsx"),
+    "utf-8",
+  );
+  assert.ok(
+    source.includes("getDefaultScheduleForCard"),
+    "AutomationDialog should import and use getDefaultScheduleForCard for pre-filling schedule",
+  );
+});

@@ -79,3 +79,43 @@ void test("uses onRunDeepDive and onStartMorningBrief props", () => {
     "Should have onStartMorningBrief prop",
   );
 });
+
+// --- Visual weight tests (task 0024) ---
+
+void test("workflow cards have gradient backgrounds for visual weight", () => {
+  assert.ok(
+    src.includes("bg-gradient-to"),
+    "Workflow cards should use gradient backgrounds for visual weight",
+  );
+});
+
+void test("workflow cards have left accent borders for type differentiation", () => {
+  assert.ok(
+    src.includes("border-l-blue-500") &&
+      src.includes("border-l-amber-500") &&
+      src.includes("border-l-emerald-500") &&
+      src.includes("border-l-violet-500"),
+    "Each card type should have a distinct left accent border color",
+  );
+});
+
+void test("workflow cards have hover lift effect", () => {
+  assert.ok(
+    src.includes("hover:-translate-y"),
+    "Workflow cards should lift on hover for interactivity",
+  );
+});
+
+void test("workflow cards have hover shadow", () => {
+  assert.ok(
+    src.includes("hover:shadow"),
+    "Workflow cards should show shadow on hover",
+  );
+});
+
+void test("gap between empty state and workflow cards is reduced", () => {
+  assert.ok(
+    !src.includes("gap-8"),
+    "Gap between sections should be reduced (not gap-8)",
+  );
+});

@@ -17,6 +17,7 @@ import {
 import { allCards } from "@/features/launchpad/card-registry";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import { STEP_LABELS } from "../schedule-utils";
+import { getDefaultScheduleForCard } from "./AutomationEmptyState";
 import {
   DestinationStep,
   EventTypeStep,
@@ -87,12 +88,23 @@ export function AutomationDialog({
       const hasPreselect =
         preselectedCardId &&
         schedulableCards.some((c) => c.id === preselectedCardId);
+      const defaultSchedule = hasPreselect
+        ? getDefaultScheduleForCard(preselectedCardId)
+        : null;
       setStep(hasPreselect ? 1 : 0);
       setCardId(hasPreselect ? preselectedCardId : "");
       setTriggerType("schedule");
       setEventType("");
-      setTime("08:00");
-      setDays(["monday", "tuesday", "wednesday", "thursday", "friday"]);
+      setTime(defaultSchedule?.time ?? "08:00");
+      setDays(
+        defaultSchedule?.days ?? [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+        ],
+      );
       setTimezone(getDefaultTimezone());
       setDestination("library");
       setWatchlistOnly(false);

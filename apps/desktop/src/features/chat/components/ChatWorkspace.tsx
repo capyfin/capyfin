@@ -482,7 +482,7 @@ function ChatSessionView({
                 </div>
               </div>
 
-              <div className="w-full space-y-3">
+              <div className="w-full space-y-3 rounded-2xl border border-border/30 bg-gradient-to-br from-muted/[0.04] via-background to-primary/[0.02] p-5 dark:from-muted/[0.06] dark:to-primary/[0.04]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/50">
                   Try asking
                 </p>

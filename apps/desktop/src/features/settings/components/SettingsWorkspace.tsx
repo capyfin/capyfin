@@ -67,12 +67,17 @@ export function SettingsWorkspace({
       {/* Active tab icon accent */}
       {tabDef ? (
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-primary/[0.08] text-primary ring-1 ring-primary/10">
-            <tabDef.icon className="size-4" />
+          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] text-primary ring-1 ring-primary/10">
+            <tabDef.icon className="size-5" />
           </div>
-          <h1 className="text-lg font-semibold tracking-tight">
-            {tabDef.label}
-          </h1>
+          <div>
+            <h1 className="text-[17px] font-semibold tracking-tight">
+              {tabDef.label}
+            </h1>
+            <p className="text-[13px] text-muted-foreground">
+              Manage your settings
+            </p>
+          </div>
         </div>
       ) : null}
 

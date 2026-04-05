@@ -98,6 +98,8 @@ import {
   type CaseFromOutputResponse,
   type AttentionItem,
   type AttentionItemList,
+  type ReviewQueueResponse,
+  reviewQueueResponseSchema,
   investmentCaseSchema,
   attentionItemSchema,
   attentionItemListSchema,
@@ -589,6 +591,17 @@ export class SidecarClient {
 
   async triggerMonitoringScan(): Promise<void> {
     await this.request("/monitoring/scan", { method: "POST" });
+  }
+
+  async getReviewQueue(limit?: number): Promise<ReviewQueueResponse> {
+    const params = new URLSearchParams();
+    if (limit !== undefined) {
+      params.set("limit", String(limit));
+    }
+    const query = params.toString();
+    return reviewQueueResponseSchema.parse(
+      await this.request(`/review-queue${query ? `?${query}` : ""}`),
+    );
   }
 
   async getWatchlist(): Promise<WatchlistList> {

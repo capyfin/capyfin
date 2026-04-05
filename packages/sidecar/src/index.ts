@@ -9,6 +9,7 @@ import { DataProviderService } from "./data-providers/service.ts";
 import { DeliveryChannelService } from "./delivery-channels/service.ts";
 import { LibraryService } from "./library/service.ts";
 import { MonitoringService } from "./monitoring/service.ts";
+import { ReviewQueueService } from "./review-queue/service.ts";
 import { PortfolioService } from "./portfolio/service.ts";
 import { PreferencesService } from "./preferences/service.ts";
 import { WatchlistService } from "./watchlist/service.ts";
@@ -84,6 +85,11 @@ export async function startSidecarServer(
     gatewaySupervisor.paths.stateDir,
     defaultAgent.workspaceDir,
   );
+  const reviewQueueService = new ReviewQueueService(
+    casesService,
+    watchlistService,
+    portfolioService,
+  );
   // Sync watchlist to agent workspace on boot so the agent has fresh data
   const watchlistItems = await watchlistService.getAll();
   if (watchlistItems.length > 0) {
@@ -101,6 +107,7 @@ export async function startSidecarServer(
     libraryService,
     monitoringService,
     portfolioService,
+    reviewQueueService,
     preferencesService,
     watchlistService,
     embeddedGateway,

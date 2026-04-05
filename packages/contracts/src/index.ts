@@ -1000,6 +1000,30 @@ export type Urgency = z.infer<typeof urgencySchema>;
 export type AttentionItem = z.infer<typeof attentionItemSchema>;
 export type AttentionItemList = z.infer<typeof attentionItemListSchema>;
 
+// ─── Review Queue ─────────────────────────────────────────────────────
+
+export const reviewQueueItemSchema = z.object({
+  caseId: z.string(),
+  ticker: z.string(),
+  companyName: z.string(),
+  rank: z.number().int().positive(),
+  reason: z.string(),
+  urgency: urgencySchema,
+  attentionState: attentionStateSchema,
+  lastReviewedAt: z.string(),
+  daysSinceReview: z.number().int().nonnegative(),
+  isHolding: z.boolean(),
+  nextCatalystDate: z.string().optional(),
+});
+
+export const reviewQueueResponseSchema = z.object({
+  items: z.array(reviewQueueItemSchema),
+  generatedAt: z.string(),
+});
+
+export type ReviewQueueItem = z.infer<typeof reviewQueueItemSchema>;
+export type ReviewQueueResponse = z.infer<typeof reviewQueueResponseSchema>;
+
 export const appManifest = appManifestSchema.parse(appManifestJson);
 
 export function createBasicAuthHeader(

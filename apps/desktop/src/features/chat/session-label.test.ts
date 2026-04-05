@@ -67,22 +67,22 @@ void test("deriveSessionLabel trims leading and trailing whitespace", () => {
   assert.equal(deriveSessionLabel("  Hello world  "), "Hello world");
 });
 
-void test("deriveSessionLabel truncates text longer than 40 characters", () => {
-  const long = "A".repeat(50);
+void test("deriveSessionLabel truncates text longer than 50 characters", () => {
+  const long = "A".repeat(60);
   const result = deriveSessionLabel(long);
-  assert.equal(result.length, 40);
+  assert.equal(result.length, 50);
   assert.ok(result.endsWith("..."));
 });
 
-void test("deriveSessionLabel does not truncate text at exactly 40 characters", () => {
-  const exact = "A".repeat(40);
+void test("deriveSessionLabel does not truncate text at exactly 50 characters", () => {
+  const exact = "A".repeat(50);
   assert.equal(deriveSessionLabel(exact), exact);
 });
 
-void test("deriveSessionLabel truncates text at 41 characters", () => {
-  const text = "A".repeat(41);
+void test("deriveSessionLabel truncates text at 51 characters", () => {
+  const text = "A".repeat(51);
   const result = deriveSessionLabel(text);
-  assert.equal(result, "A".repeat(37) + "...");
+  assert.equal(result, "A".repeat(47) + "...");
 });
 
 // ---------------------------------------------------------------------------

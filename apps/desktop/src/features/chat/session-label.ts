@@ -14,12 +14,12 @@ export function formatSessionLabel(session: {
 
 /**
  * Derive a session label from the first user message text.
- * Collapses whitespace and truncates to ~40 characters.
+ * Collapses whitespace and truncates to ~50 characters.
  */
 export function deriveSessionLabel(text: string): string {
   const trimmed = text.trim().replace(/\s+/g, " ");
-  if (trimmed.length <= 40) {
+  if (trimmed.length <= 50) {
     return trimmed;
   }
-  return `${trimmed.slice(0, 37)}...`;
+  return `${trimmed.slice(0, 47)}...`;
 }

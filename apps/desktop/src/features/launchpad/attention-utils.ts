@@ -264,8 +264,12 @@ export function computePortfolioRisks(
   const sorted = [...portfolio.holdings].sort((a, b) => b.weight - a.weight);
   const top = sorted[0];
 
+  const filteredAlerts = portfolio.concentrationAlerts.filter(
+    (a) => !(a.type === "sector" && a.name === "Unclassified"),
+  );
+
   return {
-    concentrationAlerts: portfolio.concentrationAlerts,
+    concentrationAlerts: filteredAlerts,
     positionsNeedingReview,
     topHoldingWeight: top ? top.weight : 0,
     topHoldingTicker: top ? top.ticker : null,

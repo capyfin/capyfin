@@ -124,7 +124,7 @@ export class PortfolioService {
       }
     }
     for (const { sector, weight } of sectorExposure) {
-      if (weight > SECTOR_THRESHOLD) {
+      if (sector !== "Unclassified" && weight > SECTOR_THRESHOLD) {
         concentrationAlerts.push({ type: "sector", name: sector, weight });
       }
     }

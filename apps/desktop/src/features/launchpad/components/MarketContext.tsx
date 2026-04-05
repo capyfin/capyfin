@@ -7,7 +7,11 @@ import { Globe, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
  * Per spec 9.4: "A short, disciplined overview of the current market state."
  * This is a simplified version that uses available data signals.
  */
-export function MarketContext() {
+interface MarketContextProps {
+  hasMarketData?: boolean;
+}
+
+export function MarketContext({ hasMarketData = false }: MarketContextProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
@@ -35,27 +39,29 @@ export function MarketContext() {
               </p>
             </div>
 
-            {/* Signal placeholders */}
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-1.5 rounded-md border border-border/30 bg-muted/20 px-2.5 py-1.5 dark:bg-muted/10">
-                <TrendingUp className="size-3 text-muted-foreground/40" />
-                <span className="text-[11px] text-muted-foreground/50">
-                  Index snapshot
-                </span>
+            {/* Signal categories — only shown when market data is available */}
+            {hasMarketData && (
+              <div className="flex flex-wrap gap-2">
+                <div className="flex items-center gap-1.5 rounded-md border border-border/30 bg-muted/20 px-2.5 py-1.5 dark:bg-muted/10">
+                  <TrendingUp className="size-3 text-muted-foreground/40" />
+                  <span className="text-[11px] text-muted-foreground/50">
+                    Index snapshot
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-md border border-border/30 bg-muted/20 px-2.5 py-1.5 dark:bg-muted/10">
+                  <BarChart3 className="size-3 text-muted-foreground/40" />
+                  <span className="text-[11px] text-muted-foreground/50">
+                    Sector leadership
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-md border border-border/30 bg-muted/20 px-2.5 py-1.5 dark:bg-muted/10">
+                  <TrendingDown className="size-3 text-muted-foreground/40" />
+                  <span className="text-[11px] text-muted-foreground/50">
+                    Sector weakness
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 rounded-md border border-border/30 bg-muted/20 px-2.5 py-1.5 dark:bg-muted/10">
-                <BarChart3 className="size-3 text-muted-foreground/40" />
-                <span className="text-[11px] text-muted-foreground/50">
-                  Sector leadership
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-md border border-border/30 bg-muted/20 px-2.5 py-1.5 dark:bg-muted/10">
-                <TrendingDown className="size-3 text-muted-foreground/40" />
-                <span className="text-[11px] text-muted-foreground/50">
-                  Sector weakness
-                </span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

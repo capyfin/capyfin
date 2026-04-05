@@ -632,3 +632,30 @@ void test("computePortfolioRisks ignores cases not in portfolio", () => {
   assert.ok(result);
   assert.equal(result.positionsNeedingReview, 0);
 });
+
+void test("computePortfolioRisks filters out Unclassified sector alerts", () => {
+  const portfolio = makePortfolio({
+    concentrationAlerts: [
+      { type: "sector", name: "Unclassified", weight: 100 },
+      { type: "position", name: "AAPL", weight: 25 },
+    ],
+  });
+  const result = computePortfolioRisks(portfolio, []);
+  assert.ok(result);
+  assert.equal(result.concentrationAlerts.length, 1);
+  const alert = result.concentrationAlerts[0];
+  assert.ok(alert);
+  assert.equal(alert.name, "AAPL");
+});
+
+void test("computePortfolioRisks keeps real sector alerts", () => {
+  const portfolio = makePortfolio({
+    concentrationAlerts: [{ type: "sector", name: "Technology", weight: 65 }],
+  });
+  const result = computePortfolioRisks(portfolio, []);
+  assert.ok(result);
+  assert.equal(result.concentrationAlerts.length, 1);
+  const alert = result.concentrationAlerts[0];
+  assert.ok(alert);
+  assert.equal(alert.name, "Technology");
+});

@@ -188,6 +188,51 @@ JPM,10,100,Financial`;
   }
 });
 
+void test("does not generate concentration alert for Unclassified sector", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new PortfolioService(dir, dir);
+    // Holdings without sector data default to "Unclassified"
+    const csv = `ticker,shares,cost basis
+AAPL,100,100
+MSFT,50,100`;
+    const overview = await service.importFromCsv(csv);
+    // Unclassified sector should appear in sectorExposure but NOT in concentrationAlerts
+    assert.ok(overview.sectorExposure.some((s) => s.sector === "Unclassified"));
+    const sectorAlerts = overview.concentrationAlerts.filter(
+      (a) => a.type === "sector",
+    );
+    assert.equal(
+      sectorAlerts.length,
+      0,
+      "Should not generate sector alerts for Unclassified",
+    );
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("still generates concentration alert for real sectors above threshold", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new PortfolioService(dir, dir);
+    const csv = `ticker,shares,cost basis,sector
+AAPL,100,100,Technology
+MSFT,100,100,Technology
+JPM,10,100,Financial`;
+    const overview = await service.importFromCsv(csv);
+    const sectorAlerts = overview.concentrationAlerts.filter(
+      (a) => a.type === "sector",
+    );
+    assert.ok(
+      sectorAlerts.some((a) => a.name === "Technology"),
+      "Should still alert on real sector concentration",
+    );
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
 void test("writes portfolio.csv to workspace dir on change", async () => {
   const stateDir = await createTempDir();
   const workspaceDir = await createTempDir();

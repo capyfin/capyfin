@@ -134,11 +134,16 @@ export function PortfolioWorkspace({
               }}
             />
 
-            {portfolio.concentrationAlerts.length > 0 ? (
-              <div className="mt-4">
-                <ConcentrationAlerts alerts={portfolio.concentrationAlerts} />
-              </div>
-            ) : null}
+            {(() => {
+              const filtered = portfolio.concentrationAlerts.filter(
+                (a) => !(a.type === "sector" && a.name === "Unclassified"),
+              );
+              return filtered.length > 0 ? (
+                <div className="mt-4">
+                  <ConcentrationAlerts alerts={filtered} />
+                </div>
+              ) : null;
+            })()}
           </div>
 
           <HoldingsTable

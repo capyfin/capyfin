@@ -499,14 +499,14 @@ function ChatSessionView({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Agent/provider bar */}
-      <div className="flex items-center gap-3 border-b border-border/30 bg-card/20 px-4 py-2 lg:px-6">
+      <div className="flex items-center gap-3 border-b border-border/40 bg-card/30 px-4 py-2.5 dark:bg-card/20 lg:px-6">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/[0.08] px-2 py-0.5 text-[11px] font-medium text-primary ring-1 ring-primary/[0.06]">
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary/[0.08] px-2.5 py-1 text-[11px] font-medium text-primary ring-1 ring-primary/[0.06]">
             <BotIcon className="size-3" />
             {getAgentDisplayName(bootstrap.agent.name)}
           </span>
           {providerName ? (
-            <span className="rounded-md bg-muted/40 px-2 py-0.5 text-[11px] text-muted-foreground/60">
+            <span className="rounded-lg bg-muted/40 px-2.5 py-1 text-[11px] text-muted-foreground/60 dark:bg-muted/30">
               {providerName}
               {bootstrap.resolvedModelId
                 ? ` / ${formatModelId(bootstrap.resolvedModelId)}`
@@ -514,7 +514,7 @@ function ChatSessionView({
             </span>
           ) : null}
           {hasPortfolio ? (
-            <span className="inline-flex items-center gap-1 rounded-md bg-success/[0.08] px-2 py-0.5 text-[11px] font-medium text-success ring-1 ring-success/[0.06]">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-success/[0.08] px-2.5 py-1 text-[11px] font-medium text-success ring-1 ring-success/[0.06]">
               <BriefcaseIcon className="size-3" />
               Portfolio
             </span>
@@ -548,7 +548,7 @@ function ChatSessionView({
               </div>
 
               <div className="w-full space-y-3">
-                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/40">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/50">
                   Try asking
                 </p>
                 <div className="grid w-full gap-2.5 sm:grid-cols-3">
@@ -646,7 +646,7 @@ function ChatSessionView({
       </div>
 
       {/* Chat input */}
-      <div className="border-t border-border/40 bg-card/20 px-4 py-3 lg:px-6">
+      <div className="border-t border-border/40 bg-card/30 px-4 py-3 dark:bg-card/20 lg:px-6">
         <PromptInput
           accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.jsx,.ts,.tsx,.py,.rb,.go,.rs,.java,.c,.cpp,.h,.hpp,.cs,.swift,.kt,.sh,.bash,.zsh,.yaml,.yml,.toml,.xml,.html,.css,.scss,.sql,.r,.lua,.php,.pl,.ex,.exs,.hs,.ml,.scala,.clj,.dart,.vue,.svelte,.astro,.log,.env,.ini,.cfg,.conf,.diff,.patch"
           globalDrop
@@ -677,8 +677,8 @@ function ChatSessionView({
 
       {/* Financial disclaimer */}
       {messages.length > 0 ? (
-        <div className="bg-card/20 px-4 pb-2 pt-0 lg:px-6">
-          <p className="mx-auto max-w-3xl text-center text-[10px] leading-tight tracking-wide text-muted-foreground/40">
+        <div className="bg-card/30 px-4 pb-2.5 pt-0 dark:bg-card/20 lg:px-6">
+          <p className="mx-auto max-w-3xl text-center text-[10px] leading-tight tracking-wide text-muted-foreground/35">
             Not financial advice. AI-generated analysis may contain errors.
             Always verify data and consult a qualified advisor before making
             investment decisions.
@@ -816,9 +816,9 @@ function ChatMessage({
             {docParts.map((file, index) => (
               <div
                 key={`${message.id}-doc-${String(index)}`}
-                className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
+                className="flex items-center gap-2 rounded-xl border border-border/50 bg-muted/30 px-3 py-2 text-sm text-muted-foreground dark:border-border/40 dark:bg-muted/20"
               >
-                <FileTextIcon className="size-4 shrink-0" />
+                <FileTextIcon className="size-4 shrink-0 text-muted-foreground/60" />
                 <span className="truncate">{file.filename ?? "File"}</span>
               </div>
             ))}

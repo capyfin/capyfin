@@ -17,7 +17,7 @@ import { ReportDetailDialog } from "./ReportDetailDialog";
 import { SavedReportCard } from "./SavedReportCard";
 
 export const LIBRARY_EMPTY_TEXT =
-  "No saved reports yet. Research outputs and saved analyses will appear here.";
+  "Research outputs from Deep Dives, Morning Briefs, and other workflows will appear here automatically.";
 
 interface LibraryWorkspaceProps {
   client: SidecarClient | null;
@@ -193,11 +193,14 @@ export function LibraryWorkspace({ client }: LibraryWorkspaceProps) {
 
       {reports.length === 0 && !hasActiveFilters ? (
         <LibraryEmptyState
-          onGoToHome={() => {
+          onRunDeepDive={() => {
             window.location.hash = "#launchpad";
           }}
-          onOpenChat={() => {
-            window.location.hash = "#chat";
+          onStartMorningBrief={() => {
+            window.location.hash = "#launchpad";
+          }}
+          onWorkflowClick={() => {
+            window.location.hash = "#launchpad";
           }}
         />
       ) : filteredReports.length > 0 ? (

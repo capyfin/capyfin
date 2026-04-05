@@ -56,36 +56,3 @@ void test("LibraryEmptyState exports a function component", async () => {
   const mod = await import("./components/LibraryEmptyState");
   assert.equal(typeof mod.LibraryEmptyState, "function");
 });
-
-void test("LibraryEmptyState accepts onGoToHome and onOpenChat props", async () => {
-  const mod = await import("./components/LibraryEmptyState");
-  assert.equal(mod.LibraryEmptyState.length >= 0, true);
-});
-
-void test("LibraryEmptyState button text says 'Go to Home' not 'Go to Launchpad'", async () => {
-  const fs = await import("node:fs");
-  const path = await import("node:path");
-  const src = fs.readFileSync(
-    path.resolve(import.meta.dirname, "components/LibraryEmptyState.tsx"),
-    "utf-8",
-  );
-  assert.ok(src.includes("Go to Home"), "Button must read 'Go to Home'");
-  assert.ok(
-    !src.includes("Go to Launchpad"),
-    "Button must not read 'Go to Launchpad'",
-  );
-});
-
-void test("LibraryEmptyState uses onGoToHome prop, not onGoToLaunchpad", async () => {
-  const fs = await import("node:fs");
-  const path = await import("node:path");
-  const src = fs.readFileSync(
-    path.resolve(import.meta.dirname, "components/LibraryEmptyState.tsx"),
-    "utf-8",
-  );
-  assert.ok(src.includes("onGoToHome"), "Must use onGoToHome prop name");
-  assert.ok(
-    !src.includes("onGoToLaunchpad"),
-    "Must not use onGoToLaunchpad prop name",
-  );
-});

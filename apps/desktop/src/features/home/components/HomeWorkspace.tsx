@@ -25,6 +25,8 @@ import {
   buildUpcomingCatalysts,
   buildPortfolioAlerts,
   buildMarketContext,
+  type MarketContextItem,
+  type PortfolioAlert,
 } from "../home-utils";
 
 interface HomeWorkspaceProps {
@@ -134,6 +136,9 @@ export function HomeWorkspace({
     data?.reviewQueue.length ?? 0,
   );
 
+  const showSystemStatus =
+    marketContextItems.length > 0 || portfolioAlertItems.length > 0;
+
   if (!hasCases) {
     const handleOpenCase = (caseId: string) => {
       onOpenCase?.(caseId);
@@ -149,8 +154,12 @@ export function HomeWorkspace({
           onOpenCase={handleOpenCase}
           loading={false}
         />
-        <PersonalizedMarketContext items={marketContextItems} />
-        <PortfolioAlerts alerts={portfolioAlertItems} />
+        {showSystemStatus && (
+          <SystemStatusPanel
+            marketContextItems={marketContextItems}
+            portfolioAlertItems={portfolioAlertItems}
+          />
+        )}
         <QuickCreate onCardClick={onCardClick} />
       </div>
     );
@@ -178,12 +187,44 @@ export function HomeWorkspace({
 
       <UpcomingCatalysts catalysts={upcomingCatalysts} />
 
-      <PersonalizedMarketContext items={marketContextItems} />
-
-      <PortfolioAlerts alerts={portfolioAlertItems} />
+      {showSystemStatus && (
+        <SystemStatusPanel
+          marketContextItems={marketContextItems}
+          portfolioAlertItems={portfolioAlertItems}
+        />
+      )}
 
       <QuickCreate onCardClick={onCardClick} />
     </div>
+  );
+}
+
+function SystemStatusPanel({
+  marketContextItems,
+  portfolioAlertItems,
+}: {
+  marketContextItems: MarketContextItem[];
+  portfolioAlertItems: PortfolioAlert[];
+}) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center gap-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
+          System Status
+        </h2>
+        <div className="h-px flex-1 bg-border/30" />
+      </div>
+      <div className="overflow-hidden rounded-xl border border-border/40 bg-gradient-to-b from-card/60 to-card/30 dark:from-card/40 dark:to-card/15">
+        <div className="divide-y divide-border/20">
+          {marketContextItems.length > 0 && (
+            <PersonalizedMarketContext items={marketContextItems} embedded />
+          )}
+          {portfolioAlertItems.length > 0 && (
+            <PortfolioAlerts alerts={portfolioAlertItems} embedded />
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 

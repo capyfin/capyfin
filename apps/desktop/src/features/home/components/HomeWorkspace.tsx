@@ -6,6 +6,7 @@ import type {
   ReviewQueueItem,
   WatchlistItem,
 } from "@capyfin/contracts";
+import { HomeIcon } from "lucide-react";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import type { ActionCard } from "@/features/launchpad/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -132,6 +133,7 @@ export function HomeWorkspace({
   if (!hasCases) {
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-8">
+        <HomeHeader casesCount={0} />
         <HomeEmptyState onCardClick={onCardClick} />
         <PersonalizedMarketContext items={marketContextItems} />
         <PortfolioAlerts alerts={portfolioAlertItems} />
@@ -153,6 +155,8 @@ export function HomeWorkspace({
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-8">
+      <HomeHeader casesCount={casesData.length} />
+
       <AttentionNow bullets={bullets} />
 
       <ReviewQueueCard
@@ -170,6 +174,36 @@ export function HomeWorkspace({
       <PortfolioAlerts alerts={portfolioAlertItems} />
 
       <QuickCreate onCardClick={onCardClick} />
+    </div>
+  );
+}
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function HomeHeader({ casesCount }: { casesCount: number }) {
+  const greeting = getGreeting();
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-primary/[0.06] via-background to-amber-500/[0.04] px-5 py-4 dark:from-primary/[0.12] dark:to-amber-500/[0.06]">
+      <div className="flex items-center gap-3">
+        <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] text-primary ring-1 ring-primary/10">
+          <HomeIcon className="size-5" />
+        </div>
+        <div>
+          <h2 className="text-[17px] font-semibold tracking-tight">
+            {greeting}
+          </h2>
+          <p className="text-[13px] text-muted-foreground">
+            {casesCount > 0
+              ? `Tracking ${String(casesCount)} ${casesCount === 1 ? "case" : "cases"}`
+              : "Your mission control for investment research"}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

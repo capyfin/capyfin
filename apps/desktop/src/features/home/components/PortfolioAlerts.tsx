@@ -33,9 +33,12 @@ export function PortfolioAlerts({ alerts }: PortfolioAlertsProps) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
-        Portfolio Alerts
-      </h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
+          Portfolio Alerts
+        </h2>
+        <div className="h-px flex-1 bg-border/30" />
+      </div>
       <div className="space-y-1">
         {alerts.map((alert, index) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types

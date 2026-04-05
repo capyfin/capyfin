@@ -51,9 +51,12 @@ export function AttentionNow({ bullets }: AttentionNowProps) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
-        Attention Now
-      </h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
+          Attention Now
+        </h2>
+        <div className="h-px flex-1 bg-border/30" />
+      </div>
       <div className="space-y-2">
         {bullets.map((bullet) => {
           const style = BULLET_STYLES[bullet.urgency];

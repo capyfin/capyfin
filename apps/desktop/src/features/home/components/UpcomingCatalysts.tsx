@@ -16,9 +16,12 @@ function formatCatalystDate(dateStr: string): string {
 export function UpcomingCatalysts({ catalysts }: UpcomingCatalystsProps) {
   return (
     <section className="space-y-3">
-      <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
-        Upcoming Catalysts
-      </h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
+          Upcoming Catalysts
+        </h2>
+        <div className="h-px flex-1 bg-border/30" />
+      </div>
       {catalysts.length === 0 ? (
         <p className="py-2 text-[13px] text-muted-foreground/50">
           No upcoming catalysts

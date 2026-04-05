@@ -29,9 +29,12 @@ export function PersonalizedMarketContext({
 
   return (
     <section className="space-y-3">
-      <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
-        Market Context
-      </h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
+          Market Context
+        </h2>
+        <div className="h-px flex-1 bg-border/30" />
+      </div>
       <div className="rounded-xl border border-border/50 bg-muted/30 px-4 py-3">
         <div className="space-y-2.5">
           {items.map((item) => {

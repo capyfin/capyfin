@@ -30,7 +30,9 @@ export function PortfolioOverviewPanel({
   onAddHolding,
 }: PortfolioOverviewPanelProps) {
   const positionCount = portfolio.holdings.length;
-  const sectorCount = portfolio.sectorExposure.length;
+  const realSectorCount = portfolio.sectorExposure.filter(
+    (s) => s.sector !== "Unclassified",
+  ).length;
 
   return (
     <div className="flex flex-col gap-4">
@@ -45,8 +47,9 @@ export function PortfolioOverviewPanel({
                 Portfolio Overview
               </h2>
               <p className="text-[13px] text-muted-foreground">
-                {positionCount} {positionCount === 1 ? "position" : "positions"}{" "}
-                across {sectorCount} {sectorCount === 1 ? "sector" : "sectors"}
+                {positionCount} {positionCount === 1 ? "position" : "positions"}
+                {realSectorCount > 0 &&
+                  ` across ${String(realSectorCount)} ${realSectorCount === 1 ? "sector" : "sectors"}`}
               </p>
             </div>
           </div>
@@ -116,7 +119,7 @@ export function PortfolioOverviewPanel({
                 Sectors
               </p>
               <p className="text-[18px] font-semibold tabular-nums tracking-tight">
-                {sectorCount}
+                {realSectorCount > 0 ? realSectorCount : "—"}
               </p>
             </div>
           </CardContent>

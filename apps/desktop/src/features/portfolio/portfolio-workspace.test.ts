@@ -135,6 +135,54 @@ void test("PortfolioWorkspace suppresses position alerts for single-position por
   );
 });
 
+// --- Sector count subtitle / stat card tests ---
+
+void test("PortfolioOverviewPanel filters Unclassified from sector count in subtitle", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioOverviewPanel.tsx", import.meta.url),
+    "utf-8",
+  );
+  // Should filter out "Unclassified" sectors before counting
+  assert.ok(
+    source.includes("Unclassified"),
+    "PortfolioOverviewPanel should reference 'Unclassified' to filter it from sector counting",
+  );
+});
+
+void test("PortfolioOverviewPanel omits sector text when realSectorCount is 0", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioOverviewPanel.tsx", import.meta.url),
+    "utf-8",
+  );
+  // When sector count is 0, subtitle should not mention sectors
+  assert.ok(
+    source.includes("realSectorCount") ||
+      source.includes("filteredSectorCount"),
+    "PortfolioOverviewPanel should compute a filtered sector count excluding Unclassified",
+  );
+  // Should conditionally render sector portion of subtitle
+  assert.ok(
+    source.includes("realSectorCount > 0") ||
+      source.includes("filteredSectorCount > 0"),
+    "PortfolioOverviewPanel should conditionally show sector text only when real sectors exist",
+  );
+});
+
+void test("PortfolioOverviewPanel stat card shows dash when no real sectors", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(
+    new URL("./components/PortfolioOverviewPanel.tsx", import.meta.url),
+    "utf-8",
+  );
+  // The Sectors stat card should display "—" when count is 0
+  assert.ok(
+    source.includes("\u2014") || source.includes("&mdash;"),
+    "PortfolioOverviewPanel should display an em dash when no real sectors exist",
+  );
+});
+
 void test("cardSections includes a portfolio section", async () => {
   const mod = await import("../launchpad/card-registry");
   const section = mod.cardSections.find(

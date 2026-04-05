@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import type {
   AttentionItem,
   InvestmentCase,
+  PortfolioOverview,
   ReviewQueueItem,
+  WatchlistItem,
 } from "@capyfin/contracts";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import type { ActionCard } from "@/features/launchpad/types";
@@ -12,12 +14,16 @@ import { ReviewQueueCard } from "@/components/review-queue/ReviewQueueCard";
 import { AttentionNow } from "./AttentionNow";
 import { RecentCaseUpdates } from "./RecentCaseUpdates";
 import { UpcomingCatalysts } from "./UpcomingCatalysts";
+import { PersonalizedMarketContext } from "./PersonalizedMarketContext";
+import { PortfolioAlerts } from "./PortfolioAlerts";
 import { QuickCreate } from "./QuickCreate";
 import { HomeEmptyState } from "./HomeEmptyState";
 import {
   buildAttentionBullets,
   buildRecentUpdates,
   buildUpcomingCatalysts,
+  buildPortfolioAlerts,
+  buildMarketContext,
 } from "../home-utils";
 
 interface HomeWorkspaceProps {
@@ -30,6 +36,8 @@ interface HomeData {
   attentionItems: AttentionItem[];
   reviewQueue: ReviewQueueItem[];
   cases: InvestmentCase[];
+  portfolio: PortfolioOverview | null;
+  watchlist: WatchlistItem[];
 }
 
 export function HomeWorkspace({
@@ -51,6 +59,8 @@ export function HomeWorkspace({
         client.getAttentionItems(),
         client.getReviewQueue(5),
         client.listCases(),
+        client.getPortfolio(),
+        client.getWatchlist(),
       ]);
 
       const attentionItems =
@@ -59,8 +69,12 @@ export function HomeWorkspace({
         results[1].status === "fulfilled" ? results[1].value.items : [];
       const cases =
         results[2].status === "fulfilled" ? results[2].value.cases : [];
+      const portfolio =
+        results[3].status === "fulfilled" ? results[3].value : null;
+      const watchlist =
+        results[4].status === "fulfilled" ? results[4].value.items : [];
 
-      setData({ attentionItems, reviewQueue, cases });
+      setData({ attentionItems, reviewQueue, cases, portfolio, watchlist });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
@@ -104,11 +118,23 @@ export function HomeWorkspace({
   }
 
   const hasCases = (data?.cases.length ?? 0) > 0;
+  const portfolioData = data?.portfolio ?? null;
+  const watchlistData = data?.watchlist ?? [];
+  const casesData = data?.cases ?? [];
+
+  const marketContextItems = buildMarketContext(
+    portfolioData,
+    watchlistData,
+    casesData,
+  );
+  const portfolioAlertItems = buildPortfolioAlerts(portfolioData, casesData);
 
   if (!hasCases) {
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-8">
         <HomeEmptyState onCardClick={onCardClick} />
+        <PersonalizedMarketContext items={marketContextItems} />
+        <PortfolioAlerts alerts={portfolioAlertItems} />
         <QuickCreate onCardClick={onCardClick} />
       </div>
     );
@@ -118,8 +144,8 @@ export function HomeWorkspace({
     data?.attentionItems ?? [],
     data?.reviewQueue.length ?? 0,
   );
-  const recentUpdates = buildRecentUpdates(data?.cases ?? []);
-  const upcomingCatalysts = buildUpcomingCatalysts(data?.cases ?? []);
+  const recentUpdates = buildRecentUpdates(casesData);
+  const upcomingCatalysts = buildUpcomingCatalysts(casesData);
 
   const handleOpenCase = (caseId: string) => {
     onOpenCase?.(caseId);
@@ -138,6 +164,10 @@ export function HomeWorkspace({
       <RecentCaseUpdates updates={recentUpdates} />
 
       <UpcomingCatalysts catalysts={upcomingCatalysts} />
+
+      <PersonalizedMarketContext items={marketContextItems} />
+
+      <PortfolioAlerts alerts={portfolioAlertItems} />
 
       <QuickCreate onCardClick={onCardClick} />
     </div>

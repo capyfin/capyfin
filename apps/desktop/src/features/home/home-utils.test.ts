@@ -4,8 +4,14 @@ import {
   buildAttentionBullets,
   buildRecentUpdates,
   buildUpcomingCatalysts,
+  buildPortfolioAlerts,
+  buildMarketContext,
 } from "./home-utils";
-import type { AttentionItem, InvestmentCase } from "@capyfin/contracts";
+import type {
+  AttentionItem,
+  InvestmentCase,
+  PortfolioOverview,
+} from "@capyfin/contracts";
 
 function makeAttentionItem(
   overrides: Partial<AttentionItem> = {},
@@ -319,4 +325,354 @@ void test("buildUpcomingCatalysts includes today (daysUntil = 0)", () => {
   const first = result[0];
   assert.ok(first);
   assert.equal(first.daysUntil, 0);
+});
+
+// ---------------------------------------------------------------------------
+// buildPortfolioAlerts
+// ---------------------------------------------------------------------------
+
+void test("buildPortfolioAlerts returns empty array when portfolio is null", () => {
+  const result = buildPortfolioAlerts(null, []);
+  assert.equal(result.length, 0);
+});
+
+void test("buildPortfolioAlerts returns empty array when no holdings", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [],
+    totalValue: 0,
+    sectorExposure: [],
+    concentrationAlerts: [],
+  };
+  const result = buildPortfolioAlerts(portfolio, []);
+  assert.equal(result.length, 0);
+});
+
+void test("buildPortfolioAlerts flags concentration alerts for positions > 20%", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 45,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "MSFT",
+        shares: 50,
+        costBasis: 300,
+        weight: 30,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "GOOG",
+        shares: 20,
+        costBasis: 100,
+        weight: 25,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 100000,
+    sectorExposure: [],
+    concentrationAlerts: [
+      { type: "position", name: "AAPL", weight: 45 },
+      { type: "position", name: "MSFT", weight: 30 },
+    ],
+  };
+  const result = buildPortfolioAlerts(portfolio, []);
+  const concentration = result.filter((a) => a.type === "concentration");
+  assert.ok(
+    concentration.length >= 1,
+    "Should have at least 1 concentration alert",
+  );
+  const firstConc = concentration[0];
+  assert.ok(firstConc);
+  assert.ok(firstConc.message.includes("AAPL"));
+});
+
+void test("buildPortfolioAlerts flags stale positions without recent review", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 50,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "MSFT",
+        shares: 50,
+        costBasis: 300,
+        weight: 50,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 50000,
+    sectorExposure: [],
+    concentrationAlerts: [],
+  };
+  const cases = [
+    makeCase({ ticker: "AAPL", lastReviewedAt: "2026-02-01T00:00:00Z" }),
+  ];
+  const now = new Date("2026-04-05T00:00:00Z");
+  const result = buildPortfolioAlerts(portfolio, cases, now);
+  const stale = result.filter((a) => a.type === "stale-position");
+  assert.ok(stale.length >= 1, "Should flag stale AAPL");
+  const firstStale = stale[0];
+  assert.ok(firstStale);
+  assert.ok(firstStale.message.includes("AAPL"));
+});
+
+void test("buildPortfolioAlerts flags holdings with no case as needing review", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "TSLA",
+        shares: 50,
+        costBasis: 200,
+        weight: 40,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 10000,
+    sectorExposure: [],
+    concentrationAlerts: [],
+  };
+  const result = buildPortfolioAlerts(portfolio, []);
+  const missing = result.filter((a) => a.type === "stale-position");
+  assert.ok(missing.length >= 1, "Should flag TSLA as missing case");
+});
+
+void test("buildPortfolioAlerts flags sector crowding when sector weight > 40%", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 30,
+        sector: "Technology",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "MSFT",
+        shares: 50,
+        costBasis: 300,
+        weight: 25,
+        sector: "Technology",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 50000,
+    sectorExposure: [{ sector: "Technology", weight: 55 }],
+    concentrationAlerts: [{ type: "sector", name: "Technology", weight: 55 }],
+  };
+  const result = buildPortfolioAlerts(portfolio, []);
+  const crowding = result.filter((a) => a.type === "sector-crowding");
+  assert.ok(crowding.length >= 1, "Should flag Technology sector crowding");
+  const firstCrowding = crowding[0];
+  assert.ok(firstCrowding);
+  assert.ok(firstCrowding.message.includes("Technology"));
+});
+
+void test("buildPortfolioAlerts does not flag sector crowding for single-holding sectors", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 60,
+        sector: "Technology",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 50000,
+    sectorExposure: [{ sector: "Technology", weight: 60 }],
+    concentrationAlerts: [{ type: "sector", name: "Technology", weight: 60 }],
+  };
+  const result = buildPortfolioAlerts(portfolio, []);
+  const crowding = result.filter((a) => a.type === "sector-crowding");
+  assert.equal(
+    crowding.length,
+    0,
+    "Should not flag single-holding sector as crowded",
+  );
+});
+
+void test("buildPortfolioAlerts sorts by severity (high first)", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 50,
+        sector: "Tech",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "MSFT",
+        shares: 50,
+        costBasis: 300,
+        weight: 30,
+        sector: "Tech",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 50000,
+    sectorExposure: [{ sector: "Tech", weight: 80 }],
+    concentrationAlerts: [
+      { type: "position", name: "AAPL", weight: 50 },
+      { type: "sector", name: "Tech", weight: 80 },
+    ],
+  };
+  const cases = [
+    makeCase({ ticker: "AAPL", lastReviewedAt: "2026-01-01T00:00:00Z" }),
+  ];
+  const now = new Date("2026-04-05T00:00:00Z");
+  const result = buildPortfolioAlerts(portfolio, cases, now);
+  assert.ok(result.length >= 2);
+  const firstResult = result[0];
+  assert.ok(firstResult);
+  assert.equal(
+    firstResult.severity,
+    "high",
+    "First alert should be high severity",
+  );
+});
+
+// ---------------------------------------------------------------------------
+// buildMarketContext
+// ---------------------------------------------------------------------------
+
+void test("buildMarketContext returns empty array when no watchlist and no portfolio", () => {
+  const result = buildMarketContext(null, [], []);
+  assert.equal(result.length, 0);
+});
+
+void test("buildMarketContext returns exposure summary when portfolio has holdings", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 50,
+        sector: "Technology",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "MSFT",
+        shares: 50,
+        costBasis: 300,
+        weight: 50,
+        sector: "Technology",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 50000,
+    sectorExposure: [{ sector: "Technology", weight: 100 }],
+    concentrationAlerts: [],
+  };
+  const result = buildMarketContext(portfolio, [], []);
+  assert.ok(result.length >= 1, "Should have at least 1 context item");
+  const exposure = result.find((r) => r.type === "exposure-summary");
+  assert.ok(exposure, "Should have an exposure summary");
+});
+
+void test("buildMarketContext includes sector leadership from portfolio", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 50,
+        sector: "Technology",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "JPM",
+        shares: 20,
+        costBasis: 100,
+        weight: 30,
+        sector: "Financials",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+      {
+        ticker: "JNJ",
+        shares: 10,
+        costBasis: 50,
+        weight: 20,
+        sector: "Healthcare",
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 50000,
+    sectorExposure: [
+      { sector: "Technology", weight: 50 },
+      { sector: "Financials", weight: 30 },
+      { sector: "Healthcare", weight: 20 },
+    ],
+    concentrationAlerts: [],
+  };
+  const result = buildMarketContext(portfolio, [], []);
+  const sector = result.find((r) => r.type === "sector-leadership");
+  assert.ok(sector, "Should have sector leadership item");
+  assert.ok(sector.message.includes("Technology"), "Should mention top sector");
+});
+
+void test("buildMarketContext includes attention summary when cases need review", () => {
+  const portfolio: PortfolioOverview = {
+    holdings: [
+      {
+        ticker: "AAPL",
+        shares: 100,
+        costBasis: 150,
+        weight: 100,
+        addedAt: "2026-01-01T00:00:00Z",
+      },
+    ],
+    totalValue: 50000,
+    sectorExposure: [],
+    concentrationAlerts: [],
+  };
+  const watchlist = [
+    {
+      ticker: "MSFT",
+      list: "watching" as const,
+      addedAt: "2026-01-01T00:00:00Z",
+    },
+  ];
+  const cases = [
+    makeCase({ ticker: "AAPL", attentionState: "review-now" }),
+    makeCase({ id: "c-2", ticker: "MSFT", attentionState: "stale" }),
+  ];
+  const result = buildMarketContext(portfolio, watchlist, cases);
+  const attention = result.find((r) => r.type === "attention-summary");
+  assert.ok(attention, "Should have an attention summary");
+});
+
+void test("buildMarketContext works with only watchlist items (no portfolio)", () => {
+  const watchlist = [
+    {
+      ticker: "AAPL",
+      list: "watching" as const,
+      addedAt: "2026-01-01T00:00:00Z",
+    },
+    {
+      ticker: "MSFT",
+      list: "watching" as const,
+      addedAt: "2026-01-01T00:00:00Z",
+    },
+  ];
+  const result = buildMarketContext(null, watchlist, []);
+  assert.ok(
+    result.length >= 1,
+    "Should have at least 1 context item with watchlist only",
+  );
+  const tracking = result.find((r) => r.type === "exposure-summary");
+  assert.ok(tracking, "Should have tracking summary");
 });

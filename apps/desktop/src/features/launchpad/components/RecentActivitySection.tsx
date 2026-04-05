@@ -1,5 +1,12 @@
 import { useMemo } from "react";
-import { ArrowRight, Clock, MessageSquare } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  MessageSquare,
+  Newspaper,
+  Search,
+  type LucideIcon,
+} from "lucide-react";
 import type { AgentSession } from "@capyfin/contracts";
 import { formatRelativeTime } from "../format-relative-time";
 
@@ -23,6 +30,35 @@ function sanitizeSessionLabel(session: AgentSession): string {
   }
   return raw;
 }
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment -- lucide-react icon types */
+function getSessionStyle(label: string): {
+  icon: LucideIcon;
+  bg: string;
+  color: string;
+} {
+  const lower = label.toLowerCase();
+  if (lower.includes("morning brief")) {
+    return {
+      icon: Newspaper,
+      bg: "bg-amber-500/[0.06] group-hover:bg-amber-500/[0.10]",
+      color: "text-amber-500/60 group-hover:text-amber-500/80",
+    };
+  }
+  if (lower.includes("deep dive")) {
+    return {
+      icon: Search,
+      bg: "bg-blue-500/[0.06] group-hover:bg-blue-500/[0.10]",
+      color: "text-blue-500/60 group-hover:text-blue-500/80",
+    };
+  }
+  return {
+    icon: MessageSquare,
+    bg: "bg-primary/[0.06] group-hover:bg-primary/[0.10]",
+    color: "text-primary/60 group-hover:text-primary/80",
+  };
+}
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
 export function RecentActivitySection({
   sessions,
@@ -59,26 +95,34 @@ export function RecentActivitySection({
         </div>
       ) : (
         <div className="flex flex-col gap-1">
-          {recentSessions.map((session) => (
-            <button
-              key={session.id}
-              type="button"
-              onClick={() => onSessionSelect?.(session.id)}
-              className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 text-left transition-all hover:border-border/40 hover:bg-muted/40"
-            >
-              <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/[0.06] text-primary/60 transition-colors group-hover:bg-primary/[0.10] group-hover:text-primary/80 dark:bg-primary/[0.08]">
-                <MessageSquare className="size-3.5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-medium text-foreground">
-                  {sanitizeSessionLabel(session)}
-                </p>
-              </div>
-              <span className="shrink-0 text-[11px] text-muted-foreground/50 transition-colors group-hover:text-muted-foreground">
-                {formatRelativeTime(session.updatedAt)}
-              </span>
-            </button>
-          ))}
+          {recentSessions.map((session) => {
+            const label = sanitizeSessionLabel(session);
+            const style = getSessionStyle(label);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
+            const SessionIcon = style.icon;
+            return (
+              <button
+                key={session.id}
+                type="button"
+                onClick={() => onSessionSelect?.(session.id)}
+                className="group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 text-left transition-all hover:border-border/40 hover:bg-muted/40"
+              >
+                <div
+                  className={`flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors ${style.bg}`}
+                >
+                  <SessionIcon className={`size-3.5 ${style.color}`} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-medium text-foreground">
+                    {label}
+                  </p>
+                </div>
+                <span className="shrink-0 text-[11px] text-muted-foreground/50 transition-colors group-hover:text-muted-foreground">
+                  {formatRelativeTime(session.updatedAt)}
+                </span>
+              </button>
+            );
+          })}
 
           {sessions.length > MAX_ITEMS && (
             <a

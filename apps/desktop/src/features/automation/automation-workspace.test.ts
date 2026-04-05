@@ -273,3 +273,38 @@ void test("AutomationDialog accepts optional initialCardId prop", async () => {
   // The component should accept initialCardId in its props
   // (we verify it's callable with the prop at the type level via compilation)
 });
+
+// --- Infinite re-render fix tests ---
+
+void test("AutomationDialog source uses useMemo for schedulableCards to prevent infinite re-renders", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationDialog.tsx"),
+    "utf-8",
+  );
+  // schedulableCards must be wrapped in useMemo to avoid unstable references
+  assert.ok(
+    source.includes("useMemo"),
+    "AutomationDialog should use useMemo to memoize schedulableCards",
+  );
+  assert.match(
+    source,
+    /const schedulableCards\s*=\s*useMemo/,
+    "schedulableCards should be assigned via useMemo",
+  );
+});
+
+void test("AutomationDialog imports useMemo from react", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationDialog.tsx"),
+    "utf-8",
+  );
+  assert.match(
+    source,
+    /useMemo/,
+    "AutomationDialog should import useMemo from react",
+  );
+});

@@ -5,7 +5,7 @@ import type {
   EventTriggerType,
 } from "@capyfin/contracts";
 import { CheckIcon, LoaderCircleIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -52,7 +52,10 @@ export function AutomationDialog({
   initialCardId,
 }: AutomationDialogProps) {
   const isEdit = !!editAutomation;
-  const schedulableCards = allCards.filter((c) => c.schedulable);
+  const schedulableCards = useMemo(
+    () => allCards.filter((c) => c.schedulable),
+    [],
+  );
 
   const [step, setStep] = useState(0);
   const [cardId, setCardId] = useState("");

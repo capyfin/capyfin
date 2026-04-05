@@ -1,5 +1,6 @@
 import type { Automation } from "@capyfin/contracts";
 import {
+  CalendarClockIcon,
   CheckCircleIcon,
   EllipsisVerticalIcon,
   HistoryIcon,
@@ -19,7 +20,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { formatScheduleSummary } from "../schedule-utils";
+import {
+  formatEventTriggerLabel,
+  formatScheduleSummary,
+} from "../schedule-utils";
 
 function lastRunBadge(status: Automation["lastRunStatus"]) {
   if (!status) return null;
@@ -62,6 +66,13 @@ const DEST_LABELS: Record<string, string> = {
   email: "Email",
 };
 
+function triggerSummary(automation: Automation): string {
+  if (automation.trigger.type === "event") {
+    return formatEventTriggerLabel(automation.trigger.eventType);
+  }
+  return formatScheduleSummary(automation.trigger.schedule);
+}
+
 interface AutomationListProps {
   automations: Automation[];
   onToggle: (automation: Automation) => void;
@@ -79,98 +90,115 @@ export function AutomationList({
 }: AutomationListProps) {
   return (
     <div className="flex flex-col gap-3">
-      {automations.map((auto) => (
-        <Card
-          key={auto.id}
-          className={`group flex items-center gap-4 border-border/60 px-4 py-3.5 transition-all hover:border-border/80 hover:bg-muted/20 ${!auto.enabled ? "opacity-60" : ""}`}
-        >
-          <div
-            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${auto.enabled ? "bg-amber-500/[0.08] ring-1 ring-amber-500/10" : "bg-muted"}`}
+      {automations.map((auto) => {
+        const isEvent = auto.trigger.type === "event";
+        return (
+          <Card
+            key={auto.id}
+            className={`group flex items-center gap-4 border-border/60 px-4 py-3.5 transition-all hover:border-border/80 hover:bg-muted/20 ${!auto.enabled ? "opacity-60" : ""}`}
           >
-            <ZapIcon
-              className={`size-4 ${auto.enabled ? "text-amber-500" : "text-muted-foreground"}`}
-            />
-          </div>
-
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <div className="flex items-center gap-2">
-              <span className="truncate text-[14px] font-semibold tracking-tight text-foreground">
-                {auto.cardTitle}
-              </span>
-              <Badge
-                variant={auto.enabled ? "default" : "secondary"}
-                className={`rounded-full text-[10px] ${auto.enabled ? "bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400" : ""}`}
-              >
-                {auto.enabled ? "Active" : "Paused"}
-              </Badge>
+            <div
+              className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${auto.enabled ? (isEvent ? "bg-violet-500/[0.08] ring-1 ring-violet-500/10" : "bg-amber-500/[0.08] ring-1 ring-amber-500/10") : "bg-muted"}`}
+            >
+              {isEvent ? (
+                <ZapIcon
+                  className={`size-4 ${auto.enabled ? "text-violet-500" : "text-muted-foreground"}`}
+                />
+              ) : (
+                <CalendarClockIcon
+                  className={`size-4 ${auto.enabled ? "text-amber-500" : "text-muted-foreground"}`}
+                />
+              )}
             </div>
-            <div className="flex items-center gap-3 text-[12px] text-muted-foreground">
-              <span>{formatScheduleSummary(auto.schedule)}</span>
-              <span className="text-muted-foreground/40">→</span>
-              <span>{DEST_LABELS[auto.destination] ?? auto.destination}</span>
-            </div>
-          </div>
 
-          <div className="flex shrink-0 items-center gap-2">
-            {lastRunBadge(auto.lastRunStatus)}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <div className="flex items-center gap-2">
+                <span className="truncate text-[14px] font-semibold tracking-tight text-foreground">
+                  {auto.cardTitle}
+                </span>
+                <Badge
+                  variant={auto.enabled ? "default" : "secondary"}
+                  className={`rounded-full text-[10px] ${auto.enabled ? "bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400" : ""}`}
                 >
-                  <EllipsisVerticalIcon className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => {
-                    onToggle(auto);
-                  }}
-                >
-                  {auto.enabled ? (
-                    <>
-                      <PauseIcon className="mr-2 size-3.5" />
-                      Pause
-                    </>
-                  ) : (
-                    <>
-                      <PlayIcon className="mr-2 size-3.5" />
-                      Resume
-                    </>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    onEdit(auto);
-                  }}
-                >
-                  <PencilIcon className="mr-2 size-3.5" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    onViewRuns(auto);
-                  }}
-                >
-                  <HistoryIcon className="mr-2 size-3.5" />
-                  View Runs
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    onDelete(auto);
-                  }}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2Icon className="mr-2 size-3.5" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </Card>
-      ))}
+                  {auto.enabled ? "Active" : "Paused"}
+                </Badge>
+                {isEvent && (
+                  <Badge
+                    variant="outline"
+                    className="rounded-full text-[10px] border-violet-500/30 text-violet-600 dark:text-violet-400"
+                  >
+                    Event
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-3 text-[12px] text-muted-foreground">
+                <span>{triggerSummary(auto)}</span>
+                <span className="text-muted-foreground/40">&rarr;</span>
+                <span>{DEST_LABELS[auto.destination] ?? auto.destination}</span>
+              </div>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2">
+              {lastRunBadge(auto.lastRunStatus)}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    <EllipsisVerticalIcon className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onToggle(auto);
+                    }}
+                  >
+                    {auto.enabled ? (
+                      <>
+                        <PauseIcon className="mr-2 size-3.5" />
+                        Pause
+                      </>
+                    ) : (
+                      <>
+                        <PlayIcon className="mr-2 size-3.5" />
+                        Resume
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onEdit(auto);
+                    }}
+                  >
+                    <PencilIcon className="mr-2 size-3.5" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onViewRuns(auto);
+                    }}
+                  >
+                    <HistoryIcon className="mr-2 size-3.5" />
+                    View Runs
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onDelete(auto);
+                    }}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2Icon className="mr-2 size-3.5" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </Card>
+        );
+      })}
     </div>
   );
 }

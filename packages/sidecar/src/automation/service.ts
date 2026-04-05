@@ -7,6 +7,7 @@ import {
   type Automation,
   type AutomationRun,
   type CreateAutomationRequest,
+  type EventTriggerType,
   type UpdateAutomationRequest,
 } from "@capyfin/contracts";
 
@@ -50,7 +51,7 @@ export class AutomationService {
       id: randomUUID(),
       cardId: request.cardId,
       cardTitle: request.cardTitle,
-      schedule: request.schedule,
+      trigger: request.trigger,
       destination: request.destination,
       filters: request.filters ?? null,
       enabled: request.enabled,
@@ -82,7 +83,7 @@ export class AutomationService {
       ...(partial.cardTitle !== undefined
         ? { cardTitle: partial.cardTitle }
         : {}),
-      ...(partial.schedule !== undefined ? { schedule: partial.schedule } : {}),
+      ...(partial.trigger !== undefined ? { trigger: partial.trigger } : {}),
       ...(partial.destination !== undefined
         ? { destination: partial.destination }
         : {}),
@@ -117,6 +118,16 @@ export class AutomationService {
     return store.runs.filter((r) => r.automationId === automationId);
   }
 
+  async listByEventType(eventType: EventTriggerType): Promise<Automation[]> {
+    const store = await this.#loadAutomations();
+    return store.automations.filter(
+      (a) =>
+        a.enabled &&
+        a.trigger.type === "event" &&
+        a.trigger.eventType === eventType,
+    );
+  }
+
   async addRun(
     automationId: string,
     input: Omit<AutomationRun, "id" | "automationId">,
@@ -133,6 +144,7 @@ export class AutomationService {
       status: input.status,
       duration: input.duration,
       outputReportId: input.outputReportId,
+      lastTriggeredBy: input.lastTriggeredBy ?? null,
     });
     runStore.runs.push(run);
     await this.#saveRuns(runStore);
@@ -142,7 +154,24 @@ export class AutomationService {
   async #loadAutomations(): Promise<AutomationStore> {
     try {
       const raw = await readFile(this.#automationsPath, "utf-8");
-      return JSON.parse(raw) as AutomationStore;
+      const store = JSON.parse(raw) as AutomationStore;
+      // Migrate old format: schedule → trigger
+      let needsSave = false;
+      for (const a of store.automations) {
+        const record = a as Record<string, unknown>;
+        if ("schedule" in record && !("trigger" in record)) {
+          record.trigger = {
+            type: "schedule",
+            schedule: record.schedule,
+          };
+          delete record.schedule;
+          needsSave = true;
+        }
+      }
+      if (needsSave) {
+        await this.#saveAutomations(store);
+      }
+      return store;
     } catch (error: unknown) {
       if (
         error instanceof Error &&

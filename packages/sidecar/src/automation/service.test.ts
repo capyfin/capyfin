@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -12,18 +12,21 @@ async function createTempDir(): Promise<string> {
 const sampleRequest = {
   cardId: "morning-brief",
   cardTitle: "Morning Brief",
-  schedule: {
-    time: "08:00",
-    days: ["monday", "wednesday", "friday"] as (
-      | "monday"
-      | "tuesday"
-      | "wednesday"
-      | "thursday"
-      | "friday"
-      | "saturday"
-      | "sunday"
-    )[],
-    timezone: "America/New_York",
+  trigger: {
+    type: "schedule" as const,
+    schedule: {
+      time: "08:00",
+      days: ["monday", "wednesday", "friday"] as (
+        | "monday"
+        | "tuesday"
+        | "wednesday"
+        | "thursday"
+        | "friday"
+        | "saturday"
+        | "sunday"
+      )[],
+      timezone: "America/New_York",
+    },
   },
   destination: "library" as const,
   enabled: true,
@@ -56,6 +59,7 @@ void test("create generates id and timestamps, returns automation", async () => 
     assert.equal(automation.lastRunStatus, null);
     assert.ok(automation.createdAt >= before && automation.createdAt <= after);
     assert.ok(automation.updatedAt >= before && automation.updatedAt <= after);
+    assert.equal(automation.trigger.type, "schedule");
   } finally {
     await rm(dir, { recursive: true });
   }
@@ -291,6 +295,132 @@ void test("data persists across service instances", async () => {
 
     const runs = await service2.listRuns(created.id);
     assert.equal(runs.length, 1);
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+// --- Migration tests ---
+
+void test("loading old-format automation with schedule migrates to trigger", async () => {
+  const dir = await createTempDir();
+  try {
+    // Write old-format automation directly to disk
+    const oldAutomation = {
+      id: "old-auto-1",
+      cardId: "morning-brief",
+      cardTitle: "Morning Brief",
+      schedule: {
+        time: "08:00",
+        days: ["monday", "friday"],
+        timezone: "America/New_York",
+      },
+      destination: "library",
+      filters: null,
+      enabled: true,
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+      lastRunAt: null,
+      lastRunStatus: null,
+    };
+    await mkdir(dir, { recursive: true });
+    await writeFile(
+      join(dir, "automations.json"),
+      JSON.stringify({ version: 1, automations: [oldAutomation] }),
+      "utf-8",
+    );
+
+    const service = new AutomationService(dir);
+    const items = await service.list();
+    assert.equal(items.length, 1);
+    const auto = items[0];
+    assert.ok(auto);
+    assert.equal(auto.trigger.type, "schedule");
+    const scheduleTrigger = auto.trigger as {
+      type: "schedule";
+      schedule: { time: string; days: string[] };
+    };
+    assert.equal(scheduleTrigger.schedule.time, "08:00");
+    assert.deepEqual(scheduleTrigger.schedule.days, ["monday", "friday"]);
+    // Old schedule field should be gone
+    assert.equal("schedule" in auto, false);
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("creating event-trigger automation stores correctly", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new AutomationService(dir);
+    const automation = await service.create({
+      cardId: "position-review",
+      cardTitle: "Position Review",
+      trigger: {
+        type: "event",
+        eventType: "case-stale",
+      },
+      destination: "library",
+      enabled: true,
+    });
+    assert.equal(automation.trigger.type, "event");
+    const eventTrigger = automation.trigger as {
+      type: "event";
+      eventType: string;
+    };
+    assert.equal(eventTrigger.eventType, "case-stale");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("listByEventType returns only matching event automations", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new AutomationService(dir);
+    // Schedule automation — should not be returned
+    await service.create(sampleRequest);
+    // Event automation — should be returned
+    await service.create({
+      cardId: "position-review",
+      cardTitle: "Position Review",
+      trigger: { type: "event", eventType: "case-stale" },
+      destination: "library",
+      enabled: true,
+    });
+    // Different event type — should not be returned
+    await service.create({
+      cardId: "earnings-xray",
+      cardTitle: "Earnings X-Ray",
+      trigger: { type: "event", eventType: "earnings-detected" },
+      destination: "library",
+      enabled: true,
+    });
+
+    const results = await service.listByEventType("case-stale");
+    assert.equal(results.length, 1);
+    assert.equal(results[0]?.cardId, "position-review");
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+void test("existing schedule automations continue working unchanged", async () => {
+  const dir = await createTempDir();
+  try {
+    const service = new AutomationService(dir);
+    const created = await service.create(sampleRequest);
+    assert.equal(created.trigger.type, "schedule");
+    const createdSchedule = created.trigger as {
+      type: "schedule";
+      schedule: { time: string };
+    };
+    assert.equal(createdSchedule.schedule.time, "08:00");
+
+    // Update should work with schedule trigger
+    const updated = await service.update(created.id, { enabled: false });
+    assert.equal(updated.enabled, false);
+    assert.equal(updated.trigger.type, "schedule");
   } finally {
     await rm(dir, { recursive: true });
   }

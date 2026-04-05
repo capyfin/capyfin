@@ -1,4 +1,4 @@
-import type { AutomationSchedule } from "@capyfin/contracts";
+import type { AutomationSchedule, EventTriggerType } from "@capyfin/contracts";
 
 const DAY_LABELS: Record<string, string> = {
   monday: "Mon",
@@ -72,8 +72,9 @@ export function formatScheduleSummary(schedule: AutomationSchedule): string {
 }
 
 export const STEP_LABELS = [
-  "Select Card",
-  "Schedule",
+  "Card",
+  "Trigger",
+  "When",
   "Destination",
   "Filters",
 ];
@@ -86,3 +87,29 @@ export function formatDuration(ms: number | null): string {
   const seconds = totalSeconds % 60;
   return `${String(minutes)}m ${String(seconds)}s`;
 }
+
+export function formatEventTriggerLabel(eventType: EventTriggerType): string {
+  switch (eventType) {
+    case "case-stale":
+      return "When a case goes stale";
+    case "earnings-detected":
+      return "When earnings are detected";
+    case "drift-detected":
+      return "When thesis drift is detected";
+    case "catalyst-approaching":
+      return "When a catalyst approaches";
+    case "review-due":
+      return "When a review is due";
+  }
+}
+
+export const EVENT_TRIGGER_OPTIONS: {
+  value: EventTriggerType;
+  label: string;
+}[] = [
+  { value: "case-stale", label: "When a case goes stale" },
+  { value: "earnings-detected", label: "When earnings are detected" },
+  { value: "drift-detected", label: "When thesis drift is detected" },
+  { value: "catalyst-approaching", label: "When a catalyst approaches" },
+  { value: "review-due", label: "When a review is due" },
+];

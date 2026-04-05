@@ -2,6 +2,7 @@ import type {
   Automation,
   AutomationDestination,
   DeliveryChannel,
+  EventTriggerType,
 } from "@capyfin/contracts";
 import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -18,9 +19,11 @@ import type { SidecarClient } from "@/lib/sidecar/client";
 import { STEP_LABELS } from "../schedule-utils";
 import {
   DestinationStep,
+  EventTypeStep,
   FiltersStep,
   ScheduleStep,
   SelectCardStep,
+  TriggerTypeStep,
 } from "./AutomationDialogSteps";
 
 function getDefaultTimezone(): string {
@@ -51,6 +54,10 @@ export function AutomationDialog({
 
   const [step, setStep] = useState(0);
   const [cardId, setCardId] = useState("");
+  const [triggerType, setTriggerType] = useState<"schedule" | "event">(
+    "schedule",
+  );
+  const [eventType, setEventType] = useState<EventTriggerType | "">("");
   const [time, setTime] = useState("08:00");
   const [days, setDays] = useState<string[]>([
     "monday",
@@ -59,7 +66,7 @@ export function AutomationDialog({
     "thursday",
     "friday",
   ]);
-  const [timezone, setTimezone] = useState(getDefaultTimezone());
+  const [timezone, setTimezone] = useState(() => getDefaultTimezone());
   const [destination, setDestination] =
     useState<AutomationDestination>("library");
   const [watchlistOnly, setWatchlistOnly] = useState(false);
@@ -68,9 +75,13 @@ export function AutomationDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const totalSteps = STEP_LABELS.length; // 5
+
   const resetForm = useCallback(() => {
     setStep(0);
     setCardId("");
+    setTriggerType("schedule");
+    setEventType("");
     setTime("08:00");
     setDays(["monday", "tuesday", "wednesday", "thursday", "friday"]);
     setTimezone(getDefaultTimezone());
@@ -86,9 +97,19 @@ export function AutomationDialog({
     if (editAutomation) {
       setStep(0);
       setCardId(editAutomation.cardId);
-      setTime(editAutomation.schedule.time);
-      setDays([...editAutomation.schedule.days]);
-      setTimezone(editAutomation.schedule.timezone);
+      if (editAutomation.trigger.type === "event") {
+        setTriggerType("event");
+        setEventType(editAutomation.trigger.eventType);
+        setTime("08:00");
+        setDays(["monday", "tuesday", "wednesday", "thursday", "friday"]);
+        setTimezone(getDefaultTimezone());
+      } else {
+        setTriggerType("schedule");
+        setEventType("");
+        setTime(editAutomation.trigger.schedule.time);
+        setDays([...editAutomation.trigger.schedule.days]);
+        setTimezone(editAutomation.trigger.schedule.timezone);
+      }
       setDestination(editAutomation.destination);
       setWatchlistOnly(editAutomation.filters?.watchlistOnly ?? false);
       setSectorFocus(editAutomation.filters?.sectorFocus?.join(", ") ?? "");
@@ -122,18 +143,25 @@ export function AutomationDialog({
 
   const canProceed = (): boolean => {
     switch (step) {
-      case 0:
+      case 0: // Card
         return !!cardId;
-      case 1:
-        return !!time && days.length > 0 && !!timezone;
-      case 2:
+      case 1: // Trigger type
+        return true;
+      case 2: // When (schedule or event type)
+        if (triggerType === "schedule") {
+          return !!time && days.length > 0 && !!timezone;
+        }
+        return !!eventType;
+      case 3: // Destination
         return !!destination;
-      case 3:
+      case 4: // Filters
         return true;
       default:
         return false;
     }
   };
+
+  const lastStepIndex = totalSteps - 1;
 
   const handleSubmit = async () => {
     if (!selectedCard) return;
@@ -152,14 +180,33 @@ export function AutomationDialog({
             }
           : null;
 
+      const trigger =
+        triggerType === "schedule"
+          ? {
+              type: "schedule" as const,
+              schedule: {
+                time,
+                days: days as (
+                  | "monday"
+                  | "tuesday"
+                  | "wednesday"
+                  | "thursday"
+                  | "friday"
+                  | "saturday"
+                  | "sunday"
+                )[],
+                timezone,
+              },
+            }
+          : {
+              type: "event" as const,
+              eventType: eventType as EventTriggerType,
+            };
+
       const payload = {
         cardId,
         cardTitle: selectedCard.title,
-        schedule: {
-          time,
-          days: days as Automation["schedule"]["days"],
-          timezone,
-        },
+        trigger,
         destination,
         filters,
         enabled: editAutomation?.enabled ?? true,
@@ -235,23 +282,32 @@ export function AutomationDialog({
             />
           )}
           {step === 1 && (
-            <ScheduleStep
-              time={time}
-              onTimeChange={setTime}
-              days={days}
-              onToggleDay={toggleDay}
-              timezone={timezone}
-              onTimezoneChange={setTimezone}
+            <TriggerTypeStep
+              triggerType={triggerType}
+              onSelect={setTriggerType}
             />
           )}
-          {step === 2 && (
+          {step === 2 &&
+            (triggerType === "schedule" ? (
+              <ScheduleStep
+                time={time}
+                onTimeChange={setTime}
+                days={days}
+                onToggleDay={toggleDay}
+                timezone={timezone}
+                onTimezoneChange={setTimezone}
+              />
+            ) : (
+              <EventTypeStep eventType={eventType} onSelect={setEventType} />
+            ))}
+          {step === 3 && (
             <DestinationStep
               destination={destination}
               onSelect={setDestination}
               channels={channels}
             />
           )}
-          {step === 3 && (
+          {step === 4 && (
             <FiltersStep
               watchlistOnly={watchlistOnly}
               onWatchlistOnlyChange={setWatchlistOnly}
@@ -275,7 +331,7 @@ export function AutomationDialog({
               Back
             </Button>
           )}
-          {step < 3 ? (
+          {step < lastStepIndex ? (
             <Button
               onClick={() => {
                 setStep((s) => s + 1);

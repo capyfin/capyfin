@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { AttentionItem, AttentionItemList } from "@capyfin/contracts";
 import type { CasesService } from "../cases/service.ts";
+import type { AutomationEventBus } from "../events/event-bus.ts";
 import { scanCases } from "./scanner.ts";
 
 interface AttentionStore {
@@ -15,16 +16,19 @@ export class MonitoringService {
   readonly #storePath: string;
   readonly #casesService: CasesService;
   readonly #intervalMs: number;
+  readonly #eventBus: AutomationEventBus | undefined;
   #intervalHandle: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     stateDir: string,
     casesService: CasesService,
     intervalMs = 14_400_000, // 4 hours
+    eventBus?: AutomationEventBus,
   ) {
     this.#storePath = join(stateDir, "attention-items.json");
     this.#casesService = casesService;
     this.#intervalMs = intervalMs;
+    this.#eventBus = eventBus;
   }
 
   start(): void {
@@ -45,7 +49,28 @@ export class MonitoringService {
   async scan(): Promise<void> {
     const cases = await this.#casesService.listCases();
     const store = await this.#load();
-    const updatedItems = scanCases(cases, store.items);
+    const oldItems = store.items;
+    const updatedItems = scanCases(cases, oldItems);
+
+    // Emit events for new/changed items before persisting
+    if (this.#eventBus) {
+      const oldItemMap = new Map<string, AttentionItem>();
+      for (const item of oldItems) {
+        oldItemMap.set(item.id, item);
+      }
+
+      for (const item of updatedItems) {
+        const existing = oldItemMap.get(item.id);
+        if (!existing) {
+          // New item
+          this.#eventBus.emitAttentionChange({ item, isNew: true });
+        } else if (existing.attentionState !== item.attentionState) {
+          // State changed
+          this.#eventBus.emitAttentionChange({ item, isNew: false });
+        }
+      }
+    }
+
     await this.#save({
       version: 1,
       items: updatedItems,

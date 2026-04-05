@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import packageJson from "../package.json" with { type: "json" };
+import { AutomationEventListener } from "./automation/event-listener.ts";
 import { AutomationService } from "./automation/service.ts";
 import { RuntimeProviderAuthService } from "./auth/service.ts";
 import { CasesService } from "./cases/service.ts";
@@ -18,6 +19,7 @@ import { EmbeddedGatewayClient } from "./internal-gateway/gateway-client.ts";
 import { AgentMetadataStoreService } from "./internal-gateway/metadata-store.ts";
 import { EmbeddedGatewaySupervisor } from "./internal-gateway/supervisor.ts";
 import { migrateLegacyDefaultWorkspacePersona } from "./internal-gateway/workspace-bootstrap.ts";
+import { AutomationEventBus } from "./events/event-bus.ts";
 import { createSidecarApp } from "./server/app.ts";
 
 export interface SidecarServerHandle {
@@ -63,9 +65,16 @@ export async function startSidecarServer(
     gatewaySupervisor.paths.stateDir,
   );
   const casesService = new CasesService(gatewaySupervisor.paths.stateDir);
+  const automationEventBus = new AutomationEventBus();
   const monitoringService = new MonitoringService(
     gatewaySupervisor.paths.stateDir,
     casesService,
+    undefined,
+    automationEventBus,
+  );
+  const automationEventListener = new AutomationEventListener(
+    automationEventBus,
+    automationService,
   );
   const dataProviderService = new DataProviderService(
     gatewaySupervisor.paths.stateDir,
@@ -131,10 +140,12 @@ export async function startSidecarServer(
     },
   );
 
+  automationEventListener.start();
   runtime.monitoringService.start();
 
   return {
     async close() {
+      automationEventListener.stop();
       runtime.monitoringService.stop();
       server.close();
       await gatewaySupervisor.stop();

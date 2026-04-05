@@ -117,16 +117,45 @@ void test("formatDuration formats seconds correctly", async () => {
   assert.equal(formatDuration(null), "—");
 });
 
-void test("STEP_LABELS is exported from schedule-utils", async () => {
+void test("STEP_LABELS is exported from schedule-utils with 5 entries", async () => {
   const mod = await import("./schedule-utils");
   assert.ok(Array.isArray(mod.STEP_LABELS));
-  assert.equal(mod.STEP_LABELS.length, 4);
+  assert.equal(mod.STEP_LABELS.length, 5);
 });
 
-void test("AutomationDialogSteps exports all step components", async () => {
+void test("formatEventTriggerLabel returns correct labels", async () => {
+  const { formatEventTriggerLabel } = await import("./schedule-utils");
+  assert.equal(formatEventTriggerLabel("case-stale"), "When a case goes stale");
+  assert.equal(
+    formatEventTriggerLabel("earnings-detected"),
+    "When earnings are detected",
+  );
+  assert.equal(
+    formatEventTriggerLabel("drift-detected"),
+    "When thesis drift is detected",
+  );
+  assert.equal(
+    formatEventTriggerLabel("catalyst-approaching"),
+    "When a catalyst approaches",
+  );
+  assert.equal(formatEventTriggerLabel("review-due"), "When a review is due");
+});
+
+void test("EVENT_TRIGGER_OPTIONS has 5 entries with value and label", async () => {
+  const { EVENT_TRIGGER_OPTIONS } = await import("./schedule-utils");
+  assert.equal(EVENT_TRIGGER_OPTIONS.length, 5);
+  for (const option of EVENT_TRIGGER_OPTIONS) {
+    assert.ok(typeof option.value === "string");
+    assert.ok(typeof option.label === "string");
+  }
+});
+
+void test("AutomationDialogSteps exports all step components including new ones", async () => {
   const mod = await import("./components/AutomationDialogSteps");
   assert.equal(typeof mod.SelectCardStep, "function");
   assert.equal(typeof mod.ScheduleStep, "function");
   assert.equal(typeof mod.DestinationStep, "function");
   assert.equal(typeof mod.FiltersStep, "function");
+  assert.equal(typeof mod.TriggerTypeStep, "function");
+  assert.equal(typeof mod.EventTypeStep, "function");
 });

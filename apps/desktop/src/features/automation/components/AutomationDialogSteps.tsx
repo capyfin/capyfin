@@ -1,8 +1,9 @@
 import type {
   AutomationDestination,
   DeliveryChannel,
+  EventTriggerType,
 } from "@capyfin/contracts";
-import { CheckIcon } from "lucide-react";
+import { CalendarClockIcon, CheckIcon, ZapIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { ActionCard } from "@/features/launchpad/types";
+import { EVENT_TRIGGER_OPTIONS } from "../schedule-utils";
 
 const DAYS = [
   { key: "monday", label: "Mon" },
@@ -55,7 +57,7 @@ export function SelectCardStep({
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted-foreground">
-        Choose a card to run on schedule.
+        Choose a card to automate.
       </p>
       <div className="flex flex-col gap-2">
         {schedulableCards.map((card) => (
@@ -88,6 +90,129 @@ export function SelectCardStep({
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+interface TriggerTypeStepProps {
+  triggerType: "schedule" | "event";
+  onSelect: (type: "schedule" | "event") => void;
+}
+
+export function TriggerTypeStep({
+  triggerType,
+  onSelect,
+}: TriggerTypeStepProps) {
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-sm text-muted-foreground">
+        How should this automation be triggered?
+      </p>
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            onSelect("schedule");
+          }}
+          className={`flex items-center gap-3 rounded-lg border p-3.5 text-left transition-colors ${
+            triggerType === "schedule"
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-foreground/20"
+          }`}
+        >
+          <div
+            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
+              triggerType === "schedule"
+                ? "bg-primary/10 text-primary"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            <CalendarClockIcon className="size-4" />
+          </div>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-sm font-medium">Scheduled</span>
+            <span className="text-xs text-muted-foreground">
+              Runs on a recurring schedule
+            </span>
+          </div>
+          {triggerType === "schedule" && (
+            <CheckIcon className="ml-auto size-4 shrink-0 text-primary" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            onSelect("event");
+          }}
+          className={`flex items-center gap-3 rounded-lg border p-3.5 text-left transition-colors ${
+            triggerType === "event"
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-foreground/20"
+          }`}
+        >
+          <div
+            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
+              triggerType === "event"
+                ? "bg-amber-500/10 text-amber-500"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            <ZapIcon className="size-4" />
+          </div>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-sm font-medium">Event-Driven</span>
+            <span className="text-xs text-muted-foreground">
+              Runs when a condition is detected
+            </span>
+          </div>
+          {triggerType === "event" && (
+            <CheckIcon className="ml-auto size-4 shrink-0 text-primary" />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface EventTypeStepProps {
+  eventType: EventTriggerType | "";
+  onSelect: (type: EventTriggerType) => void;
+}
+
+export function EventTypeStep({ eventType, onSelect }: EventTypeStepProps) {
+  const selected = EVENT_TRIGGER_OPTIONS.find((o) => o.value === eventType);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-muted-foreground">
+        Which event should trigger this automation?
+      </p>
+      <Select
+        value={eventType}
+        onValueChange={(v) => {
+          onSelect(v as EventTriggerType);
+        }}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select an event type" />
+        </SelectTrigger>
+        <SelectContent position="popper">
+          {EVENT_TRIGGER_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {selected && (
+        <p className="text-xs text-muted-foreground">
+          This automation will run whenever the system detects:{" "}
+          <span className="font-medium text-foreground">
+            {selected.label.toLowerCase()}
+          </span>
+        </p>
+      )}
     </div>
   );
 }

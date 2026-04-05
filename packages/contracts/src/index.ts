@@ -401,6 +401,10 @@ export type AutomationSchedule = z.infer<typeof automationScheduleSchema>;
 export type AutomationFilters = z.infer<typeof automationFiltersSchema>;
 export type AutomationDestination = z.infer<typeof automationDestinationSchema>;
 export type AutomationRunStatus = z.infer<typeof automationRunStatusSchema>;
+export type EventTriggerType = z.infer<typeof eventTriggerTypeSchema>;
+export type ScheduleTrigger = z.infer<typeof scheduleTriggerSchema>;
+export type EventTrigger = z.infer<typeof eventTriggerSchema>;
+export type AutomationTrigger = z.infer<typeof automationTriggerSchema>;
 export type Automation = z.infer<typeof automationSchema>;
 export type AutomationList = z.infer<typeof automationListSchema>;
 export type CreateAutomationRequest = z.infer<
@@ -724,11 +728,34 @@ export const automationRunStatusSchema = z.enum([
   "running",
 ]);
 
+export const eventTriggerTypeSchema = z.enum([
+  "case-stale",
+  "earnings-detected",
+  "drift-detected",
+  "catalyst-approaching",
+  "review-due",
+]);
+
+export const scheduleTriggerSchema = z.object({
+  type: z.literal("schedule"),
+  schedule: automationScheduleSchema,
+});
+
+export const eventTriggerSchema = z.object({
+  type: z.literal("event"),
+  eventType: eventTriggerTypeSchema,
+});
+
+export const automationTriggerSchema = z.discriminatedUnion("type", [
+  scheduleTriggerSchema,
+  eventTriggerSchema,
+]);
+
 export const automationSchema = z.object({
   id: z.string().min(1),
   cardId: z.string().min(1),
   cardTitle: z.string().min(1),
-  schedule: automationScheduleSchema,
+  trigger: automationTriggerSchema,
   destination: automationDestinationSchema,
   filters: automationFiltersSchema.nullable().optional(),
   enabled: z.boolean(),
@@ -745,7 +772,7 @@ export const automationListSchema = z.object({
 export const createAutomationRequestSchema = z.object({
   cardId: z.string().min(1),
   cardTitle: z.string().min(1),
-  schedule: automationScheduleSchema,
+  trigger: automationTriggerSchema,
   destination: automationDestinationSchema,
   filters: automationFiltersSchema.nullable().optional(),
   enabled: z.boolean().default(true),
@@ -753,7 +780,7 @@ export const createAutomationRequestSchema = z.object({
 
 export const updateAutomationRequestSchema = z.object({
   cardTitle: z.string().min(1).optional(),
-  schedule: automationScheduleSchema.optional(),
+  trigger: automationTriggerSchema.optional(),
   destination: automationDestinationSchema.optional(),
   filters: automationFiltersSchema.nullable().optional(),
   enabled: z.boolean().optional(),
@@ -771,6 +798,7 @@ export const automationRunSchema = z.object({
   status: automationRunStatusSchema,
   duration: z.number().nullable(),
   outputReportId: z.string().nullable(),
+  lastTriggeredBy: z.string().nullable().optional(),
 });
 
 export const automationRunListSchema = z.object({

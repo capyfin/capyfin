@@ -21,6 +21,8 @@ export function OverviewTab({ investmentCase }: OverviewTabProps) {
         <OverviewSection
           title="Thesis Summary"
           confidence={thesisSection.confidence}
+          accentClass="border-l-primary/50"
+          gradientClass="bg-gradient-to-r from-primary/[0.04] to-transparent"
         >
           <div className="prose-sm">
             <MessageResponse>{thesisSection.content}</MessageResponse>
@@ -32,6 +34,8 @@ export function OverviewTab({ investmentCase }: OverviewTabProps) {
         <OverviewSection
           title="Key Assumptions"
           icon={<CheckCircle2Icon className="size-4 text-emerald-500" />}
+          accentClass="border-l-emerald-500/50"
+          gradientClass="bg-gradient-to-r from-emerald-500/[0.04] to-transparent"
         >
           <ul className="space-y-2">
             {investmentCase.keyAssumptions.map((assumption, i) => (
@@ -51,7 +55,8 @@ export function OverviewTab({ investmentCase }: OverviewTabProps) {
         <OverviewSection
           title="Invalidation Signals"
           icon={<ShieldAlertIcon className="size-4 text-red-500/80" />}
-          accentClass="border-red-500/10"
+          accentClass="border-l-red-500/50"
+          gradientClass="bg-gradient-to-r from-red-500/[0.04] to-transparent"
         >
           <ul className="space-y-2">
             {investmentCase.invalidationSignals.map((signal, i) => (
@@ -71,7 +76,8 @@ export function OverviewTab({ investmentCase }: OverviewTabProps) {
         <OverviewSection
           title="Next Actions"
           icon={<ListChecksIcon className="size-4 text-blue-500/80" />}
-          accentClass="border-blue-500/10"
+          accentClass="border-l-blue-500/50"
+          gradientClass="bg-gradient-to-r from-blue-500/[0.04] to-transparent"
         >
           <ul className="space-y-2">
             {investmentCase.nextActions.map((action, i) => (
@@ -95,19 +101,23 @@ function OverviewSection({
   confidence,
   icon,
   accentClass,
+  gradientClass,
   children,
 }: {
   title: string;
   confidence?: Confidence;
   icon?: React.ReactNode;
   accentClass?: string;
+  gradientClass?: string;
   children: React.ReactNode;
 }) {
   return (
     <div
-      className={`overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30 ${accentClass ?? ""}`}
+      className={`overflow-hidden rounded-xl border border-border/50 border-l-2 bg-card shadow-sm dark:border-border/30 ${accentClass ?? "border-l-primary/40"}`}
     >
-      <div className="flex items-center gap-2.5 border-b border-border/40 bg-muted/[0.04] px-5 py-3">
+      <div
+        className={`flex items-center gap-2.5 border-b border-border/40 px-5 py-3 ${gradientClass ?? "bg-muted/[0.04]"}`}
+      >
         {icon}
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           {title}

@@ -9,6 +9,29 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+const SECTION_ACCENTS: Record<string, { border: string; gradient: string }> = {
+  thesis: {
+    border: "border-l-primary/50",
+    gradient: "bg-gradient-to-r from-primary/[0.04] to-transparent",
+  },
+  valuation: {
+    border: "border-l-emerald-500/50",
+    gradient: "bg-gradient-to-r from-emerald-500/[0.04] to-transparent",
+  },
+  risks: {
+    border: "border-l-red-500/50",
+    gradient: "bg-gradient-to-r from-red-500/[0.04] to-transparent",
+  },
+  whatChanged: {
+    border: "border-l-amber-500/50",
+    gradient: "bg-gradient-to-r from-amber-500/[0.04] to-transparent",
+  },
+  catalysts: {
+    border: "border-l-blue-500/50",
+    gradient: "bg-gradient-to-r from-blue-500/[0.04] to-transparent",
+  },
+};
+
 interface SectionTabProps {
   section: CaseSection | undefined;
   emptyMessage: string;
@@ -29,9 +52,15 @@ export function SectionTab({ section, emptyMessage }: SectionTabProps) {
     );
   }
 
+  const accent = SECTION_ACCENTS[section.id];
+
   return (
-    <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
-      <div className="flex items-center gap-2.5 border-b border-border/40 bg-muted/[0.04] px-5 py-3">
+    <div
+      className={`overflow-hidden rounded-xl border border-border/50 border-l-2 bg-card shadow-sm dark:border-border/30 ${accent?.border ?? "border-l-primary/40"}`}
+    >
+      <div
+        className={`flex items-center gap-2.5 border-b border-border/40 px-5 py-3 ${accent?.gradient ?? "bg-muted/[0.04]"}`}
+      >
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
           {section.title}
         </h3>

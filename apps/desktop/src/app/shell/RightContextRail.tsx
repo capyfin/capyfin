@@ -1,4 +1,4 @@
-import { XIcon } from "lucide-react";
+import { InfoIcon, XIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -38,9 +38,14 @@ export function RightContextRail({
       </div>
       <div className="flex-1 overflow-y-auto p-4">
         {children ?? (
-          <p className="text-center text-[13px] text-muted-foreground/50">
-            No context available
-          </p>
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-muted/30">
+              <InfoIcon className="size-4 text-muted-foreground/30" />
+            </div>
+            <p className="text-[13px] leading-relaxed text-muted-foreground/40">
+              No context available
+            </p>
+          </div>
         )}
       </div>
     </aside>

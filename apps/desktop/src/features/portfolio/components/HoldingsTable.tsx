@@ -181,9 +181,10 @@ export function HoldingsTable({
                     <TableCell className="text-[13px] text-muted-foreground">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button
-                            type="button"
-                            className="group/sector inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted/60"
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="group/sector h-auto gap-1 px-1.5 py-0.5 font-normal"
                           >
                             {holding.sector ? (
                               <span>{holding.sector}</span>
@@ -193,7 +194,7 @@ export function HoldingsTable({
                               </span>
                             )}
                             <PencilIcon className="size-3 text-muted-foreground/40 opacity-0 transition-opacity group-hover/sector:opacity-100" />
-                          </button>
+                          </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-52">
                           <DropdownMenuLabel>Select sector</DropdownMenuLabel>
@@ -201,7 +202,7 @@ export function HoldingsTable({
                           {GICS_SECTORS.map((sector) => (
                             <DropdownMenuItem
                               key={sector}
-                              onClick={() => {
+                              onSelect={() => {
                                 onSectorChange?.(holding.ticker, sector);
                               }}
                             >

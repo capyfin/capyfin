@@ -21,8 +21,8 @@ export function QuickCreate({ onCardClick }: QuickCreateProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
-        <div className="flex size-6 items-center justify-center rounded-lg bg-muted/60">
-          <RocketIcon className="size-3.5 text-muted-foreground/50" />
+        <div className="flex size-6 items-center justify-center rounded-lg bg-violet-500/10 dark:bg-violet-500/15">
+          <RocketIcon className="size-3.5 text-violet-500/60" />
         </div>
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
           Quick Create

@@ -434,7 +434,7 @@ function ChatSessionView({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Agent/provider bar */}
-      <div className="flex items-center gap-3 border-b border-border/40 bg-card/30 px-4 py-2.5 dark:bg-card/20 lg:px-6">
+      <div className="flex items-center gap-3 border-b border-border/20 bg-gradient-to-b from-card/40 to-card/25 px-4 py-2.5 dark:from-card/25 dark:to-card/15 lg:px-6">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary/[0.08] px-2.5 py-1 text-[11px] font-medium text-primary ring-1 ring-primary/[0.06]">
             <BotIcon className="size-3" />
@@ -581,13 +581,13 @@ function ChatSessionView({
       </div>
 
       {/* Chat input */}
-      <div className="border-t border-border/40 bg-card/30 px-4 py-3 dark:bg-card/20 lg:px-6">
+      <div className="border-t border-border/20 bg-gradient-to-t from-background via-card/40 to-card/25 px-4 py-4 dark:from-background/80 dark:via-card/25 dark:to-card/15 lg:px-6">
         <PromptInput
           accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.jsx,.ts,.tsx,.py,.rb,.go,.rs,.java,.c,.cpp,.h,.hpp,.cs,.swift,.kt,.sh,.bash,.zsh,.yaml,.yml,.toml,.xml,.html,.css,.scss,.sql,.r,.lua,.php,.pl,.ex,.exs,.hs,.ml,.scala,.clj,.dart,.vue,.svelte,.astro,.log,.env,.ini,.cfg,.conf,.diff,.patch"
           globalDrop
           multiple
           onSubmit={handleSubmit}
-          className="mx-auto max-w-3xl"
+          className="mx-auto max-w-3xl [&>[data-slot=input-group]]:rounded-xl [&>[data-slot=input-group]]:border-border/50 [&>[data-slot=input-group]]:shadow-lg [&>[data-slot=input-group]]:shadow-black/[0.03] dark:[&>[data-slot=input-group]]:border-border/30 dark:[&>[data-slot=input-group]]:shadow-black/20"
         >
           <PromptInputHeader>
             <AttachmentPreviews />
@@ -612,8 +612,8 @@ function ChatSessionView({
 
       {/* Financial disclaimer */}
       {messages.length > 0 ? (
-        <div className="bg-card/30 px-4 pb-2.5 pt-0 dark:bg-card/20 lg:px-6">
-          <p className="mx-auto max-w-3xl text-center text-[10px] leading-tight tracking-wide text-muted-foreground/35">
+        <div className="bg-gradient-to-t from-background to-background/80 px-4 pb-3 pt-0 dark:from-background/80 dark:to-background/60 lg:px-6">
+          <p className="mx-auto max-w-3xl text-center text-[10px] leading-tight tracking-wide text-muted-foreground/30">
             Not financial advice. AI-generated analysis may contain errors.
             Always verify data and consult a qualified advisor before making
             investment decisions.

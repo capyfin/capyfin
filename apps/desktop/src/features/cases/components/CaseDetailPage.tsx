@@ -1,5 +1,6 @@
 import type { InvestmentCase } from "@capyfin/contracts";
 import {
+  ActivityIcon,
   ArrowLeftIcon,
   CalendarIcon,
   GitCompareArrowsIcon,
@@ -118,74 +119,83 @@ export function CaseDetailPage({
 
       {/* Header card */}
       <div className="relative overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-transparent to-emerald-500/[0.02]" />
-        <div className="relative flex items-start justify-between gap-4 p-5">
-          <div className="flex items-start gap-4">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-primary/[0.10] font-mono text-base font-bold tracking-wider text-primary ring-1 ring-primary/15">
-              {investmentCase.ticker.slice(0, 2)}
-            </div>
-            <div className="flex flex-col gap-2.5">
-              <div className="flex items-baseline gap-3">
-                <h1 className="font-mono text-xl font-bold tracking-wide text-foreground">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-transparent to-emerald-500/[0.03] dark:from-primary/[0.10] dark:to-emerald-500/[0.05]" />
+        <div className="relative p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/[0.10] font-mono text-lg font-bold tracking-wider text-primary ring-1 ring-primary/15 shadow-sm">
+                {investmentCase.ticker.slice(0, 3)}
+              </div>
+              <div className="flex flex-col gap-1">
+                <h1 className="font-mono text-2xl font-bold tracking-wide text-foreground">
                   {investmentCase.ticker}
                 </h1>
-                <span className="text-[15px] text-muted-foreground">
+                <p className="text-[14px] text-muted-foreground">
                   {investmentCase.companyName}
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <StanceBadge stance={investmentCase.stance} />
-                <ConfidenceBadge confidence={investmentCase.confidence} />
-                <div className="h-3.5 w-px bg-border/50" />
-                <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground/60">
-                  <CalendarIcon className="size-3" />
-                  Reviewed {formattedDate}
-                </span>
+                </p>
               </div>
             </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-border/40 bg-background/60 backdrop-blur-sm"
+                  >
+                    <GitCompareArrowsIcon className="size-3.5" />
+                    Compare
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      window.location.hash = `#cases/compare?left=${investmentCase.id}`;
+                    }}
+                  >
+                    Compare with another case...
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      window.location.hash = `#cases/compare?left=${investmentCase.id}&mode=prior`;
+                    }}
+                  >
+                    Compare with Prior
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-border/40 bg-background/60 backdrop-blur-sm"
+                onClick={() => {
+                  if (onRefresh) {
+                    onRefresh(investmentCase.ticker);
+                  }
+                }}
+              >
+                <RefreshCwIcon className="size-3.5" />
+                Refresh Case
+              </Button>
+            </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-background/60 backdrop-blur-sm"
-                >
-                  <GitCompareArrowsIcon className="size-3.5" />
-                  Compare
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => {
-                    window.location.hash = `#cases/compare?left=${investmentCase.id}`;
-                  }}
-                >
-                  Compare with another case...
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    window.location.hash = `#cases/compare?left=${investmentCase.id}&mode=prior`;
-                  }}
-                >
-                  Compare with Prior
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-background/60 backdrop-blur-sm"
-              onClick={() => {
-                if (onRefresh) {
-                  onRefresh(investmentCase.ticker);
-                }
-              }}
-            >
-              <RefreshCwIcon className="size-3.5" />
-              Refresh Case
-            </Button>
+          <div className="mt-4 flex flex-wrap items-center gap-2.5 border-t border-border/30 pt-4">
+            <StanceBadge stance={investmentCase.stance} />
+            <ConfidenceBadge confidence={investmentCase.confidence} />
+            <div className="h-3.5 w-px bg-border/40" />
+            <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground/60">
+              <CalendarIcon className="size-3" />
+              Reviewed {formattedDate}
+            </span>
+            {investmentCase.monitoringEnabled ? (
+              <>
+                <div className="h-3.5 w-px bg-border/40" />
+                <span className="inline-flex items-center gap-1.5 text-[12px] text-emerald-600 dark:text-emerald-400">
+                  <ActivityIcon className="size-3" />
+                  Monitoring active
+                </span>
+              </>
+            ) : null}
           </div>
         </div>
       </div>

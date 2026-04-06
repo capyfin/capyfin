@@ -38,7 +38,7 @@ export function CaseCard({ investmentCase, onClick, selected }: CaseCardProps) {
 
   return (
     <Card
-      className={`cursor-pointer overflow-hidden rounded-xl border-l-2 border-border/50 transition-all hover:-translate-y-0.5 hover:border-border/70 hover:bg-muted/20 hover:shadow-md hover:shadow-black/[0.03] dark:border-border/30 dark:hover:border-border/50 dark:hover:shadow-black/20 ${borderColor} ${selected === true ? "ring-2 ring-primary" : ""} ${selected === false ? "opacity-60" : ""}`}
+      className={`cursor-pointer overflow-hidden rounded-xl border-l-2 border-border/50 transition-all hover:-translate-y-0.5 hover:border-border/70 hover:bg-gradient-to-r hover:from-primary/[0.03] hover:via-muted/15 hover:to-transparent hover:shadow-md hover:shadow-black/[0.03] dark:border-border/30 dark:hover:border-border/50 dark:hover:from-primary/[0.06] dark:hover:shadow-black/20 ${borderColor} ${selected === true ? "ring-2 ring-primary" : ""} ${selected === false ? "opacity-60" : ""}`}
       onClick={onClick}
     >
       <CardHeader className="pb-2">

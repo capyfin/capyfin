@@ -98,17 +98,19 @@ export function SettingsWorkspace({
     >
       {/* Active tab icon accent */}
       {tabDef ? (
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] text-primary ring-1 ring-primary/10">
-            <tabDef.icon className="size-5" />
-          </div>
-          <div>
-            <h1 className="text-[17px] font-semibold tracking-tight">
-              {tabDef.label}
-            </h1>
-            <p className="text-[13px] text-muted-foreground">
-              {tabDef.description}
-            </p>
+        <div className="relative mb-6 overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-primary/[0.06] via-background to-muted/[0.04] px-5 py-4 dark:from-primary/[0.12] dark:to-muted/[0.06]">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] text-primary ring-1 ring-primary/10">
+              <tabDef.icon className="size-5" />
+            </div>
+            <div>
+              <h1 className="text-[17px] font-semibold tracking-tight">
+                {tabDef.label}
+              </h1>
+              <p className="text-[13px] text-muted-foreground">
+                {tabDef.description}
+              </p>
+            </div>
           </div>
         </div>
       ) : null}

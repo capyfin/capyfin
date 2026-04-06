@@ -1,5 +1,10 @@
 import type { InvestmentCase } from "@capyfin/contracts";
-import { ArrowLeftIcon, LoaderCircleIcon, SaveIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  GitCompareArrowsIcon,
+  LoaderCircleIcon,
+  SaveIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -205,26 +210,30 @@ export function ComparisonWorkspace({
       </Button>
 
       {/* Header card */}
-      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm dark:border-border/30">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.04] via-transparent to-transparent" />
-        <div className="relative flex items-start justify-between gap-4 p-5">
-          <div className="flex flex-col gap-1.5">
-            <h1 className="text-xl font-bold tracking-tight">
-              {mode === "prior"
-                ? `${leftCase?.ticker ?? "Case"} — Compare with Prior`
-                : "Compare Cases"}
-            </h1>
-            <p className="text-[13px] text-muted-foreground">
-              {mode === "prior"
-                ? "Current state versus the most recent review"
-                : "Side-by-side analysis of two investment cases"}
-            </p>
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-blue-500/[0.05] via-background to-violet-500/[0.03] px-5 py-4 dark:from-blue-500/[0.10] dark:to-violet-500/[0.05]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-blue-500/[0.08] text-blue-500 ring-1 ring-blue-500/10">
+              <GitCompareArrowsIcon className="size-5" />
+            </div>
+            <div>
+              <h2 className="text-[17px] font-semibold tracking-tight">
+                {mode === "prior"
+                  ? `${leftCase?.ticker ?? "Case"} — Compare with Prior`
+                  : "Compare Cases"}
+              </h2>
+              <p className="text-[13px] text-muted-foreground">
+                {mode === "prior"
+                  ? "Current state versus the most recent review"
+                  : "Side-by-side analysis of two investment cases"}
+              </p>
+            </div>
           </div>
           {comparisonResult || priorResult ? (
             <Button
               variant="outline"
               size="sm"
-              className="bg-background/60 backdrop-blur-sm"
+              className="border-border/40 bg-background/60 backdrop-blur-sm"
               disabled={isSaving}
               onClick={() => {
                 void handleSaveToLibrary();

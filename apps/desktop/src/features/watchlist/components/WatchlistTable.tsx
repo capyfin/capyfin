@@ -1,4 +1,5 @@
 import type { InvestmentCase, WatchlistItem } from "@capyfin/contracts";
+import { lookupCompanyName } from "../ticker-company-map";
 import {
   BookOpenIcon,
   CalculatorIcon,
@@ -231,14 +232,18 @@ export function WatchlistTable({
                       <span className="inline-flex items-center rounded-md bg-foreground/[0.05] px-2.5 py-0.5 font-mono text-sm font-bold tracking-wide text-foreground dark:bg-foreground/[0.07]">
                         {item.ticker}
                       </span>
-                      {(item.companyName ??
-                      caseMap?.get(item.ticker.toUpperCase())?.companyName) ? (
-                        <span className="text-[12px] text-muted-foreground/50">
-                          {item.companyName ??
-                            caseMap?.get(item.ticker.toUpperCase())
-                              ?.companyName}
-                        </span>
-                      ) : null}
+                      {(() => {
+                        const name =
+                          item.companyName ??
+                          caseMap?.get(item.ticker.toUpperCase())
+                            ?.companyName ??
+                          lookupCompanyName(item.ticker);
+                        return name ? (
+                          <span className="text-[12px] text-muted-foreground/50">
+                            {name}
+                          </span>
+                        ) : null;
+                      })()}
                     </div>
                   </div>
                 </TableCell>

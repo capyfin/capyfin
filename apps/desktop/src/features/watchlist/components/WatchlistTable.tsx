@@ -219,7 +219,7 @@ export function WatchlistTable({
             {items.map((item) => (
               <TableRow
                 key={item.ticker}
-                className="group/row border-b border-border/25 transition-colors hover:bg-muted/30 dark:border-border/20"
+                className="group/row border-b border-border/25 transition-colors hover:bg-gradient-to-r hover:from-primary/[0.03] hover:via-muted/20 hover:to-transparent dark:border-border/20 dark:hover:from-primary/[0.06]"
               >
                 <TableCell className="pl-5">
                   <div className="flex items-center gap-2.5">

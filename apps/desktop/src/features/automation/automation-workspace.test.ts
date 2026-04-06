@@ -551,3 +551,156 @@ void test("SuggestedAutomations source has prominent Set up CTA button", async (
     "Set up CTA should be visible by default, not hidden with opacity-0",
   );
 });
+
+// --- Suggested card click handler wiring tests ---
+
+void test("SuggestedAutomations card buttons call onSetUp with card.id on click", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "SuggestedAutomations.tsx"),
+    "utf-8",
+  );
+  // Each card button must have an onClick handler that calls onSetUp(card.id)
+  assert.match(
+    source,
+    /onClick=\{?\(\)\s*=>\s*\{?\s*onSetUp\(card\.id\)/,
+    "Card button onClick must call onSetUp(card.id)",
+  );
+});
+
+void test("AutomationWorkspace passes onSetUp to SuggestedAutomations that opens the dialog", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationWorkspace.tsx"),
+    "utf-8",
+  );
+  // SuggestedAutomations must receive onSetUp that sets initialCardId and showCreateDialog
+  assert.match(
+    source,
+    /onSetUp=\{.*setInitialCardId/s,
+    "onSetUp callback must call setInitialCardId",
+  );
+  assert.match(
+    source,
+    /onSetUp=\{.*setShowCreateDialog\(true\)/s,
+    "onSetUp callback must call setShowCreateDialog(true) to open the wizard",
+  );
+});
+
+void test("AutomationDialog open prop depends on showCreateDialog state", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationWorkspace.tsx"),
+    "utf-8",
+  );
+  // AutomationDialog open prop must include showCreateDialog
+  assert.match(
+    source,
+    /open=\{showCreateDialog/,
+    "AutomationDialog open prop must be controlled by showCreateDialog state",
+  );
+});
+
+void test("AutomationDialog receives initialCardId prop from workspace", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationWorkspace.tsx"),
+    "utf-8",
+  );
+  assert.match(
+    source,
+    /initialCardId=\{initialCardId\}/,
+    "AutomationDialog must receive initialCardId prop",
+  );
+});
+
+void test("AutomationDialog resets form with initialCardId when opened", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationDialog.tsx"),
+    "utf-8",
+  );
+  // Must call resetForm with initialCardId in the open effect
+  assert.match(
+    source,
+    /resetForm\(initialCardId\)/,
+    "AutomationDialog must call resetForm(initialCardId) when opened",
+  );
+});
+
+void test("AutomationDialog skips card selection step when card is pre-selected", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationDialog.tsx"),
+    "utf-8",
+  );
+  // resetForm should set step to 1 (skip card selection) when preselectedCardId is valid
+  assert.match(
+    source,
+    /setStep\(hasPreselect \? 1 : 0\)/,
+    "resetForm should skip step 0 (card selection) when a card is pre-selected",
+  );
+  assert.match(
+    source,
+    /setCardId\(hasPreselect \? preselectedCardId : ""\)/,
+    "resetForm should set cardId when pre-selected",
+  );
+});
+
+void test("SuggestedAutomations card IDs match schedulable cards in card registry", async () => {
+  const { getSuggestedCards } =
+    await import("./components/SuggestedAutomations");
+  const { allCards } = await import("../../features/launchpad/card-registry");
+  const schedulableCards = allCards.filter((c) => c.schedulable);
+
+  // All suggested cards should have matching IDs in the schedulable card registry
+  const suggested = getSuggestedCards([]);
+  for (const card of suggested) {
+    const match = schedulableCards.find((sc) => sc.id === card.id);
+    assert.ok(
+      match,
+      `Suggested card "${card.id}" must exist in card registry with schedulable=true`,
+    );
+  }
+});
+
+void test("AutomationEmptyState card buttons call onCreateWithCard on click", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationEmptyState.tsx"),
+    "utf-8",
+  );
+  // Each card button must have an onClick handler that calls onCreateWithCard
+  assert.match(
+    source,
+    /onClick=\{?\(\)\s*=>\s*onCreateWithCard\?\.\(card\.id\)/,
+    "Empty state card button onClick must call onCreateWithCard(card.id)",
+  );
+});
+
+void test("AutomationWorkspace passes onCreateWithCard to empty state that opens dialog", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const source = fs.readFileSync(
+    path.join(import.meta.dirname, "components", "AutomationWorkspace.tsx"),
+    "utf-8",
+  );
+  // AutomationEmptyState must receive onCreateWithCard that sets initialCardId and showCreateDialog
+  assert.match(
+    source,
+    /onCreateWithCard=\{.*setInitialCardId/s,
+    "onCreateWithCard callback must call setInitialCardId",
+  );
+  assert.match(
+    source,
+    /onCreateWithCard=\{.*setShowCreateDialog\(true\)/s,
+    "onCreateWithCard callback must call setShowCreateDialog(true) to open the wizard",
+  );
+});

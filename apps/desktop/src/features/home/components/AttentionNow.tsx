@@ -77,10 +77,16 @@ export function AttentionNow({ bullets }: AttentionNowProps) {
             return (
               <div
                 key={bullet.category}
-                className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 ${style?.bg ?? "bg-muted"} ${style?.border ?? "border-border/50"}`}
+                className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-all hover:-translate-y-px hover:shadow-sm ${style?.bg ?? "bg-muted"} ${style?.border ?? "border-border/50"}`}
               >
-                <Icon className="size-4 shrink-0 text-foreground/60" />
-                <span className="text-[13px] text-foreground/80">
+                <div
+                  className={`flex size-7 shrink-0 items-center justify-center rounded-lg ${bullet.urgency === "high" ? "bg-destructive/15" : bullet.urgency === "medium" ? "bg-amber-500/15" : "bg-muted/60"}`}
+                >
+                  <Icon
+                    className={`size-3.5 ${bullet.urgency === "high" ? "text-destructive" : bullet.urgency === "medium" ? "text-amber-500" : "text-muted-foreground/60"}`}
+                  />
+                </div>
+                <span className="text-[13px] font-medium text-foreground/80">
                   {bullet.message}
                 </span>
               </div>

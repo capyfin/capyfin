@@ -59,7 +59,7 @@ export function ReviewQueueCard({
             {items.map((item) => (
               <div
                 key={item.caseId}
-                className="group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-colors hover:bg-muted/40"
+                className="group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-colors hover:bg-gradient-to-r hover:from-primary/[0.04] hover:via-muted/30 hover:to-transparent"
               >
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-foreground/[0.04] text-[11px] font-semibold tabular-nums text-muted-foreground/50 dark:bg-foreground/[0.06]">
                   {item.rank}

@@ -495,21 +495,23 @@ function ChatSessionView({
                       <button
                         key={prompt.text}
                         type="button"
-                        className={`flex items-start gap-3 rounded-xl border px-3.5 py-3.5 text-left text-[13px] leading-relaxed transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.03] dark:hover:shadow-black/20 ${accent.card} ${accent.hover}`}
+                        className={`flex items-start gap-3 rounded-xl border px-4 py-4 text-left text-[13px] leading-relaxed transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/[0.04] dark:hover:shadow-black/25 ${accent.card} ${accent.hover}`}
                         onClick={() => {
                           handleSubmit({ text: prompt.text });
                         }}
                       >
                         <div
-                          className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ${accent.iconBg}`}
+                          className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl ring-1 ring-current/10 ${accent.iconBg}`}
                         >
                           <prompt.icon
-                            className={`size-4 ${accent.iconText}`}
+                            className={`size-4.5 ${accent.iconText}`}
                           />
                         </div>
-                        <span className="text-muted-foreground/80">
-                          {prompt.text}
-                        </span>
+                        <div className="min-w-0">
+                          <span className="text-foreground/80">
+                            {prompt.text}
+                          </span>
+                        </div>
                       </button>
                     );
                   })}

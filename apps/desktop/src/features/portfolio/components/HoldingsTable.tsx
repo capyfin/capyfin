@@ -30,6 +30,7 @@ import { StanceBadge } from "@/features/cases/components/StanceBadge";
 import { getCaseStatus } from "@/features/launchpad/case-lookup";
 import type { ActionCard } from "@/features/launchpad/types";
 import { TickerLink } from "@/features/ticker-actions/TickerLink";
+import { lookupCompanyName } from "@/features/watchlist/ticker-company-map";
 
 const GICS_SECTORS = [
   "Technology",
@@ -145,7 +146,7 @@ export function HoldingsTable({
                 .map((holding) => (
                   <TableRow
                     key={holding.ticker}
-                    className="group/row border-b border-border/25 transition-colors hover:bg-muted/30 dark:border-border/20"
+                    className="group/row border-b border-border/25 transition-colors hover:bg-gradient-to-r hover:from-primary/[0.03] hover:via-muted/20 hover:to-transparent dark:border-border/20 dark:hover:from-primary/[0.06]"
                   >
                     <TableCell className="pl-5">
                       <div>
@@ -159,11 +160,15 @@ export function HoldingsTable({
                             {holding.ticker}
                           </span>
                         )}
-                        {holding.name ? (
-                          <p className="mt-0.5 text-xs text-muted-foreground">
-                            {holding.name}
-                          </p>
-                        ) : null}
+                        {(() => {
+                          const name =
+                            holding.name ?? lookupCompanyName(holding.ticker);
+                          return name ? (
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {name}
+                            </p>
+                          ) : null;
+                        })()}
                       </div>
                     </TableCell>
                     <TableCell className="tabular-nums">
@@ -175,8 +180,22 @@ export function HoldingsTable({
                     <TableCell className="font-medium tabular-nums">
                       {formatCurrency(holding.shares * holding.costBasis)}
                     </TableCell>
-                    <TableCell className="tabular-nums">
-                      {holding.weight.toFixed(1)}%
+                    <TableCell>
+                      <div className="flex items-center gap-2.5">
+                        <div className="hidden w-16 sm:block">
+                          <div className="h-1.5 overflow-hidden rounded-full bg-muted/40">
+                            <div
+                              className="h-full rounded-full bg-primary/60 transition-all"
+                              style={{
+                                width: `${String(Math.min(holding.weight, 100))}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <span className="tabular-nums text-[13px]">
+                          {holding.weight.toFixed(1)}%
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell className="text-[13px] text-muted-foreground">
                       <DropdownMenu>

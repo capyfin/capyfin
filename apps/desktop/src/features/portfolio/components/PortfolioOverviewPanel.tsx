@@ -77,16 +77,17 @@ export function PortfolioOverviewPanel({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="relative overflow-hidden rounded-xl border-border/50 bg-gradient-to-br from-primary/[0.04] to-transparent dark:border-border/30 dark:from-primary/[0.08]">
-          <CardContent className="flex items-center gap-3.5 p-4">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.08] ring-1 ring-primary/10">
+        <Card className="relative overflow-hidden rounded-xl border-border/50 bg-gradient-to-br from-primary/[0.06] via-primary/[0.02] to-transparent shadow-sm dark:border-border/30 dark:from-primary/[0.12] dark:via-primary/[0.04]">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/[0.04] via-transparent to-transparent" />
+          <CardContent className="relative flex items-center gap-3.5 p-4">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/[0.12] ring-1 ring-primary/15">
               <BriefcaseIcon className="size-4.5 text-primary" />
             </div>
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/60">
                 Total Value
               </p>
-              <p className="text-[20px] font-semibold tabular-nums tracking-tight">
+              <p className="text-[22px] font-bold tabular-nums tracking-tight">
                 {formatCurrency(portfolio.totalValue)}
               </p>
             </div>

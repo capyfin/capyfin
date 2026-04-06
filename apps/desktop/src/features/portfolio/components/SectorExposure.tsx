@@ -80,7 +80,7 @@ export function SectorExposure({ sectors }: SectorExposureProps) {
         ) : (
           <>
             {/* Stacked bar overview */}
-            <div className="flex h-3 overflow-hidden rounded-full bg-muted/40">
+            <div className="flex h-4 overflow-hidden rounded-full bg-muted/30 shadow-inner">
               {realSectors.map((sector, index) => {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- SECTOR_COLORS index is safe with modulo
                 const color = SECTOR_COLORS[index % SECTOR_COLORS.length]!;

@@ -35,6 +35,9 @@ export function RecentCaseUpdates({ updates }: RecentCaseUpdatesProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
+        <div className="flex size-6 items-center justify-center rounded-lg bg-blue-500/10 dark:bg-blue-500/15">
+          <History className="size-3.5 text-blue-500/60" />
+        </div>
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
           Recent Updates
         </h2>

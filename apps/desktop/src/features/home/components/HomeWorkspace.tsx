@@ -9,6 +9,7 @@ import type {
 import { HomeIcon } from "lucide-react";
 import type { SidecarClient } from "@/lib/sidecar/client";
 import type { ActionCard } from "@/features/launchpad/types";
+import { ActivityIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReviewQueueCard } from "@/components/review-queue/ReviewQueueCard";
@@ -209,6 +210,9 @@ function SystemStatusPanel({
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
+        <div className="flex size-6 items-center justify-center rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15">
+          <ActivityIcon className="size-3.5 text-emerald-500/60" />
+        </div>
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
           System Status
         </h2>

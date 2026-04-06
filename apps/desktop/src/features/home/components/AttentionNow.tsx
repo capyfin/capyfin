@@ -50,6 +50,9 @@ export function AttentionNow({ bullets }: AttentionNowProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
+        <div className="flex size-6 items-center justify-center rounded-lg bg-destructive/10 dark:bg-destructive/15">
+          <AlertTriangle className="size-3.5 text-destructive/60" />
+        </div>
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
           Attention Now
         </h2>

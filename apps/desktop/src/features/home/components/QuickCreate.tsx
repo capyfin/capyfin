@@ -1,3 +1,4 @@
+import { RocketIcon } from "lucide-react";
 import { ActionCardItem } from "@/features/launchpad/components/ActionCardItem";
 import { allCards } from "@/features/launchpad/card-registry";
 import type { ActionCard } from "@/features/launchpad/types";
@@ -20,6 +21,9 @@ export function QuickCreate({ onCardClick }: QuickCreateProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-3">
+        <div className="flex size-6 items-center justify-center rounded-lg bg-muted/60">
+          <RocketIcon className="size-3.5 text-muted-foreground/50" />
+        </div>
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
           Quick Create
         </h2>

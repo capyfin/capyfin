@@ -46,25 +46,30 @@ export function PortfolioEmptyState({
 }: PortfolioEmptyStateProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-8 py-12">
-      <EmptyState
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
-        icon={BriefcaseIcon}
-        iconColor="emerald"
-        heading="Track your portfolio"
-        description={PORTFOLIO_EMPTY_TEXT}
-        className="flex flex-col items-center gap-5"
-      >
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onImport}>
-            <UploadIcon className="size-3.5" />
-            Import CSV
-          </Button>
-          <Button size="sm" onClick={onAddHolding}>
-            <PlusIcon className="size-3.5" />
-            Add Position
-          </Button>
+      <div className="relative w-full max-w-xl overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-emerald-500/[0.04] via-background to-primary/[0.02] dark:from-emerald-500/[0.08] dark:to-primary/[0.04]">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/[0.03] via-transparent to-transparent" />
+        <div className="relative flex flex-col items-center px-6 py-10 text-center">
+          <EmptyState
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- lucide-react icon types
+            icon={BriefcaseIcon}
+            iconColor="emerald"
+            heading="Track your portfolio"
+            description={PORTFOLIO_EMPTY_TEXT}
+            className="flex flex-col items-center gap-5"
+          >
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={onImport}>
+                <UploadIcon className="size-3.5" />
+                Import CSV
+              </Button>
+              <Button size="sm" onClick={onAddHolding}>
+                <PlusIcon className="size-3.5" />
+                Add Position
+              </Button>
+            </div>
+          </EmptyState>
         </div>
-      </EmptyState>
+      </div>
 
       <div className="w-full max-w-md">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">

@@ -144,6 +144,9 @@ export function AutomationEmptyState({
 
       <div className="w-full max-w-xl">
         <div className="mb-4 flex items-center gap-3">
+          <div className="flex size-6 items-center justify-center rounded-lg bg-amber-500/10 dark:bg-amber-500/15">
+            <ZapIcon className="size-3.5 text-amber-500/60" />
+          </div>
           <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
             Popular automations
           </h3>

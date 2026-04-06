@@ -59,9 +59,15 @@ export function AttentionNow({ bullets }: AttentionNowProps) {
         <div className="h-px flex-1 bg-border/30" />
       </div>
       {bullets.length === 0 ? (
-        <p className="py-3 text-center text-[13px] text-muted-foreground/50">
-          No attention items yet — create your first case to activate monitoring
-        </p>
+        <div className="flex items-center gap-3 rounded-xl border border-dashed border-border/40 bg-gradient-to-br from-card/40 to-card/20 px-5 py-4 dark:from-card/25 dark:to-card/10">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/40">
+            <Eye className="size-4 text-muted-foreground/40" />
+          </div>
+          <p className="text-[13px] leading-relaxed text-muted-foreground/50">
+            No attention items yet — create your first case to activate
+            monitoring
+          </p>
+        </div>
       ) : (
         <div className="space-y-2">
           {bullets.map((bullet) => {

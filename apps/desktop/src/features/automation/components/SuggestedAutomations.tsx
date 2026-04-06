@@ -1,6 +1,7 @@
 import {
   Activity,
   ClockIcon,
+  LightbulbIcon,
   ListChecks,
   ListOrdered,
   Newspaper,
@@ -57,7 +58,10 @@ export function SuggestedAutomations({
   return (
     <div className="mt-2 flex-1">
       <div className="mb-4 flex items-center gap-3">
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+        <div className="flex size-6 items-center justify-center rounded-lg bg-blue-500/10 dark:bg-blue-500/15">
+          <LightbulbIcon className="size-3.5 text-blue-500/60" />
+        </div>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/40">
           Suggested Automations
         </h3>
         <div className="h-px flex-1 bg-border/30" />
